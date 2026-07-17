@@ -43,7 +43,8 @@ def build_solver(device: str = "cuda", seed: int = 0) -> VectorCFR:
     if CHECKPOINT_PATH.exists():
         payload = np.load(CHECKPOINT_PATH, allow_pickle=False)
         stored = json.loads(str(payload["config"]))
-        if stored != asdict(DEFAULT_CONFIG):
+        # JSON turns tuples into lists; normalize both sides before comparing.
+        if stored != json.loads(json.dumps(asdict(DEFAULT_CONFIG))):
             raise RuntimeError(
                 "gpu_blueprint checkpoint was trained with a different action config; "
                 "delete backend/data/gpu_blueprint to start fresh"

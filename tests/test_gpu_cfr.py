@@ -59,16 +59,17 @@ class TerminalMathTests(unittest.TestCase):
         showdown = int(solver.showdown_nodes[0])
         reach[1, showdown, :] = torch.tensor(opponent_reach, dtype=torch.float32)
 
-        values = torch.zeros((2, nodes, NUM_COMBOS))
+        values = torch.zeros((nodes, NUM_COMBOS))
         solver._showdown_values(
             values,
             reach,
             torch.tensor(deal.river_scores, dtype=torch.long),
             torch.tensor(deal.valid),
+            player=0,
         )
 
         expected = self._brute_force_showdown(showdown, opponent_reach)
-        np.testing.assert_allclose(values[0, showdown].numpy(), expected, rtol=1e-4, atol=1e-3)
+        np.testing.assert_allclose(values[showdown].numpy(), expected, rtol=1e-4, atol=1e-3)
 
     def test_fold_values_match_brute_force(self) -> None:
         solver, deal = self.solver, self.deal
@@ -82,8 +83,8 @@ class TerminalMathTests(unittest.TestCase):
 
         reach = torch.zeros((2, nodes, NUM_COMBOS))
         reach[loser, fold_node, :] = torch.tensor(opponent_reach, dtype=torch.float32)
-        values = torch.zeros((2, nodes, NUM_COMBOS))
-        solver._fold_values(values, reach)
+        values = torch.zeros((nodes, NUM_COMBOS))
+        solver._fold_values(values, reach, player=winner)
 
         combo_array = combos()
         expected = np.zeros(NUM_COMBOS)
@@ -94,7 +95,7 @@ class TerminalMathTests(unittest.TestCase):
                 if villain != hero and not hero_cards & set(map(int, combo_array[villain])):
                     mass += opponent_reach[villain]
             expected[hero] = amount * mass
-        np.testing.assert_allclose(values[winner, fold_node].numpy(), expected, rtol=1e-4, atol=1e-3)
+        np.testing.assert_allclose(values[fold_node].numpy(), expected, rtol=1e-4, atol=1e-3)
 
 
 class PushFoldConvergenceTests(unittest.TestCase):

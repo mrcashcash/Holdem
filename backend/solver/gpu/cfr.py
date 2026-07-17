@@ -35,12 +35,24 @@ class VectorCFR:
         sampler: DealSampler | None = None,
         device: str = "cpu",
         seed: int = 0,
+        discount_alpha: float = 1.5,
+        discount_beta: float = 0.0,
+        discount_gamma: float = 2.0,
+        averaging_delay: int = 0,
     ) -> None:
         self.tree = tree
         self.sampler = sampler or DealSampler()
         self.device = torch.device(device)
         self.rng = random.Random(seed)
         self.iteration = 0
+        # DCFR(alpha, beta, gamma) (Brown & Sandholm AAAI 2019): the setting
+        # (1.5, 0, 2) is the paper's best on NLHE and what desktop-postflop/
+        # opensolver ship. averaging_delay skips strategy-sum accumulation for
+        # the earliest (worst) iterations (Supremus' DCFR+ trick).
+        self.discount_alpha = discount_alpha
+        self.discount_beta = discount_beta
+        self.discount_gamma = discount_gamma
+        self.averaging_delay = averaging_delay
 
         nodes = len(tree)
         actions = tree.config.num_actions
@@ -109,9 +121,26 @@ class VectorCFR:
         for _ in range(iterations):
             self.iteration += 1
             deal = self.sampler.sample(self.rng)
-            self._iterate(deal)
+            # Alternating updates (Burch et al. JAIR 2019): each player's
+            # regrets are updated in their own pass against the opponent's
+            # freshly regret-matched strategy.
+            self._iterate(deal, traverser=0)
+            self._iterate(deal, traverser=1)
+            self._discount()
 
-    def _iterate(self, deal: Deal) -> None:
+    def _discount(self) -> None:
+        t = float(self.iteration)
+        positive_factor = t**self.discount_alpha / (t**self.discount_alpha + 1.0)
+        negative_factor = t**self.discount_beta / (t**self.discount_beta + 1.0)
+        self.regrets = torch.where(
+            self.regrets > 0, self.regrets * positive_factor, self.regrets * negative_factor
+        )
+        if self.iteration > self.averaging_delay:
+            self.strategy_sums *= (t / (t + 1.0)) ** self.discount_gamma
+        else:
+            self.strategy_sums.zero_()
+
+    def _iterate(self, deal: Deal, traverser: int = 0) -> None:
         device = self.device
         nodes = len(self.tree)
         valid = torch.tensor(deal.valid, device=device)
@@ -160,60 +189,52 @@ class VectorCFR:
                         source = acting[is_opponent]
                         reach[player, self.t_children[source, action], :] += reach[player, source, :]
 
-        # ---- terminal values ----------------------------------------------------
-        values = torch.zeros((2, nodes, NUM_COMBOS), dtype=torch.float32, device=device)
-        self._fold_values(values, reach)
-        self._showdown_values(values, reach, scores, valid)
+        # ---- terminal values (traverser's perspective only) ----------------------
+        values = torch.zeros((nodes, NUM_COMBOS), dtype=torch.float32, device=device)
+        self._fold_values(values, reach, traverser)
+        self._showdown_values(values, reach, scores, valid, traverser)
 
-        # ---- backward: roll values up, accumulate regrets and strategy sums ------
-        weight = float(self.iteration)
+        # ---- backward: roll values up, accumulate traverser regrets/sums ---------
         for level_index in range(len(self.levels) - 1, -1, -1):
             level = self.levels[level_index]
             street_ends = level[self.tree_kind(level) == STREET_END]
             if street_ends.numel():
                 children = self.t_children[street_ends, 0]
-                values[:, street_ends, :] = values[:, children, :]
+                values[street_ends, :] = values[children, :]
             decisions = level_decisions.get(level_index)
             if decisions is None or not decisions.numel():
                 continue
             strategy = strategies[level_index]  # [L, C, A]
             child_values = torch.zeros(
-                (2, decisions.shape[0], NUM_COMBOS, self.num_actions), dtype=torch.float32, device=device
+                (decisions.shape[0], NUM_COMBOS, self.num_actions), dtype=torch.float32, device=device
             )
             for action in range(self.num_actions):
                 legal_here = self.t_legal[decisions, action]
                 if not bool(legal_here.any()):
                     continue
                 children = self.t_children[decisions[legal_here], action]
-                child_values[:, legal_here, :, action] = values[:, children, :]
+                child_values[legal_here, :, action] = values[children, :]
 
             actors = self.t_actor[decisions]
             node_buckets = buckets[self.t_street[decisions]]  # [L, C]
             legal = self.t_legal[decisions].unsqueeze(1).float()  # [L, 1, A]
-            for player in (0, 1):
-                acted = actors == player
-                if not bool(acted.any()):
-                    continue
+            node_value = (strategy * child_values).sum(dim=2)  # [L, C]
+            values[decisions, :] = node_value
+
+            acted = actors == traverser
+            if bool(acted.any()):
                 own = decisions[acted]
-                own_strategy = strategy[acted]  # [K, C, A]
-                own_children = child_values[player, acted]  # [K, C, A]
-                node_value = (own_strategy * own_children).sum(dim=2)  # [K, C]
-                values[player, own, :] = node_value
                 # Terminal values are opponent-reach weighted already, so the
                 # counterfactual regret is simply the child/node value gap.
-                regret_increment = (own_children - node_value.unsqueeze(2)) * legal[acted]
-                sum_increment = own_strategy * reach[player, own, :].unsqueeze(2)
+                regret_increment = (child_values[acted] - node_value[acted].unsqueeze(2)) * legal[acted]
+                sum_increment = strategy[acted] * reach[traverser, own, :].unsqueeze(2)
                 flat_index = (own.unsqueeze(1) * MAX_BUCKETS + node_buckets[acted]).reshape(-1)
                 self.regrets.view(-1, self.num_actions).index_add_(
-                    0, flat_index, (weight * regret_increment).reshape(-1, self.num_actions)
+                    0, flat_index, regret_increment.reshape(-1, self.num_actions)
                 )
                 self.strategy_sums.view(-1, self.num_actions).index_add_(
-                    0, flat_index, (weight * sum_increment).reshape(-1, self.num_actions)
+                    0, flat_index, sum_increment.reshape(-1, self.num_actions)
                 )
-                # Opponent value at this node: their reach is unchanged, value
-                # is the strategy-weighted average of child values.
-                other_children = child_values[1 - player, acted]
-                values[1 - player, own, :] = (own_strategy * other_children).sum(dim=2)
 
     def tree_kind(self, node_ids: torch.Tensor) -> torch.Tensor:
         return torch.tensor(self.tree.kind, device=self.device)[node_ids]
@@ -229,16 +250,15 @@ class VectorCFR:
         blocked = per_card[..., card_a] + per_card[..., card_b] - opponent_reach
         return total - blocked
 
-    def _fold_values(self, values: torch.Tensor, reach: torch.Tensor) -> None:
+    def _fold_values(self, values: torch.Tensor, reach: torch.Tensor, player: int) -> None:
         nodes = self.fold_nodes
         if not nodes.numel():
             return
         amount = self.t_fold_committed[nodes].unsqueeze(1)  # [F, 1]
         loser = self.t_fold_loser[nodes]  # [F]
-        for player in (0, 1):
-            sign = torch.where(loser == player, -1.0, 1.0).unsqueeze(1)
-            opponent_mass = self._opponent_mass(reach[1 - player, nodes, :])  # [F, C]
-            values[player, nodes, :] = sign * amount * opponent_mass
+        sign = torch.where(loser == player, -1.0, 1.0).unsqueeze(1)
+        opponent_mass = self._opponent_mass(reach[1 - player, nodes, :])  # [F, C]
+        values[nodes, :] = sign * amount * opponent_mass
 
     def _showdown_values(
         self,
@@ -246,6 +266,7 @@ class VectorCFR:
         reach: torch.Tensor,
         scores: torch.Tensor,
         valid: torch.Tensor,
+        player: int,
     ) -> None:
         nodes = self.showdown_nodes
         if not nodes.numel():
@@ -258,33 +279,32 @@ class VectorCFR:
         card_in_combo = self.t_card_in_combo > 0  # [52, C] bool
         combo_cards = self.t_combos  # [C, 2]
 
-        for player in (0, 1):
-            opponent = reach[1 - player, nodes, :] * valid.float()  # [S, C]
-            ordered = opponent[:, order]  # [S, C] in score order
-            prefix = torch.cumsum(ordered, dim=1)
-            total = prefix[:, -1:]
-            zeros = torch.zeros((nodes.shape[0], 1), device=self.device, dtype=prefix.dtype)
-            padded = torch.cat([zeros, prefix], dim=1)
-            worse = padded[:, boundaries_left]  # [S, C] opponents with lower score
-            better = total - padded[:, boundaries_right]
+        opponent = reach[1 - player, nodes, :] * valid.float()  # [S, C]
+        ordered = opponent[:, order]  # [S, C] in score order
+        prefix = torch.cumsum(ordered, dim=1)
+        total = prefix[:, -1:]
+        zeros = torch.zeros((nodes.shape[0], 1), device=self.device, dtype=prefix.dtype)
+        padded = torch.cat([zeros, prefix], dim=1)
+        worse = padded[:, boundaries_left]  # [S, C] opponents with lower score
+        better = total - padded[:, boundaries_right]
 
-            # Blocker correction, one card at a time: subtract the worse/better
-            # mass contributed by opponent combos sharing a card with the hero.
-            correction = torch.zeros_like(worse)  # (worse_blocked - better_blocked)
-            for card in range(52):
-                members = card_in_combo[card]  # [C] combos containing this card
-                masked = ordered * members[order].unsqueeze(0)  # [S, C]
-                card_prefix = torch.cumsum(masked, dim=1)
-                card_total = card_prefix[:, -1:]
-                card_padded = torch.cat([zeros, card_prefix], dim=1)
-                holders = torch.nonzero(
-                    (combo_cards[:, 0] == card) | (combo_cards[:, 1] == card)
-                ).squeeze(1)
-                worse_blocked = card_padded[:, boundaries_left[holders]]
-                better_blocked = card_total - card_padded[:, boundaries_right[holders]]
-                correction[:, holders] += worse_blocked - better_blocked
+        # Blocker correction, one card at a time: subtract the worse/better
+        # mass contributed by opponent combos sharing a card with the hero.
+        correction = torch.zeros_like(worse)  # (worse_blocked - better_blocked)
+        for card in range(52):
+            members = card_in_combo[card]  # [C] combos containing this card
+            masked = ordered * members[order].unsqueeze(0)  # [S, C]
+            card_prefix = torch.cumsum(masked, dim=1)
+            card_total = card_prefix[:, -1:]
+            card_padded = torch.cat([zeros, card_prefix], dim=1)
+            holders = torch.nonzero(
+                (combo_cards[:, 0] == card) | (combo_cards[:, 1] == card)
+            ).squeeze(1)
+            worse_blocked = card_padded[:, boundaries_left[holders]]
+            better_blocked = card_total - card_padded[:, boundaries_right[holders]]
+            correction[:, holders] += worse_blocked - better_blocked
 
-            values[player, nodes, :] = pots * (worse - better - correction) * valid.float()
+        values[nodes, :] = pots * (worse - better - correction) * valid.float()
 
     # -- outputs -----------------------------------------------------------------
 

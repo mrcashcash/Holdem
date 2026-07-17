@@ -39,7 +39,9 @@ def build_solver(device: str = "cuda", seed: int = 0) -> VectorCFR:
     if device == "cuda" and not torch.cuda.is_available():
         device = "cpu"
     tree = BettingTree(DEFAULT_CONFIG)
-    solver = VectorCFR(tree, DealSampler(**DEFAULT_SAMPLER), device=device, seed=seed)
+    # averaging_delay: the earliest strategies are noise; keep them out of the
+    # average (Supremus' DCFR+ delayed averaging).
+    solver = VectorCFR(tree, DealSampler(**DEFAULT_SAMPLER), device=device, seed=seed, averaging_delay=1000)
     if CHECKPOINT_PATH.exists():
         payload = np.load(CHECKPOINT_PATH, allow_pickle=False)
         stored = json.loads(str(payload["config"]))

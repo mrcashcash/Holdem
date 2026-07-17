@@ -26,14 +26,18 @@ from backend.solver.game import Game, State
 class StrategyTable:
     """Per-infoset cumulative regrets and average-strategy weights."""
 
-    __slots__ = ("num_actions", "regrets", "strategy_sums")
+    __slots__ = ("num_actions", "regrets", "strategy_sums", "_baseline_regrets", "_baseline_sums", "_touched")
 
     def __init__(self, num_actions: int) -> None:
         self.num_actions = num_actions
         self.regrets: dict[Hashable, np.ndarray] = {}
         self.strategy_sums: dict[Hashable, np.ndarray] = {}
+        self._baseline_regrets: dict[Hashable, np.ndarray] = {}
+        self._baseline_sums: dict[Hashable, np.ndarray] = {}
+        self._touched: set[Hashable] | None = None
 
     def _regret_row(self, key: Hashable) -> np.ndarray:
+        self._touch(key)
         row = self.regrets.get(key)
         if row is None:
             row = np.zeros(self.num_actions, dtype=np.float64)
@@ -41,6 +45,7 @@ class StrategyTable:
         return row
 
     def _strategy_row(self, key: Hashable) -> np.ndarray:
+        self._touch(key)
         row = self.strategy_sums.get(key)
         if row is None:
             row = np.zeros(self.num_actions, dtype=np.float64)
@@ -68,6 +73,48 @@ class StrategyTable:
 
     def __len__(self) -> int:
         return len(self.regrets)
+
+    # -- delta tracking (parallel training) ---------------------------------
+
+    def begin_delta(self) -> None:
+        """Start recording changes so they can be shipped to other processes."""
+        self._baseline_regrets = {}
+        self._baseline_sums = {}
+        self._touched = set()
+
+    def _touch(self, key: Hashable) -> None:
+        touched = self._touched
+        if touched is None or key in touched:
+            return
+        touched.add(key)
+        existing_regrets = self.regrets.get(key)
+        existing_sums = self.strategy_sums.get(key)
+        if existing_regrets is not None:
+            self._baseline_regrets[key] = existing_regrets.copy()
+        if existing_sums is not None:
+            self._baseline_sums[key] = existing_sums.copy()
+
+    def collect_delta(self) -> dict[Hashable, tuple[np.ndarray, np.ndarray]]:
+        """Return per-key (regret, strategy-sum) increments since begin_delta."""
+        delta: dict[Hashable, tuple[np.ndarray, np.ndarray]] = {}
+        zeros = np.zeros(self.num_actions, dtype=np.float64)
+        for key in self._touched:
+            regret_change = self.regrets.get(key, zeros) - self._baseline_regrets.get(key, zeros)
+            sum_change = self.strategy_sums.get(key, zeros) - self._baseline_sums.get(key, zeros)
+            if regret_change.any() or sum_change.any():
+                delta[key] = (regret_change, sum_change)
+        self._touched = set()
+        self._baseline_regrets = {}
+        self._baseline_sums = {}
+        return delta
+
+    def apply_delta(self, delta: dict[Hashable, tuple[np.ndarray, np.ndarray]]) -> None:
+        """Additively merge increments produced by another process."""
+        for key, (regret_change, sum_change) in delta.items():
+            self._regret_row(key)
+            self._strategy_row(key)
+            self.regrets[key] += regret_change
+            self.strategy_sums[key] += sum_change
 
     # Checkpoints use pickle because infoset keys are arbitrary hashable tuples.
     # Trust boundary: these files are produced and consumed only by this local

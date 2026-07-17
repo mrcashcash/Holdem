@@ -48,9 +48,11 @@ def log_debug(event: str, **fields) -> None:
 
 
 # The GPU blueprint overtakes the CPU one quickly (600 GPU iterations matched
-# 12k CPU MCCFR iterations on the styles benchmark); prefer it once its
-# checkpoint has enough iterations to clearly dominate the frozen CPU table.
-GPU_SERVE_MIN_ITERATIONS = 10_000
+# 12k CPU MCCFR iterations on the styles benchmark), and it is the only
+# blueprint trained at the serving game's 100 bb depth — the frozen CPU table
+# is a 50 bb model. Prefer the GPU checkpoint as soon as it has meaningful
+# training.
+GPU_SERVE_MIN_ITERATIONS = 5_000
 
 
 def load_serving_agent():

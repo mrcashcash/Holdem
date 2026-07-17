@@ -32,7 +32,11 @@ ABSTRACTION_PATH = DATA_DIR / "abstraction.npz"
 BLUEPRINT_PATH = DATA_DIR / "blueprint.pkl"
 TELEMETRY_PATH = DATA_DIR / "telemetry.json"
 
-STACK_BB = 50.0  # matches the serving game: 1000 chips at a 20-chip big blind
+# NOTE: the serving game moved to 100 bb (2000 chips at 10/20). Existing CPU
+# checkpoints were trained at 50 bb and are depth-mismatched at the table;
+# the GPU blueprint (trained at 100 bb) supersedes them. Change this only
+# together with a fresh backend/data/blueprint/ — checkpoints embed the depth.
+STACK_BB = 50.0
 PRUNING_THRESHOLD = -1.5
 PRUNING_WARMUP = 20000
 

@@ -30,7 +30,7 @@ DEFAULT_CONFIG = GpuActionConfig(
     preflop_fractions=(0.75, 1.5),
     postflop_fractions=(0.5, 1.0),
     max_raises_per_street=3,
-    stack_bb=50.0,
+    stack_bb=100.0,  # matches the serving game: 2000 chips at a 20-chip big blind
 )
 DEFAULT_SAMPLER = dict(flop_buckets=20, turn_buckets=20, river_buckets=20, flop_samples=8, turn_samples=8)
 

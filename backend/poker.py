@@ -135,11 +135,11 @@ class SessionStats:
 class HeadsUpHoldem:
     """A single hand-at-a-time heads-up Hold'em match state."""
 
-    initial_stack: int = 1_000
+    initial_stack: int = 2_000  # 100 bb at 10/20 — standard heads-up depth
     small_blind: int = 10
     big_blind: int = 20
     rng: random.Random = field(default_factory=random.Random)
-    stacks: list[int] = field(default_factory=lambda: [1_000, 1_000])
+    stacks: list[int] = field(default_factory=lambda: [2_000, 2_000])
     hand_number: int = 0
     deck: list[Card] = field(default_factory=list)
     hole_cards: list[list[Card]] = field(default_factory=lambda: [[], []])
@@ -183,7 +183,7 @@ class HeadsUpHoldem:
     def new_hand(self) -> None:
         if 0 in self.stacks:
             self.stacks = [self.initial_stack, self.initial_stack]
-            self.history = ["A new match begins: both stacks reset to 1,000."]
+            self.history = [f"A new match begins: both stacks reset to {self.initial_stack:,}."]
         else:
             self.history = []
 

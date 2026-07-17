@@ -38,7 +38,67 @@ type TableActionPopup = {
   text: string;
   tone: "hero" | "opponent" | "center";
 };
-type HandHistory = { handNumber: number; entries: string[] };
+type HandHistory = {
+  handNumber: number;
+  entries: string[];
+  heroCards: string[];
+  opponentCards: string[];
+  community: string[];
+  result: string | null;
+  winner: number | null;
+};
+
+const snapshotOf = (game: GameState): HandHistory => ({
+  handNumber: game.hand_number,
+  entries: [...game.history],
+  heroCards: [...game.hero_cards],
+  opponentCards: [...game.opponent_cards],
+  community: [...game.community],
+  result: game.result,
+  winner: game.winner,
+});
+
+const STREET_BOARD_COUNT: Record<string, number> = {
+  flop: 3,
+  turn: 4,
+  river: 5,
+};
+const boardCountAtStep = (entries: string[]) => {
+  let count = 0;
+  for (const entry of entries) {
+    const match = entry.match(/^(Flop|Turn|River):/i);
+    if (match) count = STREET_BOARD_COUNT[match[1].toLowerCase()] ?? count;
+  }
+  return count;
+};
+const HAND_HISTORY_STORAGE_KEY = "holdem.handHistory.v1";
+const MAX_STORED_HANDS = 200;
+const loadStoredHands = (): HandHistory[] => {
+  try {
+    const raw = window.localStorage.getItem(HAND_HISTORY_STORAGE_KEY);
+    if (!raw) return [];
+    const parsed = JSON.parse(raw);
+    return Array.isArray(parsed) ? (parsed as HandHistory[]) : [];
+  } catch {
+    return [];
+  }
+};
+const storeHands = (hands: HandHistory[]) => {
+  try {
+    window.localStorage.setItem(
+      HAND_HISTORY_STORAGE_KEY,
+      JSON.stringify(hands.slice(-MAX_STORED_HANDS)),
+    );
+  } catch {
+    /* storage unavailable — replay stays in-memory only */
+  }
+};
+const handOutcome = (hand: HandHistory) => {
+  if (hand.winner === null) return { label: "Split pot", tone: "center" as const };
+  return hand.winner === 0
+    ? { label: "You won", tone: "hero" as const }
+    : { label: "Agent won", tone: "opponent" as const };
+};
 
 const CHIP_DENOMINATIONS: { value: number; colour: ChipColour }[] = [
   { value: 500, colour: "black" },
@@ -192,14 +252,15 @@ function App() {
   const [autoDealing, setAutoDealing] = useState(false);
   const [handSettling, setHandSettling] = useState(false);
   const [chipFlights, setChipFlights] = useState<ChipFlight[]>([]);
-  const [actionPopups, setActionPopups] = useState<TableActionPopup[]>([]);
-  const [lastHand, setLastHand] = useState<HandHistory | null>(null);
-  const [lastHandOpen, setLastHandOpen] = useState(false);
+  const [hands, setHands] = useState<HandHistory[]>(loadStoredHands);
+  const [replayOpen, setReplayOpen] = useState(false);
+  const [replayHandNumber, setReplayHandNumber] = useState<number | null>(null);
+  const [replayStep, setReplayStep] = useState(0);
+  const [replayPlaying, setReplayPlaying] = useState(false);
   const [displayedDealer, setDisplayedDealer] = useState<0 | 1 | null>(null);
   const [dealerFlight, setDealerFlight] = useState<DealerFlight | null>(null);
   const gameRef = useRef<GameState | null>(null);
   const chipFlightId = useRef(0);
-  const actionPopupId = useRef(0);
   const dealerFlightId = useRef(0);
   const autoDealTimer = useRef<number | null>(null);
 
@@ -274,45 +335,34 @@ function App() {
           ...payoutFlights,
         ]);
     }
+    const upsertHand = (snapshot: HandHistory) =>
+      setHands((prev) => {
+        const index = prev.findIndex(
+          (hand) => hand.handNumber === snapshot.handNumber,
+        );
+        const next =
+          index === -1
+            ? [...prev, snapshot]
+            : prev.map((hand, position) =>
+                position === index ? snapshot : hand,
+              );
+        storeHands(next);
+        return next;
+      });
     if (handJustCompleted) {
-      setLastHand({ handNumber: next.hand_number, entries: [...next.history] });
+      upsertHand(snapshotOf(next));
       setHandSettling(true);
     }
     if (startsFreshHand) {
       setHandSettling(false);
       setAutoDealing(false);
       if (newMatch) {
-        setLastHand(null);
-        setLastHandOpen(false);
+        setHands([]);
+        storeHands([]);
+        setReplayOpen(false);
+        setReplayHandNumber(null);
       } else if (previous?.complete) {
-        setLastHand({
-          handNumber: previous.hand_number,
-          entries: [...previous.history],
-        });
-      }
-      setActionPopups(
-        next.history.map((entry) => ({
-          id: ++actionPopupId.current,
-          text: actionPopupText(entry),
-          tone: actionPopupTone(entry),
-        })),
-      );
-    } else {
-      const historyContinues = next.history
-        .slice(0, previous.history.length)
-        .every((entry, index) => entry === previous.history[index]);
-      const newEntries = historyContinues
-        ? next.history.slice(previous.history.length)
-        : next.history.slice(-3);
-      if (newEntries.length) {
-        setActionPopups((popups) => [
-          ...popups,
-          ...newEntries.map((entry) => ({
-            id: ++actionPopupId.current,
-            text: actionPopupText(entry),
-            tone: actionPopupTone(entry),
-          })),
-        ]);
+        upsertHand(snapshotOf(previous));
       }
     }
     if (!previous) {
@@ -476,6 +526,35 @@ function App() {
     [],
   );
 
+  const openReplay = useCallback(
+    (handNumber?: number) => {
+      const target =
+        handNumber ?? hands[hands.length - 1]?.handNumber ?? null;
+      const hand = hands.find((entry) => entry.handNumber === target);
+      if (!hand) return;
+      setReplayHandNumber(hand.handNumber);
+      setReplayStep(hand.entries.length);
+      setReplayPlaying(false);
+      setReplayOpen(true);
+    },
+    [hands],
+  );
+
+  useEffect(() => {
+    if (!replayPlaying || !replayOpen) return;
+    const hand = hands.find((entry) => entry.handNumber === replayHandNumber);
+    if (!hand) return;
+    if (replayStep >= hand.entries.length) {
+      setReplayPlaying(false);
+      return;
+    }
+    const timer = window.setTimeout(
+      () => setReplayStep((step) => step + 1),
+      1_100,
+    );
+    return () => window.clearTimeout(timer);
+  }, [replayPlaying, replayOpen, replayHandNumber, replayStep, hands]);
+
   const statusLine = useMemo(() => {
     if (!game) return "Loading game state…";
     if (game.complete) return game.result ?? "Hand complete.";
@@ -489,6 +568,7 @@ function App() {
       </main>
     );
 
+  const latestHand = hands.length ? hands[hands.length - 1] : null;
   const legal = game.legal_actions;
   const canAct = game.current_player === 0 && !game.complete && !busy;
   const potDisplay = game.complete ? game.last_pot : game.pot;
@@ -537,6 +617,41 @@ function App() {
         index,
     );
 
+  const replayHand =
+    hands.find((entry) => entry.handNumber === replayHandNumber) ?? null;
+  const replayIndex = replayHand
+    ? hands.findIndex((entry) => entry.handNumber === replayHand.handNumber)
+    : -1;
+  const replayTotalSteps = replayHand ? replayHand.entries.length : 0;
+  const replayClampedStep = Math.min(replayStep, replayTotalSteps);
+  const replayPlayed = replayHand
+    ? replayHand.entries.slice(0, replayClampedStep)
+    : [];
+  const replayBoard = replayHand
+    ? replayHand.community.slice(0, boardCountAtStep(replayPlayed))
+    : [];
+  const replayCurrentEntry =
+    replayClampedStep > 0 ? replayPlayed[replayClampedStep - 1] : null;
+  const replayFinished =
+    replayHand !== null && replayClampedStep >= replayTotalSteps;
+  const replayOutcome = replayHand ? handOutcome(replayHand) : null;
+  const gotoReplayStep = (step: number) => {
+    setReplayPlaying(false);
+    setReplayStep(clamp(step, 0, replayTotalSteps));
+  };
+  const gotoReplayHand = (index: number) => {
+    const target = hands[index];
+    if (!target) return;
+    setReplayPlaying(false);
+    setReplayHandNumber(target.handNumber);
+    setReplayStep(target.entries.length);
+  };
+  const toggleReplayPlay = () => {
+    if (!replayHand) return;
+    if (replayFinished) setReplayStep(0);
+    setReplayPlaying((playing) => !playing);
+  };
+
   return (
     <main className="app-shell">
       <header className="masthead">
@@ -579,10 +694,10 @@ function App() {
             )}
             <button
               className="top-action-history"
-              onClick={() => setLastHandOpen(true)}
-              disabled={!lastHand}
+              onClick={() => openReplay()}
+              disabled={!latestHand}
             >
-              Last hand{lastHand ? ` #${lastHand.handNumber}` : ""}
+              Hand replay{latestHand ? ` (${hands.length})` : ""}
             </button>
             {message && (
               <p className="top-action-message" role="alert">
@@ -598,27 +713,6 @@ function App() {
       </header>
 
       <div className="game-workspace">
-        <aside className="live-hand-history" aria-label="Live hand history">
-          <div className="live-history-title">
-            <span className="signal" />
-            LIVE HAND
-          </div>
-          <div className="table-action-popups" aria-live="polite">
-            {actionPopups.length > 0 ? (
-              actionPopups.map((popup) => (
-                <div
-                  className={`table-action-popup ${popup.tone}`}
-                  key={popup.id}
-                  title={popup.text}
-                >
-                  <span>{popup.text}</span>
-                </div>
-              ))
-            ) : (
-              <p className="live-history-empty">Waiting for the next action…</p>
-            )}
-          </div>
-        </aside>
         <section
           className={`poker-table ${handSettling ? "hand-settling" : ""} ${autoDealing ? "auto-dealing" : ""}`}
           aria-label="Three-dimensional heads-up poker table"
@@ -1003,10 +1097,10 @@ function App() {
             )}
             <button
               className="history-button"
-              onClick={() => setLastHandOpen(true)}
-              disabled={!lastHand}
+              onClick={() => openReplay()}
+              disabled={!latestHand}
             >
-              Last hand{lastHand ? ` #${lastHand.handNumber}` : ""}
+              Hand replay{latestHand ? ` (${hands.length})` : ""}
             </button>
             {message && (
               <p className="message" role="alert">
@@ -1134,38 +1228,189 @@ function App() {
           </section>
         </aside>
       </div>
-      {lastHandOpen && lastHand && (
+      {replayOpen && replayHand && (
         <div
           className="hand-history-backdrop"
           role="presentation"
-          onMouseDown={() => setLastHandOpen(false)}
+          onMouseDown={() => setReplayOpen(false)}
         >
           <section
-            className="hand-history-dialog"
+            className="replay-dialog"
             role="dialog"
             aria-modal="true"
-            aria-labelledby="last-hand-title"
+            aria-labelledby="replay-title"
             onMouseDown={(event) => event.stopPropagation()}
           >
-            <header>
+            <header className="replay-header">
               <div>
-                <p className="eyebrow">COMPLETE ACTION RECORD</p>
-                <h2 id="last-hand-title">Hand #{lastHand.handNumber}</h2>
+                <p className="eyebrow">HAND REPLAY</p>
+                <h2 id="replay-title">Hand #{replayHand.handNumber}</h2>
               </div>
-              <button className="ghost" onClick={() => setLastHandOpen(false)}>
+              <div className="replay-hand-nav">
+                <button
+                  className="ghost"
+                  onClick={() => gotoReplayHand(replayIndex - 1)}
+                  disabled={replayIndex <= 0}
+                  aria-label="Older hand"
+                >
+                  ‹ Older
+                </button>
+                <span className="replay-hand-count">
+                  {replayIndex + 1} / {hands.length}
+                </span>
+                <button
+                  className="ghost"
+                  onClick={() => gotoReplayHand(replayIndex + 1)}
+                  disabled={replayIndex >= hands.length - 1}
+                  aria-label="Newer hand"
+                >
+                  Newer ›
+                </button>
+              </div>
+              <button className="ghost" onClick={() => setReplayOpen(false)}>
                 Close
               </button>
             </header>
-            <ol className="hand-history-list">
-              {lastHand.entries.map((entry, index) => (
-                <li
-                  className={`hand-history-entry ${actionPopupTone(entry)}`}
-                  key={`${entry}-${index}`}
+
+            <div className="replay-body">
+              <aside className="replay-hand-list" aria-label="All hands">
+                {[...hands].reverse().map((hand) => {
+                  const outcome = handOutcome(hand);
+                  return (
+                    <button
+                      className={`replay-hand-item ${outcome.tone} ${
+                        hand.handNumber === replayHand.handNumber ? "active" : ""
+                      }`}
+                      key={hand.handNumber}
+                      onClick={() =>
+                        gotoReplayHand(
+                          hands.findIndex(
+                            (entry) => entry.handNumber === hand.handNumber,
+                          ),
+                        )
+                      }
+                    >
+                      <span className="replay-hand-item-no">
+                        #{hand.handNumber}
+                      </span>
+                      <span className="replay-hand-item-outcome">
+                        {outcome.label}
+                      </span>
+                    </button>
+                  );
+                })}
+              </aside>
+
+              <div className="replay-stage">
+                <div className="replay-seat replay-seat-opponent">
+                  <span className="replay-seat-label">AGENT</span>
+                  <Cards
+                    cards={replayHand.opponentCards}
+                    className="replay-cards"
+                  />
+                </div>
+
+                <div className="replay-board">
+                  {replayBoard.length > 0 ? (
+                    <Cards cards={replayBoard} className="replay-cards" />
+                  ) : (
+                    <div className="replay-board-empty">PRE-FLOP</div>
+                  )}
+                </div>
+
+                <div className="replay-seat replay-seat-hero">
+                  <Cards cards={replayHand.heroCards} className="replay-cards" />
+                  <span className="replay-seat-label">YOU</span>
+                </div>
+
+                <div
+                  className={`replay-callout ${
+                    replayCurrentEntry ? actionPopupTone(replayCurrentEntry) : ""
+                  }`}
+                  aria-live="polite"
                 >
-                  {actionPopupText(entry)}
-                </li>
-              ))}
-            </ol>
+                  {replayCurrentEntry
+                    ? actionPopupText(replayCurrentEntry)
+                    : "Ready to deal"}
+                </div>
+              </div>
+
+              <ol className="replay-log" aria-label="Action timeline">
+                {replayHand.entries.map((entry, index) => (
+                  <li
+                    className={`replay-log-entry ${actionPopupTone(entry)} ${
+                      index < replayClampedStep ? "played" : "future"
+                    } ${index === replayClampedStep - 1 ? "current" : ""}`}
+                    key={`${entry}-${index}`}
+                  >
+                    <button onClick={() => gotoReplayStep(index + 1)}>
+                      {actionPopupText(entry)}
+                    </button>
+                  </li>
+                ))}
+              </ol>
+            </div>
+
+            <div className="replay-controls">
+              <div className="replay-buttons">
+                <button
+                  onClick={() => gotoReplayStep(0)}
+                  disabled={replayClampedStep === 0}
+                  aria-label="Jump to start"
+                >
+                  ⏮
+                </button>
+                <button
+                  onClick={() => gotoReplayStep(replayClampedStep - 1)}
+                  disabled={replayClampedStep === 0}
+                  aria-label="Step back"
+                >
+                  ◀
+                </button>
+                <button
+                  className="accent replay-play"
+                  onClick={toggleReplayPlay}
+                  aria-label={replayPlaying ? "Pause" : "Play"}
+                >
+                  {replayPlaying ? "❚❚ Pause" : replayFinished ? "↺ Replay" : "▶ Play"}
+                </button>
+                <button
+                  onClick={() => gotoReplayStep(replayClampedStep + 1)}
+                  disabled={replayFinished}
+                  aria-label="Step forward"
+                >
+                  ▶
+                </button>
+                <button
+                  onClick={() => gotoReplayStep(replayTotalSteps)}
+                  disabled={replayFinished}
+                  aria-label="Jump to end"
+                >
+                  ⏭
+                </button>
+              </div>
+              <input
+                className="replay-scrubber"
+                type="range"
+                min={0}
+                max={replayTotalSteps}
+                value={replayClampedStep}
+                onChange={(event) => gotoReplayStep(Number(event.target.value))}
+                aria-label="Replay position"
+              />
+              <div className="replay-progress">
+                <span>
+                  Step {replayClampedStep} / {replayTotalSteps}
+                </span>
+                {replayFinished && replayOutcome && (
+                  <span className={`replay-result ${replayOutcome.tone}`}>
+                    {replayHand.result
+                      ? actionPopupText(replayHand.result)
+                      : replayOutcome.label}
+                  </span>
+                )}
+              </div>
+            </div>
           </section>
         </div>
       )}

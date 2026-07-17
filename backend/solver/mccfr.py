@@ -83,7 +83,9 @@ class StrategyTable:
         self._touched = set()
 
     def _touch(self, key: Hashable) -> None:
-        touched = self._touched
+        # getattr: tables unpickled from checkpoints written before delta
+        # tracking existed have no _touched slot at all.
+        touched = getattr(self, "_touched", None)
         if touched is None or key in touched:
             return
         touched.add(key)

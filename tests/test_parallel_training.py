@@ -32,6 +32,20 @@ class DeltaTrackingTests(unittest.TestCase):
         np.testing.assert_allclose(target.regrets["a"], [5.0, 2.0, 3.0])
         np.testing.assert_allclose(target.regrets["b"], [0.0, 7.0, 0.0])
 
+    def test_apply_delta_on_table_unpickled_without_delta_slots(self) -> None:
+        # Checkpoints written before delta tracking existed unpickle without
+        # the _touched/_baseline slots; apply_delta must still work.
+        table = StrategyTable(2)
+        table._regret_row("a")[0] = 1.0
+        restored = pickle.loads(pickle.dumps(table))
+        for slot in ("_touched", "_baseline_regrets", "_baseline_sums"):
+            try:
+                delattr(restored, slot)
+            except AttributeError:
+                pass
+        restored.apply_delta({"a": (np.array([2.0, 0.0]), np.array([0.0, 0.0]))})
+        np.testing.assert_allclose(restored.regrets["a"], [3.0, 0.0])
+
     def test_tracking_disabled_by_default(self) -> None:
         table = StrategyTable(2)
         table._regret_row("x")[0] = 1.0  # must not require begin_delta

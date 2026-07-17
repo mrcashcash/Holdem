@@ -47,10 +47,23 @@ def log_debug(event: str, **fields) -> None:
         pass
 
 
-def load_serving_agent() -> BlueprintAgent | HeuristicAgent:
-    agent = BlueprintAgent.try_load()
-    if agent is not None:
-        return agent
+# The GPU blueprint overtakes the CPU one quickly (600 GPU iterations matched
+# 12k CPU MCCFR iterations on the styles benchmark); prefer it once its
+# checkpoint has enough iterations to clearly dominate the frozen CPU table.
+GPU_SERVE_MIN_ITERATIONS = 10_000
+
+
+def load_serving_agent():
+    from backend.agents.gpu_blueprint_agent import GpuBlueprintAgent
+
+    gpu_agent = GpuBlueprintAgent.try_load()
+    if gpu_agent is not None and gpu_agent.iteration >= GPU_SERVE_MIN_ITERATIONS:
+        return gpu_agent
+    cpu_agent = BlueprintAgent.try_load()
+    if cpu_agent is not None:
+        return cpu_agent
+    if gpu_agent is not None:
+        return gpu_agent
     return HeuristicAgent()
 
 

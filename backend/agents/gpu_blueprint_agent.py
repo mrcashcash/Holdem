@@ -31,10 +31,13 @@ _COMBO_INDEX = {(int(a), int(b)): index for index, (a, b) in enumerate(combos())
 class GpuBlueprintAgent:
     """Drop-in serving agent backed by the dense GPU blueprint tables."""
 
-    def __init__(self, tree: BettingTree, strategy: np.ndarray, sampler: DealSampler) -> None:
+    def __init__(
+        self, tree: BettingTree, strategy: np.ndarray, sampler: DealSampler, iteration: int = 0
+    ) -> None:
         self.tree = tree
         self.strategy = strategy  # [nodes, MAX_BUCKETS, actions], normalized
         self.sampler = sampler
+        self.iteration = iteration
         self.ready = True
         self._raise_fraction: float | None = None
         self._rng = random.Random(97)
@@ -56,7 +59,7 @@ class GpuBlueprintAgent:
         totals = sums.sum(axis=2, keepdims=True)
         uniform = legal / legal.sum(axis=2, keepdims=True).clip(min=1)
         strategy = np.where(totals > 0, sums / np.maximum(totals, 1e-30), uniform) * legal
-        return cls(tree, strategy.astype(np.float64), sampler)
+        return cls(tree, strategy.astype(np.float64), sampler, iteration=int(payload["iteration"]))
 
     # -- serving contract ------------------------------------------------------
 

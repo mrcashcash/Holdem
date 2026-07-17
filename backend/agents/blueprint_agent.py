@@ -56,18 +56,17 @@ class BlueprintAgent:
         abstraction_path: Path | None = None,
     ) -> "BlueprintAgent | None":
         """Load the blueprint artifacts if both exist; otherwise return None."""
-        import pickle
-
         blueprint_file = blueprint_path or blueprint_module.BLUEPRINT_PATH
         abstraction_file = abstraction_path or blueprint_module.ABSTRACTION_PATH
         if not blueprint_file.exists() or not abstraction_file.exists():
             return None
         abstraction = CardAbstraction.load(abstraction_file)
-        # Local trainer artifact only (see StrategyTable.save trust boundary).
-        with open(blueprint_file, "rb") as handle:
-            payload = pickle.load(handle)
+        loaded = blueprint_module.load_checkpoint(blueprint_file)
+        if loaded is None:
+            return None
+        table, _ = loaded
         game = AbstractHoldem(abstraction, stack_bb=blueprint_module.STACK_BB)
-        return cls(game, payload["table"])
+        return cls(game, table)
 
     # -- serving contract ----------------------------------------------------
 

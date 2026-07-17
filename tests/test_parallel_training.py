@@ -13,49 +13,64 @@ from backend.solver.mccfr import LinearMCCFR, StrategyTable
 
 class DeltaTrackingTests(unittest.TestCase):
     def test_collect_and_apply_round_trip(self) -> None:
+        from backend.solver.mccfr import REGRETS, SUMS
+
         source = StrategyTable(3)
-        source._regret_row("a")[:] = [1.0, 2.0, 3.0]
-        source._strategy_row("a")[:] = [0.5, 0.5, 0.0]
+        source._row("a")[REGRETS] = [1.0, 2.0, 3.0]
+        source._row("a")[SUMS] = [0.5, 0.5, 0.0]
 
         source.begin_delta()
-        source._regret_row("a")[0] += 4.0
-        source._regret_row("b")[1] += 7.0
+        source._row("a")[REGRETS, 0] += 4.0
+        source._row("b")[REGRETS, 1] += 7.0
         delta = source.collect_delta()
 
         self.assertEqual(set(delta), {"a", "b"})
-        np.testing.assert_allclose(delta["a"][0], [4.0, 0.0, 0.0])
-        np.testing.assert_allclose(delta["b"][0], [0.0, 7.0, 0.0])
+        np.testing.assert_allclose(delta["a"][REGRETS], [4.0, 0.0, 0.0])
+        np.testing.assert_allclose(delta["b"][REGRETS], [0.0, 7.0, 0.0])
 
         target = StrategyTable(3)
-        target._regret_row("a")[:] = [1.0, 2.0, 3.0]
+        target._row("a")[REGRETS] = [1.0, 2.0, 3.0]
         target.apply_delta(delta)
-        np.testing.assert_allclose(target.regrets["a"], [5.0, 2.0, 3.0])
-        np.testing.assert_allclose(target.regrets["b"], [0.0, 7.0, 0.0])
+        np.testing.assert_allclose(target.rows["a"][REGRETS], [5.0, 2.0, 3.0])
+        np.testing.assert_allclose(target.rows["b"][REGRETS], [0.0, 7.0, 0.0])
 
-    def test_apply_delta_on_table_unpickled_without_delta_slots(self) -> None:
-        # Checkpoints written before delta tracking existed unpickle without
-        # the _touched/_baseline slots; apply_delta must still work.
+    def test_legacy_two_dict_pickle_still_loads(self) -> None:
+        # Whole-object checkpoints written by the original two-dict layout
+        # must unpickle into the packed-row layout with values preserved.
+        from backend.solver.mccfr import REGRETS, SUMS
+
         table = StrategyTable(2)
-        table._regret_row("a")[0] = 1.0
-        restored = pickle.loads(pickle.dumps(table))
-        for slot in ("_touched", "_baseline_regrets", "_baseline_sums"):
-            try:
-                delattr(restored, slot)
-            except AttributeError:
-                pass
-        restored.apply_delta({"a": (np.array([2.0, 0.0]), np.array([0.0, 0.0]))})
-        np.testing.assert_allclose(restored.regrets["a"], [3.0, 0.0])
+        legacy_state = (
+            None,
+            {
+                "num_actions": 2,
+                "regrets": {("k",): np.array([1.0, -2.0])},
+                "strategy_sums": {("k",): np.array([3.0, 4.0])},
+            },
+        )
+        table.__setstate__(legacy_state)
+        np.testing.assert_allclose(table.rows[("k",)][REGRETS], [1.0, -2.0])
+        np.testing.assert_allclose(table.rows[("k",)][SUMS], [3.0, 4.0])
+        table.apply_delta({("k",): np.array([[1.0, 0.0], [0.0, 0.0]])})
+        np.testing.assert_allclose(table.rows[("k",)][REGRETS], [2.0, -2.0])
+
+    def test_key_remap_preserves_values(self) -> None:
+        table = StrategyTable(2)
+        table._row((0, 5, (1, 2)))[0, 0] = 9.0
+        count = table.remap_keys(lambda key: bytes((key[0], key[1], *key[2])))
+        self.assertEqual(count, 1)
+        self.assertEqual(table.rows[bytes((0, 5, 1, 2))][0, 0], 9.0)
 
     def test_tracking_disabled_by_default(self) -> None:
         table = StrategyTable(2)
-        table._regret_row("x")[0] = 1.0  # must not require begin_delta
+        table._row("x")[0, 0] = 1.0  # must not require begin_delta
         self.assertIsNone(table._touched)
 
     def test_untouched_keys_are_not_shipped(self) -> None:
         table = StrategyTable(2)
-        table._regret_row("seen")[0] = 1.0
+        table._row("seen")[0, 0] = 1.0
         table.begin_delta()
-        table._regret_row("seen")  # touched but unchanged
+        table._row("seen")  # touched but unchanged
         delta = table.collect_delta()
         self.assertEqual(delta, {})
 

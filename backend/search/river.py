@@ -83,7 +83,8 @@ class RiverState:
         )
 
     def infoset_key(self) -> Hashable:
-        return (self.combos[self.to_act], self.history)
+        combo = self.combos[self.to_act]
+        return bytes((combo[0], combo[1], *self.history))
 
     def child(self, action: int) -> "RiverState":
         actor = self.to_act

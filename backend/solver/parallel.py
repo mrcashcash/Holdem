@@ -30,10 +30,8 @@ def _worker_main(
     pruning_warmup: int,
 ) -> None:
     """Persistent worker: apply peers' deltas, run a chunk, ship own delta."""
-    import pickle
-
     from backend.abstraction.buckets import CardAbstraction
-    from backend.solver.blueprint import STACK_BB
+    from backend.solver.blueprint import STACK_BB, load_checkpoint
     from backend.solver.holdem import AbstractHoldem
 
     abstraction = CardAbstraction.load(abstraction_path)
@@ -44,13 +42,9 @@ def _worker_main(
         pruning_threshold=pruning_threshold,
         pruning_warmup_iterations=pruning_warmup,
     )
-    checkpoint = Path(blueprint_path)
-    if checkpoint.exists():
-        # Local trainer artifact only (see StrategyTable.save trust boundary).
-        with open(checkpoint, "rb") as handle:
-            payload = pickle.load(handle)
-        solver.table = payload["table"]
-        solver.iteration = payload["iteration"]
+    loaded = load_checkpoint(Path(blueprint_path))
+    if loaded is not None:
+        solver.table, solver.iteration = loaded
 
     while True:
         message = connection.recv()
@@ -122,11 +116,11 @@ def train_parallel(
                 for other_id, delta in enumerate(previous_deltas):
                     if other_id == worker_id:
                         continue
-                    for key, (regret_change, sum_change) in delta.items():
+                    for key, change in delta.items():
                         if key in peers:
-                            peers[key] = (peers[key][0] + regret_change, peers[key][1] + sum_change)
+                            peers[key] = peers[key] + change
                         else:
-                            peers[key] = (regret_change, sum_change)
+                            peers[key] = change
                 pipe.send(("run", master.iteration, round_chunk, peers))
             fresh: list[dict] = [{} for _ in range(workers)]
             for pipe in pipes:

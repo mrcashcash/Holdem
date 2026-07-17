@@ -55,6 +55,35 @@ def build_game(abstraction: CardAbstraction | None = None) -> AbstractHoldem:
     )
 
 
+def load_checkpoint(path: Path | None = None) -> tuple["StrategyTable", int] | None:
+    """Load (table, iteration), migrating legacy tuple keys to packed bytes.
+
+    A checkpoint written before key packing stores holdem infoset keys as
+    (street, bucket, history) tuples; they are re-encoded once here and the
+    migrated checkpoint is written back so other processes load it directly.
+    """
+    from backend.solver.holdem import pack_infoset_key
+    from backend.solver.mccfr import StrategyTable
+
+    checkpoint = path or BLUEPRINT_PATH
+    if not checkpoint.exists():
+        return None
+    # Local trainer artifact only; see StrategyTable.save on the pickle trust boundary.
+    with open(checkpoint, "rb") as handle:
+        payload = pickle.load(handle)
+    table: StrategyTable = payload["table"]
+    iteration: int = payload["iteration"]
+    sample = next(iter(table.rows), None)
+    if isinstance(sample, tuple):
+        table.remap_keys(lambda key: pack_infoset_key(key[0], key[1], key[2]))
+        DATA_DIR.mkdir(parents=True, exist_ok=True)
+        temporary = checkpoint.with_suffix(".tmp")
+        with open(temporary, "wb") as migrated:
+            pickle.dump({"table": table, "iteration": iteration}, migrated, protocol=pickle.HIGHEST_PROTOCOL)
+        temporary.replace(checkpoint)
+    return table, iteration
+
+
 def load_solver(game: AbstractHoldem, seed: int = 0) -> LinearMCCFR:
     solver = LinearMCCFR(
         game,
@@ -62,12 +91,9 @@ def load_solver(game: AbstractHoldem, seed: int = 0) -> LinearMCCFR:
         pruning_threshold=PRUNING_THRESHOLD,
         pruning_warmup_iterations=PRUNING_WARMUP,
     )
-    if BLUEPRINT_PATH.exists():
-        # Local trainer artifact only; see StrategyTable.save on the pickle trust boundary.
-        with open(BLUEPRINT_PATH, "rb") as handle:
-            payload = pickle.load(handle)
-        solver.table = payload["table"]
-        solver.iteration = payload["iteration"]
+    loaded = load_checkpoint()
+    if loaded is not None:
+        solver.table, solver.iteration = loaded
     return solver
 
 

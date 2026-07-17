@@ -7,54 +7,57 @@ which converges 2-10x faster than vanilla CFR and is far more robust to the
 large payoff ranges of no-limit games. Optional regret-based pruning skips
 actions whose cumulative regret is hopelessly negative (Pluribus).
 
-The average strategy — not the current one — converges to Nash; ``StrategyTable``
-therefore accumulates strategy sums and exposes ``average_strategy``.
+The average strategy — not the current one — converges to Nash;
+``StrategyTable`` therefore accumulates strategy sums and exposes
+``average_strategy``.
+
+Memory layout: one dict entry per infoset holding a single (2, num_actions)
+float64 array — row 0 cumulative regrets, row 1 strategy sums. Combined with
+compact (e.g. bytes) infoset keys this is ~2x smaller than the original
+two-dict layout. Checkpoints in the legacy two-dict format load transparently
+(see ``__setstate__`` / ``load``).
 """
 
 from __future__ import annotations
 
 import pickle
-import random
 from pathlib import Path
 from typing import Hashable, Sequence
 
 import numpy as np
 
+import random
+
 from backend.solver.game import Game, State
+
+REGRETS, SUMS = 0, 1
 
 
 class StrategyTable:
     """Per-infoset cumulative regrets and average-strategy weights."""
 
-    __slots__ = ("num_actions", "regrets", "strategy_sums", "_baseline_regrets", "_baseline_sums", "_touched")
+    __slots__ = ("num_actions", "rows", "_baseline", "_touched")
 
     def __init__(self, num_actions: int) -> None:
         self.num_actions = num_actions
-        self.regrets: dict[Hashable, np.ndarray] = {}
-        self.strategy_sums: dict[Hashable, np.ndarray] = {}
-        self._baseline_regrets: dict[Hashable, np.ndarray] = {}
-        self._baseline_sums: dict[Hashable, np.ndarray] = {}
+        self.rows: dict[Hashable, np.ndarray] = {}
+        self._baseline: dict[Hashable, np.ndarray] = {}
         self._touched: set[Hashable] | None = None
 
-    def _regret_row(self, key: Hashable) -> np.ndarray:
-        self._touch(key)
-        row = self.regrets.get(key)
+    def _row(self, key: Hashable) -> np.ndarray:
+        row = self.rows.get(key)
         if row is None:
-            row = np.zeros(self.num_actions, dtype=np.float64)
-            self.regrets[key] = row
-        return row
-
-    def _strategy_row(self, key: Hashable) -> np.ndarray:
-        self._touch(key)
-        row = self.strategy_sums.get(key)
-        if row is None:
-            row = np.zeros(self.num_actions, dtype=np.float64)
-            self.strategy_sums[key] = row
+            row = np.zeros((2, self.num_actions), dtype=np.float64)
+            self.rows[key] = row
+        touched = getattr(self, "_touched", None)
+        if touched is not None and key not in touched:
+            touched.add(key)
+            self._baseline[key] = row.copy()
         return row
 
     def current_strategy(self, key: Hashable, actions: Sequence[int]) -> np.ndarray:
         """Regret-matching policy over ``actions`` (indexed by position)."""
-        regrets = self._regret_row(key)
+        regrets = self._row(key)[REGRETS]
         positive = np.maximum(regrets[list(actions)], 0.0)
         total = positive.sum()
         if total <= 0.0:
@@ -62,71 +65,50 @@ class StrategyTable:
         return positive / total
 
     def average_strategy(self, key: Hashable, actions: Sequence[int]) -> np.ndarray:
-        sums = self.strategy_sums.get(key)
-        if sums is None:
+        row = self.rows.get(key)
+        if row is None:
             return np.full(len(actions), 1.0 / len(actions))
-        weights = sums[list(actions)]
+        weights = row[SUMS][list(actions)]
         total = weights.sum()
         if total <= 0.0:
             return np.full(len(actions), 1.0 / len(actions))
         return weights / total
 
     def __len__(self) -> int:
-        return len(self.regrets)
+        return len(self.rows)
 
     # -- delta tracking (parallel training) ---------------------------------
 
     def begin_delta(self) -> None:
         """Start recording changes so they can be shipped to other processes."""
-        self._baseline_regrets = {}
-        self._baseline_sums = {}
+        self._baseline = {}
         self._touched = set()
 
-    def _touch(self, key: Hashable) -> None:
-        # getattr: tables unpickled from checkpoints written before delta
-        # tracking existed have no _touched slot at all.
-        touched = getattr(self, "_touched", None)
-        if touched is None or key in touched:
-            return
-        touched.add(key)
-        existing_regrets = self.regrets.get(key)
-        existing_sums = self.strategy_sums.get(key)
-        if existing_regrets is not None:
-            self._baseline_regrets[key] = existing_regrets.copy()
-        if existing_sums is not None:
-            self._baseline_sums[key] = existing_sums.copy()
-
-    def collect_delta(self) -> dict[Hashable, tuple[np.ndarray, np.ndarray]]:
-        """Return per-key (regret, strategy-sum) increments since begin_delta."""
-        delta: dict[Hashable, tuple[np.ndarray, np.ndarray]] = {}
-        zeros = np.zeros(self.num_actions, dtype=np.float64)
-        for key in self._touched:
-            regret_change = self.regrets.get(key, zeros) - self._baseline_regrets.get(key, zeros)
-            sum_change = self.strategy_sums.get(key, zeros) - self._baseline_sums.get(key, zeros)
-            if regret_change.any() or sum_change.any():
-                delta[key] = (regret_change, sum_change)
+    def collect_delta(self) -> dict[Hashable, np.ndarray]:
+        """Return per-key (2, num_actions) increments since ``begin_delta``."""
+        delta: dict[Hashable, np.ndarray] = {}
+        zeros = np.zeros((2, self.num_actions), dtype=np.float64)
+        for key in self._touched or ():
+            change = self.rows.get(key, zeros) - self._baseline.get(key, zeros)
+            if change.any():
+                delta[key] = change
         self._touched = set()
-        self._baseline_regrets = {}
-        self._baseline_sums = {}
+        self._baseline = {}
         return delta
 
-    def apply_delta(self, delta: dict[Hashable, tuple[np.ndarray, np.ndarray]]) -> None:
+    def apply_delta(self, delta: dict[Hashable, np.ndarray]) -> None:
         """Additively merge increments produced by another process."""
-        for key, (regret_change, sum_change) in delta.items():
-            self._regret_row(key)
-            self._strategy_row(key)
-            self.regrets[key] += regret_change
-            self.strategy_sums[key] += sum_change
+        for key, change in delta.items():
+            self._row(key)
+            self.rows[key] += change
 
-    # Checkpoints use pickle because infoset keys are arbitrary hashable tuples.
+    # -- persistence ----------------------------------------------------------
+
+    # Checkpoints use pickle because infoset keys are arbitrary hashables.
     # Trust boundary: these files are produced and consumed only by this local
     # trainer under backend/data/; never load a table from an untrusted source.
     def save(self, path: str | Path) -> None:
-        payload = {
-            "num_actions": self.num_actions,
-            "regrets": self.regrets,
-            "strategy_sums": self.strategy_sums,
-        }
+        payload = {"format": 2, "num_actions": self.num_actions, "rows": self.rows}
         target = Path(path)
         target.parent.mkdir(parents=True, exist_ok=True)
         temporary = target.with_suffix(target.suffix + ".tmp")
@@ -139,9 +121,48 @@ class StrategyTable:
         with open(path, "rb") as handle:
             payload = pickle.load(handle)
         table = cls(payload["num_actions"])
-        table.regrets = payload["regrets"]
-        table.strategy_sums = payload["strategy_sums"]
+        if payload.get("format", 1) >= 2:
+            table.rows = payload["rows"]
+        else:
+            table._adopt_legacy(payload["regrets"], payload["strategy_sums"])
         return table
+
+    def _adopt_legacy(
+        self,
+        regrets: dict[Hashable, np.ndarray],
+        strategy_sums: dict[Hashable, np.ndarray],
+    ) -> None:
+        """Convert the legacy two-dict layout into packed rows."""
+        for key in regrets.keys() | strategy_sums.keys():
+            row = np.zeros((2, self.num_actions), dtype=np.float64)
+            regret_row = regrets.get(key)
+            sum_row = strategy_sums.get(key)
+            if regret_row is not None:
+                row[REGRETS] = regret_row
+            if sum_row is not None:
+                row[SUMS] = sum_row
+            self.rows[key] = row
+
+    def __getstate__(self) -> dict:
+        return {"num_actions": self.num_actions, "rows": self.rows}
+
+    def __setstate__(self, state: dict) -> None:
+        # Whole-object pickles: slots classes pickle as (None, slot_dict).
+        if isinstance(state, tuple):
+            state = state[1] or {}
+        self.num_actions = state["num_actions"]
+        self._baseline = {}
+        self._touched = None
+        if "rows" in state:
+            self.rows = state["rows"]
+        else:  # legacy layout pickled before the packed-row format
+            self.rows = {}
+            self._adopt_legacy(state.get("regrets", {}), state.get("strategy_sums", {}))
+
+    def remap_keys(self, mapper) -> int:
+        """Re-encode every infoset key with ``mapper`` (checkpoint migration)."""
+        self.rows = {mapper(key): row for key, row in self.rows.items()}
+        return len(self.rows)
 
 
 class LinearMCCFR:
@@ -188,14 +209,14 @@ class LinearMCCFR:
         if state.current_player() != traverser:
             # Opponent node: sample the action, accumulate the linear-weighted
             # average-strategy contribution for the opponent.
-            sums = self.table._strategy_row(key)
+            sums = self.table._row(key)[SUMS]
             for position, action in enumerate(actions):
                 sums[action] += self.iteration * strategy[position]
             choice = self.rng.choices(range(len(actions)), weights=strategy)[0]
             return self._traverse(state.child(actions[choice]), traverser, prune)
 
         # Traverser node: explore every action (optionally pruning hopeless ones).
-        regrets = self.table._regret_row(key)
+        regrets = self.table._row(key)[REGRETS]
         action_values = np.zeros(len(actions))
         explored = np.ones(len(actions), dtype=bool)
         # Under linear weighting, sampling noise in cumulative regret grows

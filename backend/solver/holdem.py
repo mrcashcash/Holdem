@@ -28,6 +28,15 @@ def card_tuple(card: int) -> tuple[int, str]:
     return card // 4 + 2, SUITS[card % 4]
 
 
+def pack_infoset_key(street: int, bucket: int, history: tuple[int, ...]) -> bytes:
+    """Compact byte encoding of (street, bucket, public history).
+
+    Bytes hash fast and cost a fraction of nested tuples in the strategy
+    table (history entries are street*16+action < 64; buckets fit 16 bits).
+    """
+    return bytes((street, bucket & 0xFF, bucket >> 8, *history))
+
+
 @dataclass(frozen=True)
 class HoldemState:
     game: "AbstractHoldem"
@@ -110,7 +119,7 @@ class HoldemState:
 
     def infoset_key(self) -> Hashable:
         bucket = self.game.abstraction.bucket(self.hole[self.to_act], self.board)
-        return (self.street, bucket, self.history)
+        return pack_infoset_key(self.street, bucket, self.history)
 
     def child(self, action: int) -> "HoldemState":
         actor = self.to_act

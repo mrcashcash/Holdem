@@ -102,8 +102,9 @@ class AbstractHoldemMechanicsTests(unittest.TestCase):
         rng = random.Random(7)
         state = self.game.initial_state().sample_chance(rng)
         key = state.infoset_key()
-        self.assertEqual(key[0], 0)  # street
-        self.assertEqual(key[2], ())  # no public history yet
+        self.assertIsInstance(key, bytes)
+        self.assertEqual(key[0], 0)  # street byte
+        self.assertEqual(len(key), 3)  # street + 16-bit bucket, no history yet
 
     def test_mccfr_smoke_runs_on_the_full_game(self) -> None:
         solver = LinearMCCFR(self.game, seed=8)

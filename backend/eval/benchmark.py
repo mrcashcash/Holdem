@@ -86,6 +86,7 @@ def main() -> None:
     parser.add_argument("--styles", type=str, default="", help="comma-separated subset of styles")
     parser.add_argument("--seed", type=int, default=0)
     parser.add_argument("--gpu", action="store_true", help="benchmark the dense GPU blueprint instead")
+    parser.add_argument("--subgame-iters", type=int, default=0, help="turn/river re-solve iterations (0 = blueprint only)")
     arguments = parser.parse_args()
 
     if arguments.gpu:
@@ -94,6 +95,8 @@ def main() -> None:
         agent = GpuBlueprintAgent.try_load()
         if agent is None:
             raise SystemExit("no GPU blueprint found — train with `python -m backend.solver.gpu.train` first")
+        agent.subgame_search = arguments.subgame_iters > 0
+        agent.subgame_iterations = arguments.subgame_iters or agent.subgame_iterations
     else:
         agent = BlueprintAgent.try_load()
     if agent is None:

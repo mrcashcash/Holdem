@@ -85,9 +85,17 @@ def main() -> None:
     parser.add_argument("--hands", type=int, default=1000, help="hands per style (played as duplicate pairs)")
     parser.add_argument("--styles", type=str, default="", help="comma-separated subset of styles")
     parser.add_argument("--seed", type=int, default=0)
+    parser.add_argument("--gpu", action="store_true", help="benchmark the dense GPU blueprint instead")
     arguments = parser.parse_args()
 
-    agent = BlueprintAgent.try_load()
+    if arguments.gpu:
+        from backend.agents.gpu_blueprint_agent import GpuBlueprintAgent
+
+        agent = GpuBlueprintAgent.try_load()
+        if agent is None:
+            raise SystemExit("no GPU blueprint found — train with `python -m backend.solver.gpu.train` first")
+    else:
+        agent = BlueprintAgent.try_load()
     if agent is None:
         raise SystemExit("no blueprint artifacts found — train with `python -m backend.solver.blueprint` first")
     styles = tuple(s for s in arguments.styles.split(",") if s) or ALL_STYLES

@@ -1,0 +1,7 @@
+fastapi==0.116.1
+uvicorn[standard]==0.35.0
+pydantic==2.11.7
+numpy>=1.26,<2.3
+numba>=0.61,<0.62
+# torch is no longer required by the backend (the PPO trainer was retired to
+# legacy/); reinstall it only if you want to run the legacy code.

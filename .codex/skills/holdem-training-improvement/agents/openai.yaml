@@ -1,0 +1,4 @@
+interface:
+  display_name: "Holdem Training Improvement"
+  short_description: "Iteratively diagnose and validate Holdem training"
+  default_prompt: "Use $holdem-training-improvement 3 to run three complete diagnose, improve, and validate iterations."

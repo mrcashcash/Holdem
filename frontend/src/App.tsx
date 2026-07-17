@@ -1,0 +1,1176 @@
+import {
+  useCallback,
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+  type CSSProperties,
+} from "react";
+import { api } from "./api";
+import type { GameState, LegalActions, TrainingStatus } from "./types";
+
+const MIN_EPISODES = 10;
+const MAX_EPISODES = 500_000;
+
+const clamp = (value: number, minimum: number, maximum: number) =>
+  Math.min(Math.max(value, minimum), maximum);
+const cardAssetPath = (card: string) => {
+  const suit = card.slice(-1);
+  const suitCode = { "♥": "h", "♦": "d", "♣": "c", "♠": "s" }[suit];
+  return suitCode ? `/assets/cards/${card.slice(0, -1)}${suitCode}.png` : "";
+};
+type ChipColour = "white" | "green" | "red" | "black" | "purple";
+type ChipGroup = { value: number; colour: ChipColour; count: number };
+type ChipFlight = {
+  id: number;
+  target: 0 | 1;
+  motion: "to-pot" | "to-player";
+  value: number;
+  colour: ChipColour;
+  delay: number;
+  offsetX: number;
+  offsetY: number;
+  turn: number;
+};
+type DealerFlight = { id: number; from: 0 | 1; to: 0 | 1 };
+type TableActionPopup = {
+  id: number;
+  text: string;
+  tone: "hero" | "opponent" | "center";
+};
+type HandHistory = { handNumber: number; entries: string[] };
+
+const CHIP_DENOMINATIONS: { value: number; colour: ChipColour }[] = [
+  { value: 500, colour: "black" },
+  { value: 100, colour: "red" },
+  { value: 25, colour: "green" },
+  { value: 5, colour: "purple" },
+  { value: 1, colour: "white" },
+];
+const chipAssetPath = (colour: ChipColour) =>
+  `/assets/chips/chip-${colour}.png`;
+const chipBreakdown = (amount: number): ChipGroup[] => {
+  let remaining = Math.max(0, Math.trunc(amount));
+  return CHIP_DENOMINATIONS.flatMap(({ value, colour }) => {
+    const count = Math.floor(remaining / value);
+    remaining %= value;
+    return count > 0 ? [{ value, colour, count }] : [];
+  });
+};
+const individualChips = (amount: number) =>
+  chipBreakdown(amount).flatMap(({ count, ...chip }) =>
+    Array.from({ length: count }, () => chip),
+  );
+const actionPopupTone = (entry: string): TableActionPopup["tone"] =>
+  entry.startsWith("Player 1")
+    ? "hero"
+    : entry.startsWith("Player 2")
+      ? "opponent"
+      : "center";
+const actionPopupText = (entry: string) =>
+  entry
+    .replace(/^Player 1\b/, "YOU")
+    .replace(/^Player 2\b/, "AGENT")
+    .replace(/^Hand \d+:\s*/, "NEW HAND · ");
+
+function PlayingCard({
+  card,
+  hidden = false,
+}: {
+  card?: string;
+  hidden?: boolean;
+}) {
+  if (hidden || !card)
+    return (
+      <span className="playing-card card-back" aria-label="Face-down card">
+        <span>♠</span>
+      </span>
+    );
+
+  const suit = card.slice(-1);
+  const rawRank = card.slice(0, -1);
+  const rank = rawRank === "T" ? "10" : rawRank;
+  return (
+    <span className="playing-card card-face" aria-label={`${rank} of ${suit}`}>
+      <img src={cardAssetPath(card)} alt="" />
+    </span>
+  );
+}
+
+function Cards({
+  cards,
+  hidden = false,
+  className = "",
+}: {
+  cards: string[];
+  hidden?: boolean;
+  className?: string;
+}) {
+  if (hidden) {
+    return (
+      <div className={`cards ${className}`}>
+        <PlayingCard hidden />
+        <PlayingCard hidden />
+      </div>
+    );
+  }
+  return (
+    <div className={`cards ${className}`}>
+      {cards.map((card, index) => (
+        <PlayingCard card={card} key={`${card}-${index}`} />
+      ))}
+    </div>
+  );
+}
+
+function ChipStack({
+  amount,
+  className = "",
+}: {
+  amount: number;
+  className?: string;
+}) {
+  const chips = chipBreakdown(amount);
+  return (
+    <div
+      className={`chip-stack ${className}`}
+      aria-label={`${amount.toLocaleString()} chips`}
+    >
+      <div className="chips value-chip-rack" aria-hidden="true">
+        {chips.map((chip) => (
+          <span
+            className={`value-chip-stack chip-${chip.colour}`}
+            key={chip.value}
+            style={{ height: `${30 + (chip.count - 1) * 4}px` }}
+          >
+            {Array.from({ length: chip.count }, (_, index) => (
+              <span
+                className="value-chip"
+                key={index}
+                style={{ bottom: `${index * 4}px`, zIndex: index + 1 }}
+              >
+                <img
+                  className="chip-art"
+                  src={chipAssetPath(chip.colour)}
+                  alt=""
+                />
+              </span>
+            ))}
+          </span>
+        ))}
+      </div>
+      <span>{amount.toLocaleString()}</span>
+    </div>
+  );
+}
+
+function boundedRaise(value: number, legal: LegalActions, fallback: number) {
+  const minimum = legal.raise_min;
+  const maximum = legal.raise_max;
+  if (minimum === undefined || maximum === undefined) return fallback;
+  return clamp(
+    Number.isFinite(value) ? Math.trunc(value) : minimum,
+    minimum,
+    maximum,
+  );
+}
+
+function bigBlindFromHistory(history: string[]) {
+  const match = history
+    .find((entry) => /big blind/i.test(entry))
+    ?.match(/big blind\s+(\d+)/i);
+  return match ? Number(match[1]) : 20;
+}
+
+function App() {
+  const [game, setGame] = useState<GameState | null>(null);
+  const [training, setTraining] = useState<TrainingStatus | null>(null);
+  const [raiseTo, setRaiseTo] = useState(40);
+  const [episodes, setEpisodes] = useState(50_000);
+  const [message, setMessage] = useState("Connecting to the table…");
+  const [busy, setBusy] = useState(false);
+  const [autoDealing, setAutoDealing] = useState(false);
+  const [handSettling, setHandSettling] = useState(false);
+  const [chipFlights, setChipFlights] = useState<ChipFlight[]>([]);
+  const [actionPopups, setActionPopups] = useState<TableActionPopup[]>([]);
+  const [lastHand, setLastHand] = useState<HandHistory | null>(null);
+  const [lastHandOpen, setLastHandOpen] = useState(false);
+  const [displayedDealer, setDisplayedDealer] = useState<0 | 1 | null>(null);
+  const [dealerFlight, setDealerFlight] = useState<DealerFlight | null>(null);
+  const gameRef = useRef<GameState | null>(null);
+  const chipFlightId = useRef(0);
+  const actionPopupId = useRef(0);
+  const dealerFlightId = useRef(0);
+  const autoDealTimer = useRef<number | null>(null);
+
+  const cancelAutoDeal = useCallback(() => {
+    if (autoDealTimer.current !== null) {
+      window.clearTimeout(autoDealTimer.current);
+      autoDealTimer.current = null;
+    }
+    setAutoDealing(false);
+  }, []);
+
+  const acceptGame = useCallback((next: GameState, newMatch = false) => {
+    const previous = gameRef.current;
+    const reducedMotion = window.matchMedia?.(
+      "(prefers-reduced-motion: reduce)",
+    ).matches;
+    const startsFreshHand =
+      !previous || newMatch || previous.hand_number !== next.hand_number;
+    const handJustCompleted = Boolean(
+      previous && !previous.complete && next.complete,
+    );
+    if (previous && !reducedMotion) {
+      const previousBets = startsFreshHand ? [0, 0] : previous.round_bets;
+      const wagerFlights = ([0, 1] as const).flatMap((target) => {
+        const added = Math.max(
+          0,
+          next.round_bets[target] - previousBets[target],
+        );
+        return individualChips(added).map((chip, index) => ({
+          id: ++chipFlightId.current,
+          target,
+          motion: "to-pot" as const,
+          value: chip.value,
+          colour: chip.colour,
+          delay: target * 90 + index * 80,
+          offsetX: ((index % 5) - 2) * 13,
+          offsetY: (index % 3) * 7,
+          turn: ((index % 5) - 2) * 48,
+        }));
+      });
+      const payoutDelay =
+        wagerFlights.length > 0
+          ? Math.max(...wagerFlights.map((flight) => flight.delay)) + 820
+          : 0;
+      const payoutRecipients: (0 | 1)[] =
+        next.winner === null ? [0, 1] : [next.winner as 0 | 1];
+      const payoutFlights =
+        !previous.complete && next.complete && next.last_pot > 0
+          ? payoutRecipients.flatMap((target, recipientIndex) => {
+              const share =
+                Math.floor(next.last_pot / payoutRecipients.length) +
+                (recipientIndex === 0
+                  ? next.last_pot % payoutRecipients.length
+                  : 0);
+              return individualChips(share).map((chip, index) => ({
+                id: ++chipFlightId.current,
+                target,
+                motion: "to-player" as const,
+                value: chip.value,
+                colour: chip.colour,
+                delay: payoutDelay + recipientIndex * 120 + index * 80,
+                offsetX: ((index % 5) - 2) * 13,
+                offsetY: (index % 3) * 7,
+                turn: ((index % 5) - 2) * 48,
+              }));
+            })
+          : [];
+      if (wagerFlights.length > 0 || payoutFlights.length > 0)
+        setChipFlights((flights) => [
+          ...flights,
+          ...wagerFlights,
+          ...payoutFlights,
+        ]);
+    }
+    if (handJustCompleted) {
+      setLastHand({ handNumber: next.hand_number, entries: [...next.history] });
+      setHandSettling(true);
+    }
+    if (startsFreshHand) {
+      setHandSettling(false);
+      setAutoDealing(false);
+      if (newMatch) {
+        setLastHand(null);
+        setLastHandOpen(false);
+      } else if (previous?.complete) {
+        setLastHand({
+          handNumber: previous.hand_number,
+          entries: [...previous.history],
+        });
+      }
+      setActionPopups(
+        next.history.map((entry) => ({
+          id: ++actionPopupId.current,
+          text: actionPopupText(entry),
+          tone: actionPopupTone(entry),
+        })),
+      );
+    } else {
+      const historyContinues = next.history
+        .slice(0, previous.history.length)
+        .every((entry, index) => entry === previous.history[index]);
+      const newEntries = historyContinues
+        ? next.history.slice(previous.history.length)
+        : next.history.slice(-3);
+      if (newEntries.length) {
+        setActionPopups((popups) => [
+          ...popups,
+          ...newEntries.map((entry) => ({
+            id: ++actionPopupId.current,
+            text: actionPopupText(entry),
+            tone: actionPopupTone(entry),
+          })),
+        ]);
+      }
+    }
+    if (!previous) {
+      setDisplayedDealer(next.button as 0 | 1);
+    } else if (
+      previous.hand_number !== next.hand_number &&
+      previous.button !== next.button
+    ) {
+      const from = previous.button as 0 | 1;
+      const to = next.button as 0 | 1;
+      if (reducedMotion) {
+        setDisplayedDealer(to);
+      } else {
+        setDisplayedDealer(from);
+        setDealerFlight({ id: ++dealerFlightId.current, from, to });
+      }
+    }
+    gameRef.current = next;
+    setGame(next);
+    setRaiseTo((previous) =>
+      boundedRaise(
+        previous,
+        next.legal_actions,
+        next.legal_actions.raise_min ?? previous,
+      ),
+    );
+  }, []);
+
+  const refresh = useCallback(async () => {
+    try {
+      const [currentGame, currentTraining] = await Promise.all([
+        api.getGame(),
+        api.trainingStatus(),
+      ]);
+      acceptGame(currentGame);
+      setTraining(currentTraining);
+    } catch (error) {
+      setMessage(
+        error instanceof Error
+          ? error.message
+          : "Cannot reach the Python server.",
+      );
+    }
+  }, [acceptGame]);
+
+  useEffect(() => {
+    void refresh();
+  }, [refresh]);
+  useEffect(() => {
+    if (!training?.running) return;
+    const interval = window.setInterval(() => void refresh(), 700);
+    return () => window.clearInterval(interval);
+  }, [refresh, training?.running]);
+
+  const sendAction = async (action: string) => {
+    if (!game) return;
+    setBusy(true);
+    try {
+      const amount =
+        action === "raise"
+          ? boundedRaise(raiseTo, game.legal_actions, raiseTo)
+          : undefined;
+      if (amount !== undefined) setRaiseTo(amount);
+      acceptGame(await api.action(action, amount));
+      setMessage("");
+    } catch (error) {
+      setMessage(error instanceof Error ? error.message : "Action failed.");
+    } finally {
+      setBusy(false);
+    }
+  };
+
+  const deal = useCallback(
+    async (kind: "new" | "next") => {
+      cancelAutoDeal();
+      setBusy(true);
+      try {
+        acceptGame(
+          kind === "new" ? await api.newGame() : await api.nextHand(),
+          kind === "new",
+        );
+        setMessage("");
+      } catch (error) {
+        setMessage(error instanceof Error ? error.message : "Unable to deal.");
+      } finally {
+        setBusy(false);
+      }
+    },
+    [acceptGame, cancelAutoDeal],
+  );
+
+  const startTraining = async () => {
+    const safeEpisodes = clamp(
+      Number.isFinite(episodes) ? Math.trunc(episodes) : MIN_EPISODES,
+      MIN_EPISODES,
+      MAX_EPISODES,
+    );
+    setEpisodes(safeEpisodes);
+    setBusy(true);
+    try {
+      setTraining(await api.train(safeEpisodes));
+      setMessage("");
+    } catch (error) {
+      setMessage(
+        error instanceof Error ? error.message : "Could not start training.",
+      );
+    } finally {
+      setBusy(false);
+    }
+  };
+
+  const reloadLastModel = async () => {
+    if (
+      !window.confirm(
+        "Reload the latest saved checkpoint? Any unsaved in-memory strategy will be discarded.",
+      )
+    )
+      return;
+    setBusy(true);
+    try {
+      const result = await api.reloadLastModel();
+      setTraining(result.status);
+      setMessage(`Latest checkpoint reloaded (${result.source}).`);
+    } catch (error) {
+      setMessage(
+        error instanceof Error
+          ? error.message
+          : "Could not reload the saved checkpoint.",
+      );
+    } finally {
+      setBusy(false);
+    }
+  };
+
+  useEffect(() => {
+    if (
+      !game?.complete ||
+      busy ||
+      autoDealTimer.current !== null ||
+      window.matchMedia?.("(prefers-reduced-motion: reduce)").matches
+    )
+      return;
+    setAutoDealing(true);
+    autoDealTimer.current = window.setTimeout(() => {
+      autoDealTimer.current = null;
+      void deal("next");
+    }, 2_800);
+    return () => {
+      if (autoDealTimer.current !== null) {
+        window.clearTimeout(autoDealTimer.current);
+        autoDealTimer.current = null;
+      }
+    };
+  }, [busy, deal, game?.complete, game?.hand_number]);
+
+  useEffect(
+    () => () => {
+      if (autoDealTimer.current !== null)
+        window.clearTimeout(autoDealTimer.current);
+    },
+    [],
+  );
+
+  const statusLine = useMemo(() => {
+    if (!game) return "Loading game state…";
+    if (game.complete) return game.result ?? "Hand complete.";
+    return game.current_player === 0 ? "Your action." : "Agent is acting.";
+  }, [game]);
+
+  if (!game)
+    return (
+      <main className="loading">
+        <p>{message}</p>
+      </main>
+    );
+
+  const legal = game.legal_actions;
+  const canAct = game.current_player === 0 && !game.complete && !busy;
+  const potDisplay = game.complete ? game.last_pot : game.pot;
+  const trainingProgress = Math.round((training?.progress ?? 0) * 100);
+  const dealerSeat = displayedDealer ?? (game.button as 0 | 1);
+  const preflop = game.street.toLowerCase() === "preflop";
+  const bigBlind = bigBlindFromHistory(game.history);
+  const currentBet = Math.max(...game.round_bets);
+  const chipLead = game.stacks[0] - game.stacks[1];
+  const chipLeadLabel =
+    chipLead === 0 ? "Stacks even" : chipLead > 0 ? "You ahead" : "Agent ahead";
+  const sessionStats = game.session_stats;
+  const heroStats = sessionStats.players[0];
+  const agentStats = sessionStats.players[1];
+  const decidedHands = sessionStats.hands_completed - sessionStats.split_pots;
+  const heroWinRate =
+    decidedHands > 0
+      ? Math.round((heroStats.hand_wins / decidedHands) * 100)
+      : null;
+  const averagePot =
+    sessionStats.hands_completed > 0
+      ? Math.round(sessionStats.total_pot / sessionStats.hands_completed)
+      : null;
+  const heroAggression =
+    heroStats.aggression === null ? "—" : `${heroStats.aggression}%`;
+  const quickRaisePresets = (
+    preflop
+      ? [
+          { label: "2 BB", target: bigBlind * 2 },
+          { label: "2.5 BB", target: bigBlind * 2.5 },
+          { label: "3 BB", target: bigBlind * 3 },
+        ]
+      : [
+          { label: "33%", target: currentBet + game.pot * 0.33 },
+          { label: "50%", target: currentBet + game.pot * 0.5 },
+          { label: "70%", target: currentBet + game.pot * 0.7 },
+        ]
+  )
+    .map((preset) => ({
+      ...preset,
+      target: boundedRaise(Math.round(preset.target), legal, raiseTo),
+    }))
+    .filter(
+      (preset, index, presets) =>
+        presets.findIndex((candidate) => candidate.target === preset.target) ===
+        index,
+    );
+
+  return (
+    <main className="app-shell">
+      <header className="masthead">
+        <div>
+          <p className="eyebrow">SELF-PLAY LAB / TABLE 01</p>
+          <h1>TEXT HOLD’EM</h1>
+        </div>
+        <div className="masthead-controls">
+          <section
+            className="top-action-bar"
+            aria-label="Your action"
+            aria-live="polite"
+          >
+            <div className="top-action-status">
+              <span className={game.complete ? "signal done" : "signal"} />
+              {statusLine}
+            </div>
+            {!game.complete ? (
+              <div className="top-action-bets">
+                <span>
+                  Call <strong>{game.to_call.toLocaleString()}</strong>
+                </span>
+                <span>
+                  Bet{" "}
+                  <strong>
+                    {Math.max(...game.round_bets).toLocaleString()}
+                  </strong>
+                </span>
+              </div>
+            ) : autoDealing ? (
+              <span className="top-action-auto">Next hand dealing…</span>
+            ) : (
+              <button
+                className="accent top-action-next"
+                onClick={() => void deal("next")}
+                disabled={busy}
+              >
+                Deal next hand →
+              </button>
+            )}
+            <button
+              className="top-action-history"
+              onClick={() => setLastHandOpen(true)}
+              disabled={!lastHand}
+            >
+              Last hand{lastHand ? ` #${lastHand.handNumber}` : ""}
+            </button>
+            {message && (
+              <p className="top-action-message" role="alert">
+                {message}
+              </p>
+            )}
+          </section>
+          <div className="table-identity">
+            <span>HOLD’EM</span>
+            <small>HEADS UP · NLH</small>
+          </div>
+        </div>
+      </header>
+
+      <div className="game-workspace">
+        <aside className="live-hand-history" aria-label="Live hand history">
+          <div className="live-history-title">
+            <span className="signal" />
+            LIVE HAND
+          </div>
+          <div className="table-action-popups" aria-live="polite">
+            {actionPopups.length > 0 ? (
+              actionPopups.map((popup) => (
+                <div
+                  className={`table-action-popup ${popup.tone}`}
+                  key={popup.id}
+                  title={popup.text}
+                >
+                  <span>{popup.text}</span>
+                </div>
+              ))
+            ) : (
+              <p className="live-history-empty">Waiting for the next action…</p>
+            )}
+          </div>
+        </aside>
+        <section
+          className={`poker-table ${handSettling ? "hand-settling" : ""} ${autoDealing ? "auto-dealing" : ""}`}
+          aria-label="Three-dimensional heads-up poker table"
+        >
+          <div className="table-shadow" />
+          <div className="table-base" />
+          <div className="table-rail" />
+          <div className="table-felt">
+            <div className="felt-grain" />
+          </div>
+          <button
+            className="table-new-match"
+            onClick={() => void deal("new")}
+            disabled={busy}
+          >
+            New match
+          </button>
+          <div className="seat opponent-seat">
+            <div className="player-plaque">
+              <span className="seat-indicator">02</span>
+              <div>
+                <p>AGENT {game.button === 1 && <em>BUTTON</em>}</p>
+                <strong>{game.stacks[1].toLocaleString()}</strong>
+                <small>chips</small>
+              </div>
+            </div>
+            <Cards
+              key={`opponent-${game.hand_number}`}
+              cards={game.opponent_cards}
+              hidden={!game.complete}
+              className="opponent-cards"
+            />
+          </div>
+
+          {game.round_bets[1] > 0 && (
+            <ChipStack
+              amount={game.round_bets[1]}
+              className="wager opponent-wager"
+            />
+          )}
+          {game.round_bets[0] > 0 && (
+            <ChipStack
+              amount={game.round_bets[0]}
+              className="wager hero-wager"
+            />
+          )}
+
+          <div className="pot-zone">
+            <div className="pot-display">
+              <span>{game.complete ? "LAST POT" : "POT"}</span>
+              <ChipStack amount={potDisplay} />
+            </div>
+            <p className="street">
+              {game.street.toUpperCase()} · HAND #{game.hand_number}
+            </p>
+          </div>
+
+          <div className="board-zone">
+            {game.community.length > 0 ? (
+              <Cards cards={game.community} className="community-cards" />
+            ) : (
+              <div className="board-awaiting">FLOP · TURN · RIVER</div>
+            )}
+          </div>
+
+          <div className="chip-flight-layer" aria-hidden="true">
+            {chipFlights.map((flight) => (
+              <div
+                className={`chip-flight chip-flight-${flight.motion}-${flight.target}`}
+                key={flight.id}
+                style={
+                  {
+                    animationDelay: `${flight.delay}ms`,
+                    "--chip-offset-x": `${flight.offsetX}px`,
+                    "--chip-offset-y": `${flight.offsetY}px`,
+                    "--chip-turn": `${flight.turn}deg`,
+                  } as CSSProperties
+                }
+                onAnimationEnd={() =>
+                  setChipFlights((flights) =>
+                    flights.filter((item) => item.id !== flight.id),
+                  )
+                }
+              >
+                <img
+                  className="chip-flight-art"
+                  src={chipAssetPath(flight.colour)}
+                  alt=""
+                />
+              </div>
+            ))}
+          </div>
+
+          <div
+            className={`dealer-disc dealer-player-${dealerSeat}`}
+            aria-label={`Player ${dealerSeat + 1} has the dealer button`}
+          >
+            <img
+              className="dealer-button-art"
+              src="/assets/dealer-button.png"
+              alt=""
+            />
+            <b>BTN</b>
+          </div>
+          {dealerFlight && (
+            <div
+              className={`dealer-flight dealer-flight-${dealerFlight.from}-to-${dealerFlight.to}`}
+              aria-hidden="true"
+              onAnimationEnd={() => {
+                setDisplayedDealer(dealerFlight.to);
+                setDealerFlight(null);
+              }}
+            >
+              <img
+                className="dealer-button-art"
+                src="/assets/dealer-button.png"
+                alt=""
+              />
+              <b>BTN</b>
+            </div>
+          )}
+
+          {!game.complete && (
+            <div className="table-actions" aria-label="Poker actions">
+              {legal.raise && (
+                <div
+                  className="table-bet-presets"
+                  aria-label="Quick raise sizes"
+                  style={
+                    {
+                      "--quick-size-count": quickRaisePresets.length,
+                    } as CSSProperties
+                  }
+                >
+                  <span className="table-bet-presets-title">Quick raise</span>
+                  {quickRaisePresets.map((preset) => (
+                    <button
+                      className={`table-bet-preset ${raiseTo === preset.target ? "active" : ""}`}
+                      key={preset.label}
+                      type="button"
+                      title={`Set raise to ${preset.target.toLocaleString()}`}
+                      aria-pressed={raiseTo === preset.target}
+                      onClick={() => setRaiseTo(preset.target)}
+                      disabled={!canAct}
+                    >
+                      <span className="table-bet-preset-name">
+                        {preset.label}
+                      </span>
+                      <span className="table-bet-preset-amount">
+                        to {preset.target.toLocaleString()}
+                      </span>
+                    </button>
+                  ))}
+                </div>
+              )}
+              <button
+                className="table-fold"
+                onClick={() => void sendAction("fold")}
+                disabled={!canAct || !legal.fold}
+              >
+                Fold
+              </button>
+              {legal.check && (
+                <button
+                  className="table-check"
+                  onClick={() => void sendAction("check")}
+                  disabled={!canAct}
+                >
+                  Check
+                </button>
+              )}
+              {legal.call && (
+                <button
+                  className="table-call"
+                  onClick={() => void sendAction("call")}
+                  disabled={!canAct}
+                >
+                  Call {legal.to_call?.toLocaleString()}
+                </button>
+              )}
+              {legal.raise && (
+                <label className="table-raise">
+                  <span>Raise to</span>
+                  <input
+                    type="number"
+                    min={legal.raise_min}
+                    max={legal.raise_max}
+                    step={10}
+                    value={raiseTo}
+                    onChange={(event) => setRaiseTo(Number(event.target.value))}
+                    onWheel={(event) => {
+                      if (!canAct || event.deltaY === 0) return;
+                      event.preventDefault();
+                      setRaiseTo((value) =>
+                        boundedRaise(
+                          value + (event.deltaY < 0 ? 10 : -10),
+                          legal,
+                          value,
+                        ),
+                      );
+                    }}
+                    onBlur={() =>
+                      setRaiseTo((value) => boundedRaise(value, legal, value))
+                    }
+                    disabled={!canAct}
+                  />
+                  <button
+                    onClick={() => void sendAction("raise")}
+                    disabled={!canAct}
+                  >
+                    Raise
+                  </button>
+                </label>
+              )}
+              {legal.all_in && (
+                <button
+                  className="table-all-in"
+                  onClick={() => void sendAction("all_in")}
+                  disabled={!canAct}
+                >
+                  All-in
+                </button>
+              )}
+            </div>
+          )}
+
+          <div className="seat hero-seat">
+            <Cards
+              key={`hero-${game.hand_number}`}
+              cards={game.hero_cards}
+              className="hero-cards"
+            />
+            <div className="player-plaque">
+              <span className="seat-indicator">01</span>
+              <div>
+                <p>YOU {game.button === 0 && <em>BUTTON</em>}</p>
+                <strong>{game.stacks[0].toLocaleString()}</strong>
+                <small>chips</small>
+              </div>
+              {game.hero_hand_strength && (
+                <div className="hand-strength" aria-live="polite">
+                  <span>Hand strength</span>
+                  <strong>{game.hero_hand_strength}</strong>
+                </div>
+              )}
+            </div>
+          </div>
+        </section>
+
+        <section className="match-stats" aria-label="Match statistics">
+          <header className="match-stats-header">
+            <div>
+              <span className="signal" />
+              MATCH STATS
+            </div>
+            <p>SESSION · HAND #{game.hand_number}</p>
+          </header>
+          <div className="match-stats-grid">
+            <div className="match-stat">
+              <span>Hands complete</span>
+              <strong>{sessionStats.hands_completed}</strong>
+              <small>
+                {game.complete ? "Hand settled" : "Hand in progress"}
+              </small>
+            </div>
+            <div className="match-stat match-score">
+              <span>Match score</span>
+              <strong>
+                {heroStats.match_wins}
+                <i>—</i>
+                {agentStats.match_wins}
+              </strong>
+              <small>Points awarded on bust-outs</small>
+            </div>
+            <div className="match-stat match-score">
+              <span>Hand record</span>
+              <strong>
+                {heroStats.hand_wins}
+                <i>—</i>
+                {agentStats.hand_wins}
+              </strong>
+              <small>You · Agent</small>
+            </div>
+            <div className="match-stat">
+              <span>Your win rate</span>
+              <strong>{heroWinRate === null ? "—" : `${heroWinRate}%`}</strong>
+              <small>
+                {decidedHands
+                  ? `${decidedHands} decided hands`
+                  : "Awaiting a result"}
+              </small>
+            </div>
+            <div className="match-stat">
+              <span>Showdowns</span>
+              <strong>{sessionStats.showdown_hands}</strong>
+              <small>
+                Y {heroStats.showdown_wins} · A {agentStats.showdown_wins} ·{" "}
+                {sessionStats.split_pots} split
+              </small>
+            </div>
+            <div className="match-stat match-score">
+              <span>Fold wins</span>
+              <strong>
+                {heroStats.fold_wins}
+                <i>—</i>
+                {agentStats.fold_wins}
+              </strong>
+              <small>You · Agent</small>
+            </div>
+            <div
+              className={`match-stat ${chipLead === 0 ? "" : chipLead > 0 ? "hero-lead" : "agent-lead"}`}
+            >
+              <span>Chip lead</span>
+              <strong>
+                {chipLead === 0 ? "—" : Math.abs(chipLead).toLocaleString()}
+              </strong>
+              <small>{chipLeadLabel}</small>
+            </div>
+            <div className="match-stat">
+              <span>Average pot</span>
+              <strong>
+                {averagePot === null ? "—" : averagePot.toLocaleString()}
+              </strong>
+              <small>
+                {averagePot === null ? "Awaiting a result" : "chips contested"}
+              </small>
+            </div>
+            <div className="match-stat match-biggest-pot">
+              <span>Biggest pot</span>
+              <strong>
+                {sessionStats.biggest_pot
+                  ? sessionStats.biggest_pot.toLocaleString()
+                  : "—"}
+              </strong>
+              <small>
+                {sessionStats.biggest_pot
+                  ? "chips contested"
+                  : "Awaiting a result"}
+              </small>
+            </div>
+            <div className="match-stat">
+              <span>Your style</span>
+              <strong>{heroStats.vpip}% VPIP</strong>
+              <small>
+                PFR {heroStats.pfr}% · Agg {heroAggression}
+              </small>
+            </div>
+          </div>
+        </section>
+
+        <aside className="workspace-sidebar">
+          <section className="command-deck">
+            <div className="status" aria-live="polite">
+              <span className={game.complete ? "signal done" : "signal"} />
+              {statusLine}
+            </div>
+            {!game.complete ? (
+              <>
+                <div className="betting-summary">
+                  <span>
+                    To call <strong>{game.to_call.toLocaleString()}</strong>
+                  </span>
+                  <span>
+                    Highest bet{" "}
+                    <strong>
+                      {Math.max(...game.round_bets).toLocaleString()}
+                    </strong>
+                  </span>
+                </div>
+                <p className="table-action-hint">
+                  Actions are positioned on the table’s left rail.
+                </p>
+              </>
+            ) : (
+              <button
+                className="accent next"
+                onClick={() => void deal("next")}
+                disabled={busy}
+              >
+                Deal next hand →
+              </button>
+            )}
+            <button
+              className="history-button"
+              onClick={() => setLastHandOpen(true)}
+              disabled={!lastHand}
+            >
+              Last hand{lastHand ? ` #${lastHand.handNumber}` : ""}
+            </button>
+            {message && (
+              <p className="message" role="alert">
+                {message}
+              </p>
+            )}
+          </section>
+
+          <section className="lower-grid single-panel">
+            <article className="panel trainer">
+              <header className="trainer-header">
+                <div>
+                  <div className="panel-title">LINEAR MCCFR BLUEPRINT</div>
+                  <p className="trainer-kicker">Blueprint training control room</p>
+                </div>
+                <div
+                  className={`trainer-state ${training?.running ? "running" : "ready"}`}
+                >
+                  <i />
+                  <span>{training?.running ? "Training" : "Ready"}</span>
+                </div>
+              </header>
+              <p className="trainer-summary">
+                Trains a blueprint strategy with Linear MCCFR self-play
+                iterations and checkpoints the average-strategy table.
+              </p>
+              <div className="trainer-overview">
+                <div className="trainer-stat">
+                  <span>Serving agent</span>
+                  <strong>{training?.serving_agent ?? "—"}</strong>
+                  <small>
+                    river search {training?.river_search ? "on" : "off"}
+                  </small>
+                </div>
+                <div className="trainer-stat">
+                  <span>Checkpoint</span>
+                  <strong>{(training?.updates ?? 0).toLocaleString()}</strong>
+                  <small>iteration</small>
+                </div>
+                <div className="trainer-stat">
+                  <span>Infosets</span>
+                  <strong>{(training?.parameters ?? 0).toLocaleString()}</strong>
+                  <small>strategy table</small>
+                </div>
+                <div className="trainer-stat">
+                  <span>Speed</span>
+                  <strong>
+                    {training?.iterations_per_second.toFixed(1) ?? "0.0"}
+                  </strong>
+                  <small>iterations / sec</small>
+                </div>
+              </div>
+              <div className="trainer-controls">
+                <label>
+                  <span>Iterations</span>
+                  <input
+                    type="number"
+                    min={MIN_EPISODES}
+                    max={MAX_EPISODES}
+                    value={episodes}
+                    onChange={(event) =>
+                      setEpisodes(Number(event.target.value))
+                    }
+                    onBlur={() =>
+                      setEpisodes((value) =>
+                        clamp(
+                          Math.trunc(value) || MIN_EPISODES,
+                          MIN_EPISODES,
+                          MAX_EPISODES,
+                        ),
+                      )
+                    }
+                    disabled={training?.running}
+                  />
+                </label>
+                <button
+                  className="accent"
+                  onClick={() => void startTraining()}
+                  disabled={busy || training?.running}
+                >
+                  {training?.running ? "Training…" : "Start training"}
+                </button>
+              </div>
+              <div className="trainer-controls model-controls">
+                <button
+                  onClick={() => void reloadLastModel()}
+                  disabled={busy || training?.running}
+                >
+                  Reload latest checkpoint
+                </button>
+              </div>
+              {training?.running && (
+                <>
+                  <div className="progress-label">
+                    <span>
+                      {`MCCFR iterations ${training.completed.toLocaleString()} / ${training.episodes.toLocaleString()}`}
+                    </span>
+                    <span>{trainingProgress}%</span>
+                  </div>
+                  <div
+                    className="progress-track"
+                    role="progressbar"
+                    aria-valuenow={trainingProgress}
+                    aria-valuemin={0}
+                    aria-valuemax={100}
+                  >
+                    <span style={{ width: `${trainingProgress}%` }} />
+                  </div>
+                </>
+              )}
+              <div className="metrics">
+                <span>Trainer: Linear MCCFR blueprint</span>
+                <span>
+                  Abstraction{" "}
+                  {training?.artifacts.abstraction ? "ready" : "missing"}
+                </span>
+                <span>
+                  Blueprint {training?.artifacts.blueprint ? "ready" : "missing"}
+                </span>
+              </div>
+              {training?.last_error && (
+                <p className="message">Training error: {training.last_error}</p>
+              )}
+            </article>
+          </section>
+        </aside>
+      </div>
+      {lastHandOpen && lastHand && (
+        <div
+          className="hand-history-backdrop"
+          role="presentation"
+          onMouseDown={() => setLastHandOpen(false)}
+        >
+          <section
+            className="hand-history-dialog"
+            role="dialog"
+            aria-modal="true"
+            aria-labelledby="last-hand-title"
+            onMouseDown={(event) => event.stopPropagation()}
+          >
+            <header>
+              <div>
+                <p className="eyebrow">COMPLETE ACTION RECORD</p>
+                <h2 id="last-hand-title">Hand #{lastHand.handNumber}</h2>
+              </div>
+              <button className="ghost" onClick={() => setLastHandOpen(false)}>
+                Close
+              </button>
+            </header>
+            <ol className="hand-history-list">
+              {lastHand.entries.map((entry, index) => (
+                <li
+                  className={`hand-history-entry ${actionPopupTone(entry)}`}
+                  key={`${entry}-${index}`}
+                >
+                  {actionPopupText(entry)}
+                </li>
+              ))}
+            </ol>
+          </section>
+        </div>
+      )}
+    </main>
+  );
+}
+
+export default App;

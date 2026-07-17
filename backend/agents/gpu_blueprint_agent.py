@@ -32,16 +32,25 @@ class GpuBlueprintAgent:
     """Drop-in serving agent backed by the dense GPU blueprint tables."""
 
     def __init__(
-        self, tree: BettingTree, strategy: np.ndarray, sampler: DealSampler, iteration: int = 0
+        self,
+        tree: BettingTree,
+        strategy: np.ndarray,
+        sampler: DealSampler,
+        iteration: int = 0,
+        subgame_search: bool = True,
+        subgame_iterations: int = 120,
     ) -> None:
         self.tree = tree
         self.strategy = strategy  # [nodes, MAX_BUCKETS, actions], normalized
         self.sampler = sampler
         self.iteration = iteration
         self.ready = True
+        self.subgame_search = subgame_search
+        self.subgame_iterations = subgame_iterations
         self._raise_fraction: float | None = None
         self._rng = random.Random(97)
         self._equity_cache: dict[tuple, float] = {}
+        self._subgame_cache: dict[tuple, object] = {}
 
     @classmethod
     def try_load(cls, checkpoint_path: Path | None = None) -> "GpuBlueprintAgent | None":
@@ -65,6 +74,10 @@ class GpuBlueprintAgent:
 
     def select(self, game: HeadsUpHoldem, player: int) -> int:
         self._raise_fraction = None
+        if self.subgame_search and game.street >= 2:
+            subgame_choice = self._subgame_decision(game, player)
+            if subgame_choice is not None:
+                return subgame_choice
         located = self._locate(game, player)
         if located is None:
             return self._safe_default(game, player)
@@ -97,6 +110,10 @@ class GpuBlueprintAgent:
 
     # -- translation ------------------------------------------------------------
 
+    @staticmethod
+    def _abstract_seat(game: HeadsUpHoldem, player: int) -> int:
+        return 0 if player == game.button else 1
+
     def _locate(self, game: HeadsUpHoldem, player: int) -> int | None:
         """Walk the flattened tree along the hand's public actions."""
         try:
@@ -123,8 +140,79 @@ class GpuBlueprintAgent:
         except Exception:
             return None
 
-    def _translate_event(self, node: int, game: HeadsUpHoldem, event: dict, rng: random.Random) -> int:
-        legal = self.tree.legal[node]
+    # -- subgame re-solving ------------------------------------------------------
+
+    def _subgame_decision(self, game: HeadsUpHoldem, player: int) -> int | None:
+        """Solve (once per street entry) and play from the turn/river subgame."""
+        try:
+            from backend.search.gpu_subgame import solve_subgame
+
+            abstract_seat = self._abstract_seat(game, player)
+            key = (game.hand_number, len(game.community))
+            solution = self._subgame_cache.get(key)
+            if solution is None:
+                # Reuse a turn solution for river decisions when it exists.
+                turn_key = (game.hand_number, 4)
+                solution = self._subgame_cache.get(turn_key)
+                if solution is None or game.street < 3:
+                    solution = solve_subgame(self, game, player, iterations=self.subgame_iterations)
+                    self._subgame_cache[key] = solution
+                    if len(self._subgame_cache) > 8:
+                        oldest = min(self._subgame_cache)
+                        self._subgame_cache.pop(oldest, None)
+
+            tree = solution.tree
+            node = tree.root
+            rng = random.Random(game.hand_number * 733)
+            for event in game.public_actions:
+                if event["action"] == "blind" or int(event.get("street", 0)) < tree.start_street:
+                    continue
+                while tree.kind[node] == STREET_END:
+                    node = int(tree.children[node][0])
+                if tree.kind[node] != DECISION:
+                    return None
+                action = self._translate_event(node, game, event, rng, tree=tree)
+                child = int(tree.children[node][action])
+                if child < 0:
+                    return None
+                node = child
+            while tree.kind[node] == STREET_END:
+                node = int(tree.children[node][0])
+            if tree.kind[node] != DECISION or int(tree.actor[node]) != abstract_seat:
+                return None
+
+            street = int(tree.street[node])
+            if street == 2:
+                hole = tuple(sorted(card_id(card) for card in game.hole_cards[player]))
+                bucket = int(solution.street_buckets[2][_COMBO_INDEX[hole]])
+                if bucket < 0:
+                    return None
+            else:
+                bucket = self._bucket(game, player, 3)
+                if bucket is None:
+                    return None
+
+            probabilities = solution.strategy[node, bucket]
+            actions = [action for action in range(tree.config.num_actions) if tree.legal[node][action]]
+            weights = [max(float(probabilities[action]), 0.0) for action in actions]
+            if sum(weights) <= 0:
+                return None
+            choice = self._rng.choices(actions, weights=weights)[0]
+            if choice == FOLD:
+                return NEURAL_FOLD
+            if choice == CHECK_CALL:
+                return NEURAL_CHECK_CALL
+            if choice == ALL_IN:
+                return NEURAL_ALL_IN
+            return self._to_neural_raise(game, player, street, choice, tree=tree)
+        except Exception:
+            return None
+
+    def _translate_event(
+        self, node: int, game: HeadsUpHoldem, event: dict, rng: random.Random, tree: BettingTree | None = None
+    ) -> int:
+        tree = tree or self.tree
+        legal = tree.legal[node]
         kind = event["action"]
         if kind == "fold":
             return FOLD if legal[FOLD] else CHECK_CALL
@@ -139,8 +227,8 @@ class GpuBlueprintAgent:
         pot_after_call = max(pot_before + to_call_before, 1.0)
         observed = max(float(event["amount"]) - current_bet_before, 0.0) / pot_after_call
 
-        street = int(self.tree.street[node])
-        fractions = self.tree.config.fractions(street)
+        street = int(tree.street[node])
+        fractions = tree.config.fractions(street)
         raise_ids = [3 + index for index in range(len(fractions)) if legal[3 + index]]
         if not raise_ids:
             return ALL_IN if legal[ALL_IN] and observed > 1.5 else CHECK_CALL
@@ -179,12 +267,15 @@ class GpuBlueprintAgent:
         counts = self.sampler.bucket_counts()
         return min(int(cached * counts[street]), counts[street] - 1)
 
-    def _to_neural_raise(self, game: HeadsUpHoldem, player: int, street: int, choice: int) -> int:
+    def _to_neural_raise(
+        self, game: HeadsUpHoldem, player: int, street: int, choice: int, tree: BettingTree | None = None
+    ) -> int:
+        tree = tree or self.tree
         legal = game.legal_actions(player)
         if not legal.get("raise"):
             return NEURAL_ALL_IN if legal.get("all_in") else NEURAL_CHECK_CALL
         to_call = float(legal["to_call"])
-        fraction = self.tree.config.fractions(street)[choice - 3]
+        fraction = tree.config.fractions(street)[choice - 3]
         raise_by = fraction * (game.pot + to_call)
         target = float(legal["player_bet"]) + to_call + raise_by
         minimum, maximum = float(legal["raise_min"]), float(legal["raise_max"])

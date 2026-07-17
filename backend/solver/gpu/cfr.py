@@ -53,6 +53,9 @@ class VectorCFR:
         self.discount_beta = discount_beta
         self.discount_gamma = discount_gamma
         self.averaging_delay = averaging_delay
+        # Optional [2, NUM_COMBOS] root reach (re-solving subgames start from
+        # tracked ranges instead of uniform deals).
+        self.root_reach: torch.Tensor | None = None
 
         nodes = len(tree)
         actions = tree.config.num_actions
@@ -95,6 +98,62 @@ class VectorCFR:
         self.showdown_nodes = torch.tensor(np.flatnonzero(kind == SHOWDOWN), dtype=torch.long, device=device)
         self.fold_nodes = torch.tensor(np.flatnonzero(kind == FOLD_NODE), dtype=torch.long, device=device)
         self.street_end_nodes = torch.tensor(np.flatnonzero(kind == STREET_END), dtype=torch.long, device=device)
+
+        # Static per-level plans: everything about legality, children, and
+        # actors is fixed by the tree, so precompute the index tensors once.
+        # This removes ~1000 CPU<->GPU sync points per iteration (the .any()/
+        # boolean-mask pattern) that made iteration time size-independent.
+        self.level_plans: list[dict] = []
+        for level_members in self.levels:
+            members_np = level_members.cpu().numpy()
+            decisions_np = members_np[kind[members_np] == DECISION]
+            street_ends_np = members_np[kind[members_np] == STREET_END]
+            plan = {
+                "decisions": torch.tensor(decisions_np, dtype=torch.long, device=device),
+                "street_ends": torch.tensor(street_ends_np, dtype=torch.long, device=device),
+                "street_end_children": torch.tensor(
+                    tree.children[street_ends_np, 0], dtype=torch.long, device=device
+                ),
+                "actions": [],
+                "actor_rows": {
+                    player: torch.tensor(
+                        np.flatnonzero(tree.actor[decisions_np] == player), dtype=torch.long, device=device
+                    )
+                    for player in (0, 1)
+                },
+            }
+            for action in range(tree.config.num_actions):
+                legal_rows = np.flatnonzero(tree.legal[decisions_np, action])
+                if legal_rows.size == 0:
+                    continue
+                acting_np = decisions_np[legal_rows]
+                actors_np = tree.actor[acting_np]
+                plan["actions"].append(
+                    {
+                        "action": action,
+                        "rows": torch.tensor(legal_rows, dtype=torch.long, device=device),
+                        "children": torch.tensor(
+                            tree.children[acting_np, action], dtype=torch.long, device=device
+                        ),
+                        "actor_split": {
+                            player: (
+                                torch.tensor(
+                                    acting_np[actors_np == player], dtype=torch.long, device=device
+                                ),
+                                torch.tensor(
+                                    tree.children[acting_np[actors_np == player], action],
+                                    dtype=torch.long,
+                                    device=device,
+                                ),
+                                torch.tensor(
+                                    legal_rows[actors_np == player], dtype=torch.long, device=device
+                                ),
+                            )
+                            for player in (0, 1)
+                        },
+                    }
+                )
+            self.level_plans.append(plan)
 
     # -- strategy --------------------------------------------------------------
 
@@ -157,51 +216,41 @@ class VectorCFR:
         scores = torch.tensor(deal.river_scores, dtype=torch.long, device=device)
 
         reach = torch.zeros((2, nodes, NUM_COMBOS), dtype=torch.float32, device=device)
-        reach[:, self.tree.root, :] = valid.float()
+        if self.root_reach is not None:
+            reach[:, self.tree.root, :] = self.root_reach * valid.float()
+        else:
+            reach[:, self.tree.root, :] = valid.float()
 
         strategies: dict[int, torch.Tensor] = {}
         level_decisions: dict[int, torch.Tensor] = {}
 
-        # ---- forward: push reach through levels --------------------------------
-        for level_index, level in enumerate(self.levels):
-            decisions = level[self.decision_mask[level]]
-            passthrough = level[~self.decision_mask[level]]
-            if passthrough.numel():
-                street_ends = passthrough[self.tree_kind(passthrough) == STREET_END]
-                if street_ends.numel():
-                    children = self.t_children[street_ends, 0]
-                    reach[:, children, :] += reach[:, street_ends, :]
+        # ---- forward: push reach through levels (static plans, no syncs) --------
+        for level_index, plan in enumerate(self.level_plans):
+            street_ends = plan["street_ends"]
+            if street_ends.numel():
+                reach[:, plan["street_end_children"], :] += reach[:, street_ends, :]
+            decisions = plan["decisions"]
             if not decisions.numel():
                 continue
             node_buckets = buckets[self.t_street[decisions]]  # [L, C]
             strategy = self._node_strategies(decisions, node_buckets)  # [L, C, A]
             if frozen_average is not None and frozen_player is not None:
-                frozen_rows = self.t_actor[decisions] == frozen_player
-                if bool(frozen_rows.any()):
-                    rows = torch.nonzero(frozen_rows).squeeze(1)
+                rows = plan["actor_rows"][frozen_player]
+                if rows.numel():
                     strategy[rows] = frozen_average[decisions[rows].unsqueeze(1), node_buckets[rows]]
             level_decisions[level_index] = decisions
             strategies[level_index] = strategy
-            actors = self.t_actor[decisions]  # [L]
-            for action in range(self.num_actions):
-                legal_here = self.t_legal[decisions, action]
-                if not bool(legal_here.any()):
-                    continue
-                acting = decisions[legal_here]
-                children = self.t_children[acting, action]
-                acting_actor = actors[legal_here]
-                probability = strategies[level_index][legal_here, :, action]  # [K, C]
+            for action_plan in plan["actions"]:
+                action = action_plan["action"]
                 for player in (0, 1):
-                    is_actor = acting_actor == player
-                    if bool(is_actor.any()):
-                        source = acting[is_actor]
-                        reach[player, self.t_children[source, action], :] += (
-                            reach[player, source, :] * probability[is_actor]
+                    actor_nodes, actor_children, actor_rows = action_plan["actor_split"][player]
+                    if actor_nodes.numel():
+                        reach[player, actor_children, :] += (
+                            reach[player, actor_nodes, :] * strategy[actor_rows, :, action]
                         )
-                    is_opponent = ~is_actor
-                    if bool(is_opponent.any()):
-                        source = acting[is_opponent]
-                        reach[player, self.t_children[source, action], :] += reach[player, source, :]
+                    other_nodes, other_children, _ = action_plan["actor_split"][1 - player]
+                    if other_nodes.numel():
+                        reach[player, other_children, :] += reach[player, other_nodes, :]
 
         # ---- terminal values (traverser's perspective only) ----------------------
         values = torch.zeros((nodes, NUM_COMBOS), dtype=torch.float32, device=device)
@@ -209,12 +258,11 @@ class VectorCFR:
         self._showdown_values(values, reach, scores, valid, traverser)
 
         # ---- backward: roll values up, accumulate traverser regrets/sums ---------
-        for level_index in range(len(self.levels) - 1, -1, -1):
-            level = self.levels[level_index]
-            street_ends = level[self.tree_kind(level) == STREET_END]
+        for level_index in range(len(self.level_plans) - 1, -1, -1):
+            plan = self.level_plans[level_index]
+            street_ends = plan["street_ends"]
             if street_ends.numel():
-                children = self.t_children[street_ends, 0]
-                values[street_ends, :] = values[children, :]
+                values[street_ends, :] = values[plan["street_end_children"], :]
             decisions = level_decisions.get(level_index)
             if decisions is None or not decisions.numel():
                 continue
@@ -222,27 +270,24 @@ class VectorCFR:
             child_values = torch.zeros(
                 (decisions.shape[0], NUM_COMBOS, self.num_actions), dtype=torch.float32, device=device
             )
-            for action in range(self.num_actions):
-                legal_here = self.t_legal[decisions, action]
-                if not bool(legal_here.any()):
-                    continue
-                children = self.t_children[decisions[legal_here], action]
-                child_values[legal_here, :, action] = values[children, :]
+            for action_plan in plan["actions"]:
+                child_values[action_plan["rows"], :, action_plan["action"]] = values[action_plan["children"], :]
 
-            actors = self.t_actor[decisions]
             node_buckets = buckets[self.t_street[decisions]]  # [L, C]
             legal = self.t_legal[decisions].unsqueeze(1).float()  # [L, 1, A]
             node_value = (strategy * child_values).sum(dim=2)  # [L, C]
             values[decisions, :] = node_value
 
-            acted = actors == traverser
-            if bool(acted.any()):
-                own = decisions[acted]
+            acted_rows = plan["actor_rows"][traverser]
+            if acted_rows.numel():
+                own = decisions[acted_rows]
                 # Terminal values are opponent-reach weighted already, so the
                 # counterfactual regret is simply the child/node value gap.
-                regret_increment = (child_values[acted] - node_value[acted].unsqueeze(2)) * legal[acted]
-                sum_increment = strategy[acted] * reach[traverser, own, :].unsqueeze(2)
-                flat_index = (own.unsqueeze(1) * MAX_BUCKETS + node_buckets[acted]).reshape(-1)
+                regret_increment = (
+                    child_values[acted_rows] - node_value[acted_rows].unsqueeze(2)
+                ) * legal[acted_rows]
+                sum_increment = strategy[acted_rows] * reach[traverser, own, :].unsqueeze(2)
+                flat_index = (own.unsqueeze(1) * MAX_BUCKETS + node_buckets[acted_rows]).reshape(-1)
                 self.regrets.view(-1, self.num_actions).index_add_(
                     0, flat_index, regret_increment.reshape(-1, self.num_actions)
                 )

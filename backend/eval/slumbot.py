@@ -198,11 +198,15 @@ def main() -> None:
     parser = argparse.ArgumentParser(description="Play the serving agent against Slumbot")
     parser.add_argument("--hands", type=int, default=100)
     parser.add_argument("--gpu", action="store_true")
+    parser.add_argument("--subgame-iters", type=int, default=120, help="0 disables turn/river re-solving")
     arguments = parser.parse_args()
     if arguments.gpu:
         from backend.agents.gpu_blueprint_agent import GpuBlueprintAgent
 
         agent = GpuBlueprintAgent.try_load()
+        if agent is not None:
+            agent.subgame_search = arguments.subgame_iters > 0
+            agent.subgame_iterations = arguments.subgame_iters or agent.subgame_iterations
     else:
         from backend.agents.blueprint_agent import BlueprintAgent
 

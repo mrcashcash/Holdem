@@ -75,24 +75,53 @@ class _Builder:
 
 
 class BettingTree:
-    """Flattened betting tree; all chip amounts in big blinds."""
+    """Flattened betting tree; all chip amounts in big blinds.
 
-    def __init__(self, config: GpuActionConfig | None = None) -> None:
+    With ``start_street``/``start_pot``/``start_stacks`` the tree roots at the
+    beginning of a later street's betting (a re-solving subgame): both players
+    have already matched ``start_pot / 2`` and the big blind (seat 1) acts
+    first.
+    """
+
+    def __init__(
+        self,
+        config: GpuActionConfig | None = None,
+        start_street: int = 0,
+        start_pot: float | None = None,
+        start_stacks: tuple[float, float] | None = None,
+    ) -> None:
         self.config = config or GpuActionConfig()
+        self.start_street = start_street
         builder = _Builder(self.config)
-        # Preflop: player 0 = button/SB (acts first), commits 0.5/1.0.
-        self.root = _enumerate(
-            builder,
-            self.config,
-            street=0,
-            to_act=0,
-            committed=(0.5, 1.0),
-            street_commit=(0.5, 1.0),
-            stacks=(self.config.stack_bb - 0.5, self.config.stack_bb - 1.0),
-            acted=(False, False),
-            raises=0,
-            last_increment=1.0,
-        )
+        if start_street == 0:
+            # Preflop: player 0 = button/SB (acts first), commits 0.5/1.0.
+            self.root = _enumerate(
+                builder,
+                self.config,
+                street=0,
+                to_act=0,
+                committed=(0.5, 1.0),
+                street_commit=(0.5, 1.0),
+                stacks=(self.config.stack_bb - 0.5, self.config.stack_bb - 1.0),
+                acted=(False, False),
+                raises=0,
+                last_increment=1.0,
+            )
+        else:
+            half_pot = (start_pot or 0.0) / 2.0
+            stacks = start_stacks or (self.config.stack_bb - half_pot, self.config.stack_bb - half_pot)
+            self.root = _enumerate(
+                builder,
+                self.config,
+                street=start_street,
+                to_act=1,  # big blind acts first postflop
+                committed=(half_pot, half_pot),
+                street_commit=(0.0, 0.0),
+                stacks=stacks,
+                acted=(False, False),
+                raises=0,
+                last_increment=1.0,
+            )
         self.kind = np.asarray(builder.kind, dtype=np.int8)
         self.street = np.asarray(builder.street, dtype=np.int8)
         self.actor = np.asarray(builder.actor, dtype=np.int8)

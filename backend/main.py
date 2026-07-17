@@ -56,9 +56,18 @@ GPU_SERVE_MIN_ITERATIONS = 5_000
 
 
 def load_serving_agent():
+    import os
+
     from backend.agents.gpu_blueprint_agent import GpuBlueprintAgent
 
     gpu_agent = GpuBlueprintAgent.try_load()
+    if gpu_agent is not None:
+        # Turn/river re-solving costs ~20-30s per decision until the CUDA-graph
+        # optimization lands — too slow for live play, so it is off at the
+        # table unless explicitly enabled (eval CLIs enable it themselves).
+        subgame_iterations = int(os.environ.get("HOLDEM_SUBGAME_ITERS", "0"))
+        gpu_agent.subgame_search = subgame_iterations > 0
+        gpu_agent.subgame_iterations = subgame_iterations or gpu_agent.subgame_iterations
     if gpu_agent is not None and gpu_agent.iteration >= GPU_SERVE_MIN_ITERATIONS:
         return gpu_agent
     cpu_agent = BlueprintAgent.try_load()

@@ -82,9 +82,13 @@ def train(iterations: int, device: str = "cuda", save_every: int = 200, seed: in
         completed += chunk
         save_solver(solver)
         rate = chunk / (time.time() - chunk_started)
+        from backend.solver.gpu.exploit import cfr_br_exploitability
+
+        exploitability_mbb = round(cfr_br_exploitability(solver, br_iterations=60, eval_boards=8), 2)
         record = {
             "iteration": solver.iteration,
             "iterations_per_second": round(rate, 3),
+            "exploitability_mbb_per_hand": exploitability_mbb,
             "device": str(solver.device),
             "timestamp": time.strftime("%Y-%m-%dT%H:%M:%SZ", time.gmtime()),
         }

@@ -140,7 +140,16 @@ class VectorCFR:
         else:
             self.strategy_sums.zero_()
 
-    def _iterate(self, deal: Deal, traverser: int = 0) -> None:
+    def _iterate(
+        self,
+        deal: Deal,
+        traverser: int = 0,
+        frozen_average: torch.Tensor | None = None,
+        frozen_player: int | None = None,
+    ) -> None:
+        """One traversal. With ``frozen_average``/``frozen_player`` set, that
+        player follows the given average-strategy tensor instead of
+        regret matching (CFR-BR: the traverser best-responds to it)."""
         device = self.device
         nodes = len(self.tree)
         valid = torch.tensor(deal.valid, device=device)
@@ -166,6 +175,11 @@ class VectorCFR:
                 continue
             node_buckets = buckets[self.t_street[decisions]]  # [L, C]
             strategy = self._node_strategies(decisions, node_buckets)  # [L, C, A]
+            if frozen_average is not None and frozen_player is not None:
+                frozen_rows = self.t_actor[decisions] == frozen_player
+                if bool(frozen_rows.any()):
+                    rows = torch.nonzero(frozen_rows).squeeze(1)
+                    strategy[rows] = frozen_average[decisions[rows].unsqueeze(1), node_buckets[rows]]
             level_decisions[level_index] = decisions
             strategies[level_index] = strategy
             actors = self.t_actor[decisions]  # [L]

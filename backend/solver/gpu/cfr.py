@@ -177,15 +177,38 @@ class VectorCFR:
     # -- one iteration -----------------------------------------------------------
 
     def run(self, iterations: int) -> None:
-        for _ in range(iterations):
-            self.iteration += 1
-            deal = self.sampler.sample(self.rng)
-            # Alternating updates (Burch et al. JAIR 2019): each player's
-            # regrets are updated in their own pass against the opponent's
-            # freshly regret-matched strategy.
-            self._iterate(deal, traverser=0)
-            self._iterate(deal, traverser=1)
-            self._discount()
+        # Deal preparation (board sampling + bucket computation) is CPU work
+        # worth ~25-40ms per iteration; prefetch it on a thread so the GPU
+        # never waits. Identical update sequence — zero quality difference.
+        import queue
+        import threading
+
+        deals: queue.Queue = queue.Queue(maxsize=4)
+        stop = threading.Event()
+
+        def producer() -> None:
+            for _ in range(iterations):
+                if stop.is_set():
+                    return
+                deals.put(self.sampler.sample(self.rng))
+
+        worker = threading.Thread(target=producer, daemon=True)
+        worker.start()
+        try:
+            for _ in range(iterations):
+                self.iteration += 1
+                deal = deals.get()
+                # Alternating updates (Burch et al. JAIR 2019): each player's
+                # regrets are updated in their own pass against the opponent's
+                # freshly regret-matched strategy.
+                self._iterate(deal, traverser=0)
+                self._iterate(deal, traverser=1)
+                self._discount()
+        finally:
+            stop.set()
+            while not deals.empty():
+                deals.get_nowait()
+            worker.join(timeout=5)
 
     def _discount(self) -> None:
         t = float(self.iteration)

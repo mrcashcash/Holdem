@@ -94,16 +94,21 @@ def train(iterations: int, device: str = "cuda", save_every: int = 200, seed: in
         completed += chunk
         save_solver(solver)
         rate = chunk / (time.time() - chunk_started)
-        from backend.solver.gpu.exploit import cfr_br_exploitability
+        # The gate costs ~2-3 minutes; every other checkpoint is plenty for
+        # the trend while giving those minutes back to training.
+        exploitability_mbb = None
+        if (completed // save_every) % 2 == 1 or completed >= iterations:
+            from backend.solver.gpu.exploit import cfr_br_exploitability
 
-        exploitability_mbb = round(cfr_br_exploitability(solver, br_iterations=60, eval_boards=8), 2)
+            exploitability_mbb = round(cfr_br_exploitability(solver, br_iterations=60, eval_boards=8), 2)
         record = {
             "iteration": solver.iteration,
             "iterations_per_second": round(rate, 3),
-            "exploitability_mbb_per_hand": exploitability_mbb,
             "device": str(solver.device),
             "timestamp": time.strftime("%Y-%m-%dT%H:%M:%SZ", time.gmtime()),
         }
+        if exploitability_mbb is not None:
+            record["exploitability_mbb_per_hand"] = exploitability_mbb
         history = json.loads(TELEMETRY_PATH.read_text(encoding="utf-8")) if TELEMETRY_PATH.exists() else []
         history.append(record)
         TELEMETRY_PATH.write_text(json.dumps(history, indent=2), encoding="utf-8")

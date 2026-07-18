@@ -76,6 +76,11 @@ def save_solver(solver: VectorCFR) -> None:
         reach_normalized=True,
     )
     temporary.replace(CHECKPOINT_PATH)
+    # Keep sparse history so convergence trends can be probed retroactively.
+    if solver.iteration % 20_000 == 0:
+        import shutil
+
+        shutil.copy2(CHECKPOINT_PATH, DATA_DIR / f"checkpoint-{solver.iteration}.npz")
 
 
 def train(iterations: int, device: str = "cuda", save_every: int = 200, seed: int = 0, progress: bool = True) -> VectorCFR:

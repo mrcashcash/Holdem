@@ -198,6 +198,16 @@ class VectorCFR:
             self.strategy_sums *= (t / (t + 1.0)) ** self.discount_gamma
         else:
             self.strategy_sums.zero_()
+        # float32 headroom guard: regret matching and average extraction are
+        # invariant to uniform positive scaling, so shrink before precision
+        # is lost (increments must stay above the ulp of the running sums).
+        if self.iteration % 500 == 0:
+            peak = float(self.regrets.abs().max().item())
+            if peak > 1e7:
+                self.regrets *= 1e6 / peak
+            sums_peak = float(self.strategy_sums.abs().max().item())
+            if sums_peak > 1e7:
+                self.strategy_sums *= 1e6 / sums_peak
 
     def _iterate(
         self,
@@ -219,7 +229,10 @@ class VectorCFR:
         if self.root_reach is not None:
             reach[:, self.tree.root, :] = self.root_reach * valid.float()
         else:
-            reach[:, self.tree.root, :] = valid.float()
+            # Probability-normalized reach keeps terminal values (and thus
+            # cumulative regrets) ~3 orders of magnitude smaller — unnormalized
+            # masses saturated float32 (ulp 16 at 2e8) and froze learning.
+            reach[:, self.tree.root, :] = valid.float() / valid.float().sum().clamp_min(1.0)
 
         strategies: dict[int, torch.Tensor] = {}
         level_decisions: dict[int, torch.Tensor] = {}

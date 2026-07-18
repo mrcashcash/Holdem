@@ -54,6 +54,12 @@ def build_solver(device: str = "cuda", seed: int = 0) -> VectorCFR:
         solver.regrets = torch.tensor(payload["regrets"], device=solver.device)
         solver.strategy_sums = torch.tensor(payload["strategy_sums"], device=solver.device)
         solver.iteration = int(payload["iteration"])
+        if "reach_normalized" not in payload:
+            # One-time migration: reach is now probability-normalized, which
+            # scales every future increment by ~1/1081; scale the stored
+            # tensors by the same constant so past and future stay consistent.
+            solver.regrets /= 1081.0
+            solver.strategy_sums /= 1081.0
     return solver
 
 
@@ -67,6 +73,7 @@ def save_solver(solver: VectorCFR) -> None:
         iteration=solver.iteration,
         config=json.dumps(asdict(DEFAULT_CONFIG)),
         sampler=json.dumps(DEFAULT_SAMPLER),
+        reach_normalized=True,
     )
     temporary.replace(CHECKPOINT_PATH)
 

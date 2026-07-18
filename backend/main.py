@@ -266,8 +266,23 @@ def reload_last_training_model() -> dict:
         raise HTTPException(status_code=409, detail="Wait for the current training run to finish before reloading.")
     with game_lock:
         serving_agent = load_serving_agent()
+    from backend.agents.gpu_blueprint_agent import GpuBlueprintAgent
+    from backend.solver.gpu import train as gpu_trainer
+
     kind = type(serving_agent).__name__
     log_debug("serving_agent_reloaded", kind=kind)
     if isinstance(serving_agent, HeuristicAgent):
         raise HTTPException(status_code=500, detail="No blueprint checkpoint exists yet — train first.")
-    return {"ok": True, "source": str(blueprint_trainer.BLUEPRINT_PATH), "status": training.view()}
+    if isinstance(serving_agent, GpuBlueprintAgent):
+        source = str(gpu_trainer.CHECKPOINT_PATH)
+        iteration = int(serving_agent.iteration)
+    else:
+        source = str(blueprint_trainer.BLUEPRINT_PATH)
+        iteration = None
+    return {
+        "ok": True,
+        "agent": kind,
+        "source": source,
+        "iteration": iteration,
+        "status": training.view(),
+    }

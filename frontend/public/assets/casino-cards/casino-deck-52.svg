@@ -1,0 +1,988 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 3530 1540" width="3530" height="1540"><rect width="100%" height="100%" fill="#10151c"/><g transform="translate(20 20) scale(1)">
+    <defs>
+      <linearGradient id="gradient-sheet-As" x1="0" y1="0" x2="0.72" y2="1"><stop stop-color="#11161c"/><stop offset=".26" stop-color="#89939d"/><stop offset=".54" stop-color="#3f464d"/><stop offset="1" stop-color="#11161c"/></linearGradient>
+      <linearGradient id="shine-sheet-As" x1="0" y1="0" x2="0" y2="1"><stop stop-color="#fff" stop-opacity=".52"/><stop offset=".1" stop-color="#fff" stop-opacity=".16"/><stop offset=".43" stop-color="#fff" stop-opacity="0"/></linearGradient>
+      <radialGradient id="glow-sheet-As" cx="78%" cy="5%" r="68%"><stop stop-color="#fff" stop-opacity=".35"/><stop offset=".5" stop-color="#fff" stop-opacity="0"/></radialGradient>
+      <filter id="shadow-sheet-As" x="-20%" y="-20%" width="140%" height="140%"><feDropShadow dx="4" dy="6" stdDeviation="4" flood-color="#000" flood-opacity=".48"/></filter>
+      <filter id="text-shadow-sheet-As" x="-20%" y="-20%" width="140%" height="150%"><feDropShadow dx="2" dy="3" stdDeviation="1.5" flood-color="#000" flood-opacity=".72"/></filter>
+    </defs>
+    <rect x="0" y="0" width="250" height="360" rx="19" fill="#0a0e14" filter="url(#shadow-sheet-As)"/>
+    <rect x="5" y="5" width="240" height="350" rx="15" fill="url(#gradient-sheet-As)" stroke="#05080b" stroke-width="3"/>
+    <rect x="9" y="9" width="232" height="342" rx="12" fill="none" stroke="#fff" stroke-opacity=".25" stroke-width="2"/>
+    <rect x="10" y="10" width="230" height="340" rx="11" fill="url(#glow-sheet-As)"/>
+    <rect x="10" y="10" width="230" height="340" rx="11" fill="url(#shine-sheet-As)"/>
+    <g fill="#fff" filter="url(#text-shadow-sheet-As)">
+      <text x="24" y="70" font-family="Arial Black, Arial, sans-serif" font-size="56" font-weight="900" letter-spacing="-3">A</text>
+      <text x="27" y="119" font-family="Georgia, 'Times New Roman', serif" font-size="45">♠</text>
+      <text x="125" y="298" text-anchor="middle" font-family="Arial Black, Arial, sans-serif" font-size="200" font-weight="900" letter-spacing="-7">A</text>
+    </g>
+  </g>
+<g transform="translate(290 20) scale(1)">
+    <defs>
+      <linearGradient id="gradient-sheet-2s" x1="0" y1="0" x2="0.72" y2="1"><stop stop-color="#11161c"/><stop offset=".26" stop-color="#89939d"/><stop offset=".54" stop-color="#3f464d"/><stop offset="1" stop-color="#11161c"/></linearGradient>
+      <linearGradient id="shine-sheet-2s" x1="0" y1="0" x2="0" y2="1"><stop stop-color="#fff" stop-opacity=".52"/><stop offset=".1" stop-color="#fff" stop-opacity=".16"/><stop offset=".43" stop-color="#fff" stop-opacity="0"/></linearGradient>
+      <radialGradient id="glow-sheet-2s" cx="78%" cy="5%" r="68%"><stop stop-color="#fff" stop-opacity=".35"/><stop offset=".5" stop-color="#fff" stop-opacity="0"/></radialGradient>
+      <filter id="shadow-sheet-2s" x="-20%" y="-20%" width="140%" height="140%"><feDropShadow dx="4" dy="6" stdDeviation="4" flood-color="#000" flood-opacity=".48"/></filter>
+      <filter id="text-shadow-sheet-2s" x="-20%" y="-20%" width="140%" height="150%"><feDropShadow dx="2" dy="3" stdDeviation="1.5" flood-color="#000" flood-opacity=".72"/></filter>
+    </defs>
+    <rect x="0" y="0" width="250" height="360" rx="19" fill="#0a0e14" filter="url(#shadow-sheet-2s)"/>
+    <rect x="5" y="5" width="240" height="350" rx="15" fill="url(#gradient-sheet-2s)" stroke="#05080b" stroke-width="3"/>
+    <rect x="9" y="9" width="232" height="342" rx="12" fill="none" stroke="#fff" stroke-opacity=".25" stroke-width="2"/>
+    <rect x="10" y="10" width="230" height="340" rx="11" fill="url(#glow-sheet-2s)"/>
+    <rect x="10" y="10" width="230" height="340" rx="11" fill="url(#shine-sheet-2s)"/>
+    <g fill="#fff" filter="url(#text-shadow-sheet-2s)">
+      <text x="24" y="70" font-family="Arial Black, Arial, sans-serif" font-size="56" font-weight="900" letter-spacing="-3">2</text>
+      <text x="27" y="119" font-family="Georgia, 'Times New Roman', serif" font-size="45">♠</text>
+      <text x="125" y="298" text-anchor="middle" font-family="Arial Black, Arial, sans-serif" font-size="200" font-weight="900" letter-spacing="-7">2</text>
+    </g>
+  </g>
+<g transform="translate(560 20) scale(1)">
+    <defs>
+      <linearGradient id="gradient-sheet-3s" x1="0" y1="0" x2="0.72" y2="1"><stop stop-color="#11161c"/><stop offset=".26" stop-color="#89939d"/><stop offset=".54" stop-color="#3f464d"/><stop offset="1" stop-color="#11161c"/></linearGradient>
+      <linearGradient id="shine-sheet-3s" x1="0" y1="0" x2="0" y2="1"><stop stop-color="#fff" stop-opacity=".52"/><stop offset=".1" stop-color="#fff" stop-opacity=".16"/><stop offset=".43" stop-color="#fff" stop-opacity="0"/></linearGradient>
+      <radialGradient id="glow-sheet-3s" cx="78%" cy="5%" r="68%"><stop stop-color="#fff" stop-opacity=".35"/><stop offset=".5" stop-color="#fff" stop-opacity="0"/></radialGradient>
+      <filter id="shadow-sheet-3s" x="-20%" y="-20%" width="140%" height="140%"><feDropShadow dx="4" dy="6" stdDeviation="4" flood-color="#000" flood-opacity=".48"/></filter>
+      <filter id="text-shadow-sheet-3s" x="-20%" y="-20%" width="140%" height="150%"><feDropShadow dx="2" dy="3" stdDeviation="1.5" flood-color="#000" flood-opacity=".72"/></filter>
+    </defs>
+    <rect x="0" y="0" width="250" height="360" rx="19" fill="#0a0e14" filter="url(#shadow-sheet-3s)"/>
+    <rect x="5" y="5" width="240" height="350" rx="15" fill="url(#gradient-sheet-3s)" stroke="#05080b" stroke-width="3"/>
+    <rect x="9" y="9" width="232" height="342" rx="12" fill="none" stroke="#fff" stroke-opacity=".25" stroke-width="2"/>
+    <rect x="10" y="10" width="230" height="340" rx="11" fill="url(#glow-sheet-3s)"/>
+    <rect x="10" y="10" width="230" height="340" rx="11" fill="url(#shine-sheet-3s)"/>
+    <g fill="#fff" filter="url(#text-shadow-sheet-3s)">
+      <text x="24" y="70" font-family="Arial Black, Arial, sans-serif" font-size="56" font-weight="900" letter-spacing="-3">3</text>
+      <text x="27" y="119" font-family="Georgia, 'Times New Roman', serif" font-size="45">♠</text>
+      <text x="125" y="298" text-anchor="middle" font-family="Arial Black, Arial, sans-serif" font-size="200" font-weight="900" letter-spacing="-7">3</text>
+    </g>
+  </g>
+<g transform="translate(830 20) scale(1)">
+    <defs>
+      <linearGradient id="gradient-sheet-4s" x1="0" y1="0" x2="0.72" y2="1"><stop stop-color="#11161c"/><stop offset=".26" stop-color="#89939d"/><stop offset=".54" stop-color="#3f464d"/><stop offset="1" stop-color="#11161c"/></linearGradient>
+      <linearGradient id="shine-sheet-4s" x1="0" y1="0" x2="0" y2="1"><stop stop-color="#fff" stop-opacity=".52"/><stop offset=".1" stop-color="#fff" stop-opacity=".16"/><stop offset=".43" stop-color="#fff" stop-opacity="0"/></linearGradient>
+      <radialGradient id="glow-sheet-4s" cx="78%" cy="5%" r="68%"><stop stop-color="#fff" stop-opacity=".35"/><stop offset=".5" stop-color="#fff" stop-opacity="0"/></radialGradient>
+      <filter id="shadow-sheet-4s" x="-20%" y="-20%" width="140%" height="140%"><feDropShadow dx="4" dy="6" stdDeviation="4" flood-color="#000" flood-opacity=".48"/></filter>
+      <filter id="text-shadow-sheet-4s" x="-20%" y="-20%" width="140%" height="150%"><feDropShadow dx="2" dy="3" stdDeviation="1.5" flood-color="#000" flood-opacity=".72"/></filter>
+    </defs>
+    <rect x="0" y="0" width="250" height="360" rx="19" fill="#0a0e14" filter="url(#shadow-sheet-4s)"/>
+    <rect x="5" y="5" width="240" height="350" rx="15" fill="url(#gradient-sheet-4s)" stroke="#05080b" stroke-width="3"/>
+    <rect x="9" y="9" width="232" height="342" rx="12" fill="none" stroke="#fff" stroke-opacity=".25" stroke-width="2"/>
+    <rect x="10" y="10" width="230" height="340" rx="11" fill="url(#glow-sheet-4s)"/>
+    <rect x="10" y="10" width="230" height="340" rx="11" fill="url(#shine-sheet-4s)"/>
+    <g fill="#fff" filter="url(#text-shadow-sheet-4s)">
+      <text x="24" y="70" font-family="Arial Black, Arial, sans-serif" font-size="56" font-weight="900" letter-spacing="-3">4</text>
+      <text x="27" y="119" font-family="Georgia, 'Times New Roman', serif" font-size="45">♠</text>
+      <text x="125" y="298" text-anchor="middle" font-family="Arial Black, Arial, sans-serif" font-size="200" font-weight="900" letter-spacing="-7">4</text>
+    </g>
+  </g>
+<g transform="translate(1100 20) scale(1)">
+    <defs>
+      <linearGradient id="gradient-sheet-5s" x1="0" y1="0" x2="0.72" y2="1"><stop stop-color="#11161c"/><stop offset=".26" stop-color="#89939d"/><stop offset=".54" stop-color="#3f464d"/><stop offset="1" stop-color="#11161c"/></linearGradient>
+      <linearGradient id="shine-sheet-5s" x1="0" y1="0" x2="0" y2="1"><stop stop-color="#fff" stop-opacity=".52"/><stop offset=".1" stop-color="#fff" stop-opacity=".16"/><stop offset=".43" stop-color="#fff" stop-opacity="0"/></linearGradient>
+      <radialGradient id="glow-sheet-5s" cx="78%" cy="5%" r="68%"><stop stop-color="#fff" stop-opacity=".35"/><stop offset=".5" stop-color="#fff" stop-opacity="0"/></radialGradient>
+      <filter id="shadow-sheet-5s" x="-20%" y="-20%" width="140%" height="140%"><feDropShadow dx="4" dy="6" stdDeviation="4" flood-color="#000" flood-opacity=".48"/></filter>
+      <filter id="text-shadow-sheet-5s" x="-20%" y="-20%" width="140%" height="150%"><feDropShadow dx="2" dy="3" stdDeviation="1.5" flood-color="#000" flood-opacity=".72"/></filter>
+    </defs>
+    <rect x="0" y="0" width="250" height="360" rx="19" fill="#0a0e14" filter="url(#shadow-sheet-5s)"/>
+    <rect x="5" y="5" width="240" height="350" rx="15" fill="url(#gradient-sheet-5s)" stroke="#05080b" stroke-width="3"/>
+    <rect x="9" y="9" width="232" height="342" rx="12" fill="none" stroke="#fff" stroke-opacity=".25" stroke-width="2"/>
+    <rect x="10" y="10" width="230" height="340" rx="11" fill="url(#glow-sheet-5s)"/>
+    <rect x="10" y="10" width="230" height="340" rx="11" fill="url(#shine-sheet-5s)"/>
+    <g fill="#fff" filter="url(#text-shadow-sheet-5s)">
+      <text x="24" y="70" font-family="Arial Black, Arial, sans-serif" font-size="56" font-weight="900" letter-spacing="-3">5</text>
+      <text x="27" y="119" font-family="Georgia, 'Times New Roman', serif" font-size="45">♠</text>
+      <text x="125" y="298" text-anchor="middle" font-family="Arial Black, Arial, sans-serif" font-size="200" font-weight="900" letter-spacing="-7">5</text>
+    </g>
+  </g>
+<g transform="translate(1370 20) scale(1)">
+    <defs>
+      <linearGradient id="gradient-sheet-6s" x1="0" y1="0" x2="0.72" y2="1"><stop stop-color="#11161c"/><stop offset=".26" stop-color="#89939d"/><stop offset=".54" stop-color="#3f464d"/><stop offset="1" stop-color="#11161c"/></linearGradient>
+      <linearGradient id="shine-sheet-6s" x1="0" y1="0" x2="0" y2="1"><stop stop-color="#fff" stop-opacity=".52"/><stop offset=".1" stop-color="#fff" stop-opacity=".16"/><stop offset=".43" stop-color="#fff" stop-opacity="0"/></linearGradient>
+      <radialGradient id="glow-sheet-6s" cx="78%" cy="5%" r="68%"><stop stop-color="#fff" stop-opacity=".35"/><stop offset=".5" stop-color="#fff" stop-opacity="0"/></radialGradient>
+      <filter id="shadow-sheet-6s" x="-20%" y="-20%" width="140%" height="140%"><feDropShadow dx="4" dy="6" stdDeviation="4" flood-color="#000" flood-opacity=".48"/></filter>
+      <filter id="text-shadow-sheet-6s" x="-20%" y="-20%" width="140%" height="150%"><feDropShadow dx="2" dy="3" stdDeviation="1.5" flood-color="#000" flood-opacity=".72"/></filter>
+    </defs>
+    <rect x="0" y="0" width="250" height="360" rx="19" fill="#0a0e14" filter="url(#shadow-sheet-6s)"/>
+    <rect x="5" y="5" width="240" height="350" rx="15" fill="url(#gradient-sheet-6s)" stroke="#05080b" stroke-width="3"/>
+    <rect x="9" y="9" width="232" height="342" rx="12" fill="none" stroke="#fff" stroke-opacity=".25" stroke-width="2"/>
+    <rect x="10" y="10" width="230" height="340" rx="11" fill="url(#glow-sheet-6s)"/>
+    <rect x="10" y="10" width="230" height="340" rx="11" fill="url(#shine-sheet-6s)"/>
+    <g fill="#fff" filter="url(#text-shadow-sheet-6s)">
+      <text x="24" y="70" font-family="Arial Black, Arial, sans-serif" font-size="56" font-weight="900" letter-spacing="-3">6</text>
+      <text x="27" y="119" font-family="Georgia, 'Times New Roman', serif" font-size="45">♠</text>
+      <text x="125" y="298" text-anchor="middle" font-family="Arial Black, Arial, sans-serif" font-size="200" font-weight="900" letter-spacing="-7">6</text>
+    </g>
+  </g>
+<g transform="translate(1640 20) scale(1)">
+    <defs>
+      <linearGradient id="gradient-sheet-7s" x1="0" y1="0" x2="0.72" y2="1"><stop stop-color="#11161c"/><stop offset=".26" stop-color="#89939d"/><stop offset=".54" stop-color="#3f464d"/><stop offset="1" stop-color="#11161c"/></linearGradient>
+      <linearGradient id="shine-sheet-7s" x1="0" y1="0" x2="0" y2="1"><stop stop-color="#fff" stop-opacity=".52"/><stop offset=".1" stop-color="#fff" stop-opacity=".16"/><stop offset=".43" stop-color="#fff" stop-opacity="0"/></linearGradient>
+      <radialGradient id="glow-sheet-7s" cx="78%" cy="5%" r="68%"><stop stop-color="#fff" stop-opacity=".35"/><stop offset=".5" stop-color="#fff" stop-opacity="0"/></radialGradient>
+      <filter id="shadow-sheet-7s" x="-20%" y="-20%" width="140%" height="140%"><feDropShadow dx="4" dy="6" stdDeviation="4" flood-color="#000" flood-opacity=".48"/></filter>
+      <filter id="text-shadow-sheet-7s" x="-20%" y="-20%" width="140%" height="150%"><feDropShadow dx="2" dy="3" stdDeviation="1.5" flood-color="#000" flood-opacity=".72"/></filter>
+    </defs>
+    <rect x="0" y="0" width="250" height="360" rx="19" fill="#0a0e14" filter="url(#shadow-sheet-7s)"/>
+    <rect x="5" y="5" width="240" height="350" rx="15" fill="url(#gradient-sheet-7s)" stroke="#05080b" stroke-width="3"/>
+    <rect x="9" y="9" width="232" height="342" rx="12" fill="none" stroke="#fff" stroke-opacity=".25" stroke-width="2"/>
+    <rect x="10" y="10" width="230" height="340" rx="11" fill="url(#glow-sheet-7s)"/>
+    <rect x="10" y="10" width="230" height="340" rx="11" fill="url(#shine-sheet-7s)"/>
+    <g fill="#fff" filter="url(#text-shadow-sheet-7s)">
+      <text x="24" y="70" font-family="Arial Black, Arial, sans-serif" font-size="56" font-weight="900" letter-spacing="-3">7</text>
+      <text x="27" y="119" font-family="Georgia, 'Times New Roman', serif" font-size="45">♠</text>
+      <text x="125" y="298" text-anchor="middle" font-family="Arial Black, Arial, sans-serif" font-size="200" font-weight="900" letter-spacing="-7">7</text>
+    </g>
+  </g>
+<g transform="translate(1910 20) scale(1)">
+    <defs>
+      <linearGradient id="gradient-sheet-8s" x1="0" y1="0" x2="0.72" y2="1"><stop stop-color="#11161c"/><stop offset=".26" stop-color="#89939d"/><stop offset=".54" stop-color="#3f464d"/><stop offset="1" stop-color="#11161c"/></linearGradient>
+      <linearGradient id="shine-sheet-8s" x1="0" y1="0" x2="0" y2="1"><stop stop-color="#fff" stop-opacity=".52"/><stop offset=".1" stop-color="#fff" stop-opacity=".16"/><stop offset=".43" stop-color="#fff" stop-opacity="0"/></linearGradient>
+      <radialGradient id="glow-sheet-8s" cx="78%" cy="5%" r="68%"><stop stop-color="#fff" stop-opacity=".35"/><stop offset=".5" stop-color="#fff" stop-opacity="0"/></radialGradient>
+      <filter id="shadow-sheet-8s" x="-20%" y="-20%" width="140%" height="140%"><feDropShadow dx="4" dy="6" stdDeviation="4" flood-color="#000" flood-opacity=".48"/></filter>
+      <filter id="text-shadow-sheet-8s" x="-20%" y="-20%" width="140%" height="150%"><feDropShadow dx="2" dy="3" stdDeviation="1.5" flood-color="#000" flood-opacity=".72"/></filter>
+    </defs>
+    <rect x="0" y="0" width="250" height="360" rx="19" fill="#0a0e14" filter="url(#shadow-sheet-8s)"/>
+    <rect x="5" y="5" width="240" height="350" rx="15" fill="url(#gradient-sheet-8s)" stroke="#05080b" stroke-width="3"/>
+    <rect x="9" y="9" width="232" height="342" rx="12" fill="none" stroke="#fff" stroke-opacity=".25" stroke-width="2"/>
+    <rect x="10" y="10" width="230" height="340" rx="11" fill="url(#glow-sheet-8s)"/>
+    <rect x="10" y="10" width="230" height="340" rx="11" fill="url(#shine-sheet-8s)"/>
+    <g fill="#fff" filter="url(#text-shadow-sheet-8s)">
+      <text x="24" y="70" font-family="Arial Black, Arial, sans-serif" font-size="56" font-weight="900" letter-spacing="-3">8</text>
+      <text x="27" y="119" font-family="Georgia, 'Times New Roman', serif" font-size="45">♠</text>
+      <text x="125" y="298" text-anchor="middle" font-family="Arial Black, Arial, sans-serif" font-size="200" font-weight="900" letter-spacing="-7">8</text>
+    </g>
+  </g>
+<g transform="translate(2180 20) scale(1)">
+    <defs>
+      <linearGradient id="gradient-sheet-9s" x1="0" y1="0" x2="0.72" y2="1"><stop stop-color="#11161c"/><stop offset=".26" stop-color="#89939d"/><stop offset=".54" stop-color="#3f464d"/><stop offset="1" stop-color="#11161c"/></linearGradient>
+      <linearGradient id="shine-sheet-9s" x1="0" y1="0" x2="0" y2="1"><stop stop-color="#fff" stop-opacity=".52"/><stop offset=".1" stop-color="#fff" stop-opacity=".16"/><stop offset=".43" stop-color="#fff" stop-opacity="0"/></linearGradient>
+      <radialGradient id="glow-sheet-9s" cx="78%" cy="5%" r="68%"><stop stop-color="#fff" stop-opacity=".35"/><stop offset=".5" stop-color="#fff" stop-opacity="0"/></radialGradient>
+      <filter id="shadow-sheet-9s" x="-20%" y="-20%" width="140%" height="140%"><feDropShadow dx="4" dy="6" stdDeviation="4" flood-color="#000" flood-opacity=".48"/></filter>
+      <filter id="text-shadow-sheet-9s" x="-20%" y="-20%" width="140%" height="150%"><feDropShadow dx="2" dy="3" stdDeviation="1.5" flood-color="#000" flood-opacity=".72"/></filter>
+    </defs>
+    <rect x="0" y="0" width="250" height="360" rx="19" fill="#0a0e14" filter="url(#shadow-sheet-9s)"/>
+    <rect x="5" y="5" width="240" height="350" rx="15" fill="url(#gradient-sheet-9s)" stroke="#05080b" stroke-width="3"/>
+    <rect x="9" y="9" width="232" height="342" rx="12" fill="none" stroke="#fff" stroke-opacity=".25" stroke-width="2"/>
+    <rect x="10" y="10" width="230" height="340" rx="11" fill="url(#glow-sheet-9s)"/>
+    <rect x="10" y="10" width="230" height="340" rx="11" fill="url(#shine-sheet-9s)"/>
+    <g fill="#fff" filter="url(#text-shadow-sheet-9s)">
+      <text x="24" y="70" font-family="Arial Black, Arial, sans-serif" font-size="56" font-weight="900" letter-spacing="-3">9</text>
+      <text x="27" y="119" font-family="Georgia, 'Times New Roman', serif" font-size="45">♠</text>
+      <text x="125" y="298" text-anchor="middle" font-family="Arial Black, Arial, sans-serif" font-size="200" font-weight="900" letter-spacing="-7">9</text>
+    </g>
+  </g>
+<g transform="translate(2450 20) scale(1)">
+    <defs>
+      <linearGradient id="gradient-sheet-Ts" x1="0" y1="0" x2="0.72" y2="1"><stop stop-color="#11161c"/><stop offset=".26" stop-color="#89939d"/><stop offset=".54" stop-color="#3f464d"/><stop offset="1" stop-color="#11161c"/></linearGradient>
+      <linearGradient id="shine-sheet-Ts" x1="0" y1="0" x2="0" y2="1"><stop stop-color="#fff" stop-opacity=".52"/><stop offset=".1" stop-color="#fff" stop-opacity=".16"/><stop offset=".43" stop-color="#fff" stop-opacity="0"/></linearGradient>
+      <radialGradient id="glow-sheet-Ts" cx="78%" cy="5%" r="68%"><stop stop-color="#fff" stop-opacity=".35"/><stop offset=".5" stop-color="#fff" stop-opacity="0"/></radialGradient>
+      <filter id="shadow-sheet-Ts" x="-20%" y="-20%" width="140%" height="140%"><feDropShadow dx="4" dy="6" stdDeviation="4" flood-color="#000" flood-opacity=".48"/></filter>
+      <filter id="text-shadow-sheet-Ts" x="-20%" y="-20%" width="140%" height="150%"><feDropShadow dx="2" dy="3" stdDeviation="1.5" flood-color="#000" flood-opacity=".72"/></filter>
+    </defs>
+    <rect x="0" y="0" width="250" height="360" rx="19" fill="#0a0e14" filter="url(#shadow-sheet-Ts)"/>
+    <rect x="5" y="5" width="240" height="350" rx="15" fill="url(#gradient-sheet-Ts)" stroke="#05080b" stroke-width="3"/>
+    <rect x="9" y="9" width="232" height="342" rx="12" fill="none" stroke="#fff" stroke-opacity=".25" stroke-width="2"/>
+    <rect x="10" y="10" width="230" height="340" rx="11" fill="url(#glow-sheet-Ts)"/>
+    <rect x="10" y="10" width="230" height="340" rx="11" fill="url(#shine-sheet-Ts)"/>
+    <g fill="#fff" filter="url(#text-shadow-sheet-Ts)">
+      <text x="24" y="70" font-family="Arial Black, Arial, sans-serif" font-size="56" font-weight="900" letter-spacing="-3">T</text>
+      <text x="27" y="119" font-family="Georgia, 'Times New Roman', serif" font-size="45">♠</text>
+      <text x="125" y="298" text-anchor="middle" font-family="Arial Black, Arial, sans-serif" font-size="200" font-weight="900" letter-spacing="-7">T</text>
+    </g>
+  </g>
+<g transform="translate(2720 20) scale(1)">
+    <defs>
+      <linearGradient id="gradient-sheet-Js" x1="0" y1="0" x2="0.72" y2="1"><stop stop-color="#11161c"/><stop offset=".26" stop-color="#89939d"/><stop offset=".54" stop-color="#3f464d"/><stop offset="1" stop-color="#11161c"/></linearGradient>
+      <linearGradient id="shine-sheet-Js" x1="0" y1="0" x2="0" y2="1"><stop stop-color="#fff" stop-opacity=".52"/><stop offset=".1" stop-color="#fff" stop-opacity=".16"/><stop offset=".43" stop-color="#fff" stop-opacity="0"/></linearGradient>
+      <radialGradient id="glow-sheet-Js" cx="78%" cy="5%" r="68%"><stop stop-color="#fff" stop-opacity=".35"/><stop offset=".5" stop-color="#fff" stop-opacity="0"/></radialGradient>
+      <filter id="shadow-sheet-Js" x="-20%" y="-20%" width="140%" height="140%"><feDropShadow dx="4" dy="6" stdDeviation="4" flood-color="#000" flood-opacity=".48"/></filter>
+      <filter id="text-shadow-sheet-Js" x="-20%" y="-20%" width="140%" height="150%"><feDropShadow dx="2" dy="3" stdDeviation="1.5" flood-color="#000" flood-opacity=".72"/></filter>
+    </defs>
+    <rect x="0" y="0" width="250" height="360" rx="19" fill="#0a0e14" filter="url(#shadow-sheet-Js)"/>
+    <rect x="5" y="5" width="240" height="350" rx="15" fill="url(#gradient-sheet-Js)" stroke="#05080b" stroke-width="3"/>
+    <rect x="9" y="9" width="232" height="342" rx="12" fill="none" stroke="#fff" stroke-opacity=".25" stroke-width="2"/>
+    <rect x="10" y="10" width="230" height="340" rx="11" fill="url(#glow-sheet-Js)"/>
+    <rect x="10" y="10" width="230" height="340" rx="11" fill="url(#shine-sheet-Js)"/>
+    <g fill="#fff" filter="url(#text-shadow-sheet-Js)">
+      <text x="24" y="70" font-family="Arial Black, Arial, sans-serif" font-size="56" font-weight="900" letter-spacing="-3">J</text>
+      <text x="27" y="119" font-family="Georgia, 'Times New Roman', serif" font-size="45">♠</text>
+      <text x="125" y="298" text-anchor="middle" font-family="Arial Black, Arial, sans-serif" font-size="200" font-weight="900" letter-spacing="-7">J</text>
+    </g>
+  </g>
+<g transform="translate(2990 20) scale(1)">
+    <defs>
+      <linearGradient id="gradient-sheet-Qs" x1="0" y1="0" x2="0.72" y2="1"><stop stop-color="#11161c"/><stop offset=".26" stop-color="#89939d"/><stop offset=".54" stop-color="#3f464d"/><stop offset="1" stop-color="#11161c"/></linearGradient>
+      <linearGradient id="shine-sheet-Qs" x1="0" y1="0" x2="0" y2="1"><stop stop-color="#fff" stop-opacity=".52"/><stop offset=".1" stop-color="#fff" stop-opacity=".16"/><stop offset=".43" stop-color="#fff" stop-opacity="0"/></linearGradient>
+      <radialGradient id="glow-sheet-Qs" cx="78%" cy="5%" r="68%"><stop stop-color="#fff" stop-opacity=".35"/><stop offset=".5" stop-color="#fff" stop-opacity="0"/></radialGradient>
+      <filter id="shadow-sheet-Qs" x="-20%" y="-20%" width="140%" height="140%"><feDropShadow dx="4" dy="6" stdDeviation="4" flood-color="#000" flood-opacity=".48"/></filter>
+      <filter id="text-shadow-sheet-Qs" x="-20%" y="-20%" width="140%" height="150%"><feDropShadow dx="2" dy="3" stdDeviation="1.5" flood-color="#000" flood-opacity=".72"/></filter>
+    </defs>
+    <rect x="0" y="0" width="250" height="360" rx="19" fill="#0a0e14" filter="url(#shadow-sheet-Qs)"/>
+    <rect x="5" y="5" width="240" height="350" rx="15" fill="url(#gradient-sheet-Qs)" stroke="#05080b" stroke-width="3"/>
+    <rect x="9" y="9" width="232" height="342" rx="12" fill="none" stroke="#fff" stroke-opacity=".25" stroke-width="2"/>
+    <rect x="10" y="10" width="230" height="340" rx="11" fill="url(#glow-sheet-Qs)"/>
+    <rect x="10" y="10" width="230" height="340" rx="11" fill="url(#shine-sheet-Qs)"/>
+    <g fill="#fff" filter="url(#text-shadow-sheet-Qs)">
+      <text x="24" y="70" font-family="Arial Black, Arial, sans-serif" font-size="56" font-weight="900" letter-spacing="-3">Q</text>
+      <text x="27" y="119" font-family="Georgia, 'Times New Roman', serif" font-size="45">♠</text>
+      <text x="125" y="298" text-anchor="middle" font-family="Arial Black, Arial, sans-serif" font-size="200" font-weight="900" letter-spacing="-7">Q</text>
+    </g>
+  </g>
+<g transform="translate(3260 20) scale(1)">
+    <defs>
+      <linearGradient id="gradient-sheet-Ks" x1="0" y1="0" x2="0.72" y2="1"><stop stop-color="#11161c"/><stop offset=".26" stop-color="#89939d"/><stop offset=".54" stop-color="#3f464d"/><stop offset="1" stop-color="#11161c"/></linearGradient>
+      <linearGradient id="shine-sheet-Ks" x1="0" y1="0" x2="0" y2="1"><stop stop-color="#fff" stop-opacity=".52"/><stop offset=".1" stop-color="#fff" stop-opacity=".16"/><stop offset=".43" stop-color="#fff" stop-opacity="0"/></linearGradient>
+      <radialGradient id="glow-sheet-Ks" cx="78%" cy="5%" r="68%"><stop stop-color="#fff" stop-opacity=".35"/><stop offset=".5" stop-color="#fff" stop-opacity="0"/></radialGradient>
+      <filter id="shadow-sheet-Ks" x="-20%" y="-20%" width="140%" height="140%"><feDropShadow dx="4" dy="6" stdDeviation="4" flood-color="#000" flood-opacity=".48"/></filter>
+      <filter id="text-shadow-sheet-Ks" x="-20%" y="-20%" width="140%" height="150%"><feDropShadow dx="2" dy="3" stdDeviation="1.5" flood-color="#000" flood-opacity=".72"/></filter>
+    </defs>
+    <rect x="0" y="0" width="250" height="360" rx="19" fill="#0a0e14" filter="url(#shadow-sheet-Ks)"/>
+    <rect x="5" y="5" width="240" height="350" rx="15" fill="url(#gradient-sheet-Ks)" stroke="#05080b" stroke-width="3"/>
+    <rect x="9" y="9" width="232" height="342" rx="12" fill="none" stroke="#fff" stroke-opacity=".25" stroke-width="2"/>
+    <rect x="10" y="10" width="230" height="340" rx="11" fill="url(#glow-sheet-Ks)"/>
+    <rect x="10" y="10" width="230" height="340" rx="11" fill="url(#shine-sheet-Ks)"/>
+    <g fill="#fff" filter="url(#text-shadow-sheet-Ks)">
+      <text x="24" y="70" font-family="Arial Black, Arial, sans-serif" font-size="56" font-weight="900" letter-spacing="-3">K</text>
+      <text x="27" y="119" font-family="Georgia, 'Times New Roman', serif" font-size="45">♠</text>
+      <text x="125" y="298" text-anchor="middle" font-family="Arial Black, Arial, sans-serif" font-size="200" font-weight="900" letter-spacing="-7">K</text>
+    </g>
+  </g>
+<g transform="translate(20 400) scale(1)">
+    <defs>
+      <linearGradient id="gradient-sheet-Ah" x1="0" y1="0" x2="0.72" y2="1"><stop stop-color="#5f0713"/><stop offset=".26" stop-color="#e98486"/><stop offset=".54" stop-color="#b83845"/><stop offset="1" stop-color="#5f0713"/></linearGradient>
+      <linearGradient id="shine-sheet-Ah" x1="0" y1="0" x2="0" y2="1"><stop stop-color="#fff" stop-opacity=".52"/><stop offset=".1" stop-color="#fff" stop-opacity=".16"/><stop offset=".43" stop-color="#fff" stop-opacity="0"/></linearGradient>
+      <radialGradient id="glow-sheet-Ah" cx="78%" cy="5%" r="68%"><stop stop-color="#fff" stop-opacity=".35"/><stop offset=".5" stop-color="#fff" stop-opacity="0"/></radialGradient>
+      <filter id="shadow-sheet-Ah" x="-20%" y="-20%" width="140%" height="140%"><feDropShadow dx="4" dy="6" stdDeviation="4" flood-color="#000" flood-opacity=".48"/></filter>
+      <filter id="text-shadow-sheet-Ah" x="-20%" y="-20%" width="140%" height="150%"><feDropShadow dx="2" dy="3" stdDeviation="1.5" flood-color="#000" flood-opacity=".72"/></filter>
+    </defs>
+    <rect x="0" y="0" width="250" height="360" rx="19" fill="#0a0e14" filter="url(#shadow-sheet-Ah)"/>
+    <rect x="5" y="5" width="240" height="350" rx="15" fill="url(#gradient-sheet-Ah)" stroke="#05080b" stroke-width="3"/>
+    <rect x="9" y="9" width="232" height="342" rx="12" fill="none" stroke="#fff" stroke-opacity=".25" stroke-width="2"/>
+    <rect x="10" y="10" width="230" height="340" rx="11" fill="url(#glow-sheet-Ah)"/>
+    <rect x="10" y="10" width="230" height="340" rx="11" fill="url(#shine-sheet-Ah)"/>
+    <g fill="#fff" filter="url(#text-shadow-sheet-Ah)">
+      <text x="24" y="70" font-family="Arial Black, Arial, sans-serif" font-size="56" font-weight="900" letter-spacing="-3">A</text>
+      <text x="27" y="119" font-family="Georgia, 'Times New Roman', serif" font-size="45">♥</text>
+      <text x="125" y="298" text-anchor="middle" font-family="Arial Black, Arial, sans-serif" font-size="200" font-weight="900" letter-spacing="-7">A</text>
+    </g>
+  </g>
+<g transform="translate(290 400) scale(1)">
+    <defs>
+      <linearGradient id="gradient-sheet-2h" x1="0" y1="0" x2="0.72" y2="1"><stop stop-color="#5f0713"/><stop offset=".26" stop-color="#e98486"/><stop offset=".54" stop-color="#b83845"/><stop offset="1" stop-color="#5f0713"/></linearGradient>
+      <linearGradient id="shine-sheet-2h" x1="0" y1="0" x2="0" y2="1"><stop stop-color="#fff" stop-opacity=".52"/><stop offset=".1" stop-color="#fff" stop-opacity=".16"/><stop offset=".43" stop-color="#fff" stop-opacity="0"/></linearGradient>
+      <radialGradient id="glow-sheet-2h" cx="78%" cy="5%" r="68%"><stop stop-color="#fff" stop-opacity=".35"/><stop offset=".5" stop-color="#fff" stop-opacity="0"/></radialGradient>
+      <filter id="shadow-sheet-2h" x="-20%" y="-20%" width="140%" height="140%"><feDropShadow dx="4" dy="6" stdDeviation="4" flood-color="#000" flood-opacity=".48"/></filter>
+      <filter id="text-shadow-sheet-2h" x="-20%" y="-20%" width="140%" height="150%"><feDropShadow dx="2" dy="3" stdDeviation="1.5" flood-color="#000" flood-opacity=".72"/></filter>
+    </defs>
+    <rect x="0" y="0" width="250" height="360" rx="19" fill="#0a0e14" filter="url(#shadow-sheet-2h)"/>
+    <rect x="5" y="5" width="240" height="350" rx="15" fill="url(#gradient-sheet-2h)" stroke="#05080b" stroke-width="3"/>
+    <rect x="9" y="9" width="232" height="342" rx="12" fill="none" stroke="#fff" stroke-opacity=".25" stroke-width="2"/>
+    <rect x="10" y="10" width="230" height="340" rx="11" fill="url(#glow-sheet-2h)"/>
+    <rect x="10" y="10" width="230" height="340" rx="11" fill="url(#shine-sheet-2h)"/>
+    <g fill="#fff" filter="url(#text-shadow-sheet-2h)">
+      <text x="24" y="70" font-family="Arial Black, Arial, sans-serif" font-size="56" font-weight="900" letter-spacing="-3">2</text>
+      <text x="27" y="119" font-family="Georgia, 'Times New Roman', serif" font-size="45">♥</text>
+      <text x="125" y="298" text-anchor="middle" font-family="Arial Black, Arial, sans-serif" font-size="200" font-weight="900" letter-spacing="-7">2</text>
+    </g>
+  </g>
+<g transform="translate(560 400) scale(1)">
+    <defs>
+      <linearGradient id="gradient-sheet-3h" x1="0" y1="0" x2="0.72" y2="1"><stop stop-color="#5f0713"/><stop offset=".26" stop-color="#e98486"/><stop offset=".54" stop-color="#b83845"/><stop offset="1" stop-color="#5f0713"/></linearGradient>
+      <linearGradient id="shine-sheet-3h" x1="0" y1="0" x2="0" y2="1"><stop stop-color="#fff" stop-opacity=".52"/><stop offset=".1" stop-color="#fff" stop-opacity=".16"/><stop offset=".43" stop-color="#fff" stop-opacity="0"/></linearGradient>
+      <radialGradient id="glow-sheet-3h" cx="78%" cy="5%" r="68%"><stop stop-color="#fff" stop-opacity=".35"/><stop offset=".5" stop-color="#fff" stop-opacity="0"/></radialGradient>
+      <filter id="shadow-sheet-3h" x="-20%" y="-20%" width="140%" height="140%"><feDropShadow dx="4" dy="6" stdDeviation="4" flood-color="#000" flood-opacity=".48"/></filter>
+      <filter id="text-shadow-sheet-3h" x="-20%" y="-20%" width="140%" height="150%"><feDropShadow dx="2" dy="3" stdDeviation="1.5" flood-color="#000" flood-opacity=".72"/></filter>
+    </defs>
+    <rect x="0" y="0" width="250" height="360" rx="19" fill="#0a0e14" filter="url(#shadow-sheet-3h)"/>
+    <rect x="5" y="5" width="240" height="350" rx="15" fill="url(#gradient-sheet-3h)" stroke="#05080b" stroke-width="3"/>
+    <rect x="9" y="9" width="232" height="342" rx="12" fill="none" stroke="#fff" stroke-opacity=".25" stroke-width="2"/>
+    <rect x="10" y="10" width="230" height="340" rx="11" fill="url(#glow-sheet-3h)"/>
+    <rect x="10" y="10" width="230" height="340" rx="11" fill="url(#shine-sheet-3h)"/>
+    <g fill="#fff" filter="url(#text-shadow-sheet-3h)">
+      <text x="24" y="70" font-family="Arial Black, Arial, sans-serif" font-size="56" font-weight="900" letter-spacing="-3">3</text>
+      <text x="27" y="119" font-family="Georgia, 'Times New Roman', serif" font-size="45">♥</text>
+      <text x="125" y="298" text-anchor="middle" font-family="Arial Black, Arial, sans-serif" font-size="200" font-weight="900" letter-spacing="-7">3</text>
+    </g>
+  </g>
+<g transform="translate(830 400) scale(1)">
+    <defs>
+      <linearGradient id="gradient-sheet-4h" x1="0" y1="0" x2="0.72" y2="1"><stop stop-color="#5f0713"/><stop offset=".26" stop-color="#e98486"/><stop offset=".54" stop-color="#b83845"/><stop offset="1" stop-color="#5f0713"/></linearGradient>
+      <linearGradient id="shine-sheet-4h" x1="0" y1="0" x2="0" y2="1"><stop stop-color="#fff" stop-opacity=".52"/><stop offset=".1" stop-color="#fff" stop-opacity=".16"/><stop offset=".43" stop-color="#fff" stop-opacity="0"/></linearGradient>
+      <radialGradient id="glow-sheet-4h" cx="78%" cy="5%" r="68%"><stop stop-color="#fff" stop-opacity=".35"/><stop offset=".5" stop-color="#fff" stop-opacity="0"/></radialGradient>
+      <filter id="shadow-sheet-4h" x="-20%" y="-20%" width="140%" height="140%"><feDropShadow dx="4" dy="6" stdDeviation="4" flood-color="#000" flood-opacity=".48"/></filter>
+      <filter id="text-shadow-sheet-4h" x="-20%" y="-20%" width="140%" height="150%"><feDropShadow dx="2" dy="3" stdDeviation="1.5" flood-color="#000" flood-opacity=".72"/></filter>
+    </defs>
+    <rect x="0" y="0" width="250" height="360" rx="19" fill="#0a0e14" filter="url(#shadow-sheet-4h)"/>
+    <rect x="5" y="5" width="240" height="350" rx="15" fill="url(#gradient-sheet-4h)" stroke="#05080b" stroke-width="3"/>
+    <rect x="9" y="9" width="232" height="342" rx="12" fill="none" stroke="#fff" stroke-opacity=".25" stroke-width="2"/>
+    <rect x="10" y="10" width="230" height="340" rx="11" fill="url(#glow-sheet-4h)"/>
+    <rect x="10" y="10" width="230" height="340" rx="11" fill="url(#shine-sheet-4h)"/>
+    <g fill="#fff" filter="url(#text-shadow-sheet-4h)">
+      <text x="24" y="70" font-family="Arial Black, Arial, sans-serif" font-size="56" font-weight="900" letter-spacing="-3">4</text>
+      <text x="27" y="119" font-family="Georgia, 'Times New Roman', serif" font-size="45">♥</text>
+      <text x="125" y="298" text-anchor="middle" font-family="Arial Black, Arial, sans-serif" font-size="200" font-weight="900" letter-spacing="-7">4</text>
+    </g>
+  </g>
+<g transform="translate(1100 400) scale(1)">
+    <defs>
+      <linearGradient id="gradient-sheet-5h" x1="0" y1="0" x2="0.72" y2="1"><stop stop-color="#5f0713"/><stop offset=".26" stop-color="#e98486"/><stop offset=".54" stop-color="#b83845"/><stop offset="1" stop-color="#5f0713"/></linearGradient>
+      <linearGradient id="shine-sheet-5h" x1="0" y1="0" x2="0" y2="1"><stop stop-color="#fff" stop-opacity=".52"/><stop offset=".1" stop-color="#fff" stop-opacity=".16"/><stop offset=".43" stop-color="#fff" stop-opacity="0"/></linearGradient>
+      <radialGradient id="glow-sheet-5h" cx="78%" cy="5%" r="68%"><stop stop-color="#fff" stop-opacity=".35"/><stop offset=".5" stop-color="#fff" stop-opacity="0"/></radialGradient>
+      <filter id="shadow-sheet-5h" x="-20%" y="-20%" width="140%" height="140%"><feDropShadow dx="4" dy="6" stdDeviation="4" flood-color="#000" flood-opacity=".48"/></filter>
+      <filter id="text-shadow-sheet-5h" x="-20%" y="-20%" width="140%" height="150%"><feDropShadow dx="2" dy="3" stdDeviation="1.5" flood-color="#000" flood-opacity=".72"/></filter>
+    </defs>
+    <rect x="0" y="0" width="250" height="360" rx="19" fill="#0a0e14" filter="url(#shadow-sheet-5h)"/>
+    <rect x="5" y="5" width="240" height="350" rx="15" fill="url(#gradient-sheet-5h)" stroke="#05080b" stroke-width="3"/>
+    <rect x="9" y="9" width="232" height="342" rx="12" fill="none" stroke="#fff" stroke-opacity=".25" stroke-width="2"/>
+    <rect x="10" y="10" width="230" height="340" rx="11" fill="url(#glow-sheet-5h)"/>
+    <rect x="10" y="10" width="230" height="340" rx="11" fill="url(#shine-sheet-5h)"/>
+    <g fill="#fff" filter="url(#text-shadow-sheet-5h)">
+      <text x="24" y="70" font-family="Arial Black, Arial, sans-serif" font-size="56" font-weight="900" letter-spacing="-3">5</text>
+      <text x="27" y="119" font-family="Georgia, 'Times New Roman', serif" font-size="45">♥</text>
+      <text x="125" y="298" text-anchor="middle" font-family="Arial Black, Arial, sans-serif" font-size="200" font-weight="900" letter-spacing="-7">5</text>
+    </g>
+  </g>
+<g transform="translate(1370 400) scale(1)">
+    <defs>
+      <linearGradient id="gradient-sheet-6h" x1="0" y1="0" x2="0.72" y2="1"><stop stop-color="#5f0713"/><stop offset=".26" stop-color="#e98486"/><stop offset=".54" stop-color="#b83845"/><stop offset="1" stop-color="#5f0713"/></linearGradient>
+      <linearGradient id="shine-sheet-6h" x1="0" y1="0" x2="0" y2="1"><stop stop-color="#fff" stop-opacity=".52"/><stop offset=".1" stop-color="#fff" stop-opacity=".16"/><stop offset=".43" stop-color="#fff" stop-opacity="0"/></linearGradient>
+      <radialGradient id="glow-sheet-6h" cx="78%" cy="5%" r="68%"><stop stop-color="#fff" stop-opacity=".35"/><stop offset=".5" stop-color="#fff" stop-opacity="0"/></radialGradient>
+      <filter id="shadow-sheet-6h" x="-20%" y="-20%" width="140%" height="140%"><feDropShadow dx="4" dy="6" stdDeviation="4" flood-color="#000" flood-opacity=".48"/></filter>
+      <filter id="text-shadow-sheet-6h" x="-20%" y="-20%" width="140%" height="150%"><feDropShadow dx="2" dy="3" stdDeviation="1.5" flood-color="#000" flood-opacity=".72"/></filter>
+    </defs>
+    <rect x="0" y="0" width="250" height="360" rx="19" fill="#0a0e14" filter="url(#shadow-sheet-6h)"/>
+    <rect x="5" y="5" width="240" height="350" rx="15" fill="url(#gradient-sheet-6h)" stroke="#05080b" stroke-width="3"/>
+    <rect x="9" y="9" width="232" height="342" rx="12" fill="none" stroke="#fff" stroke-opacity=".25" stroke-width="2"/>
+    <rect x="10" y="10" width="230" height="340" rx="11" fill="url(#glow-sheet-6h)"/>
+    <rect x="10" y="10" width="230" height="340" rx="11" fill="url(#shine-sheet-6h)"/>
+    <g fill="#fff" filter="url(#text-shadow-sheet-6h)">
+      <text x="24" y="70" font-family="Arial Black, Arial, sans-serif" font-size="56" font-weight="900" letter-spacing="-3">6</text>
+      <text x="27" y="119" font-family="Georgia, 'Times New Roman', serif" font-size="45">♥</text>
+      <text x="125" y="298" text-anchor="middle" font-family="Arial Black, Arial, sans-serif" font-size="200" font-weight="900" letter-spacing="-7">6</text>
+    </g>
+  </g>
+<g transform="translate(1640 400) scale(1)">
+    <defs>
+      <linearGradient id="gradient-sheet-7h" x1="0" y1="0" x2="0.72" y2="1"><stop stop-color="#5f0713"/><stop offset=".26" stop-color="#e98486"/><stop offset=".54" stop-color="#b83845"/><stop offset="1" stop-color="#5f0713"/></linearGradient>
+      <linearGradient id="shine-sheet-7h" x1="0" y1="0" x2="0" y2="1"><stop stop-color="#fff" stop-opacity=".52"/><stop offset=".1" stop-color="#fff" stop-opacity=".16"/><stop offset=".43" stop-color="#fff" stop-opacity="0"/></linearGradient>
+      <radialGradient id="glow-sheet-7h" cx="78%" cy="5%" r="68%"><stop stop-color="#fff" stop-opacity=".35"/><stop offset=".5" stop-color="#fff" stop-opacity="0"/></radialGradient>
+      <filter id="shadow-sheet-7h" x="-20%" y="-20%" width="140%" height="140%"><feDropShadow dx="4" dy="6" stdDeviation="4" flood-color="#000" flood-opacity=".48"/></filter>
+      <filter id="text-shadow-sheet-7h" x="-20%" y="-20%" width="140%" height="150%"><feDropShadow dx="2" dy="3" stdDeviation="1.5" flood-color="#000" flood-opacity=".72"/></filter>
+    </defs>
+    <rect x="0" y="0" width="250" height="360" rx="19" fill="#0a0e14" filter="url(#shadow-sheet-7h)"/>
+    <rect x="5" y="5" width="240" height="350" rx="15" fill="url(#gradient-sheet-7h)" stroke="#05080b" stroke-width="3"/>
+    <rect x="9" y="9" width="232" height="342" rx="12" fill="none" stroke="#fff" stroke-opacity=".25" stroke-width="2"/>
+    <rect x="10" y="10" width="230" height="340" rx="11" fill="url(#glow-sheet-7h)"/>
+    <rect x="10" y="10" width="230" height="340" rx="11" fill="url(#shine-sheet-7h)"/>
+    <g fill="#fff" filter="url(#text-shadow-sheet-7h)">
+      <text x="24" y="70" font-family="Arial Black, Arial, sans-serif" font-size="56" font-weight="900" letter-spacing="-3">7</text>
+      <text x="27" y="119" font-family="Georgia, 'Times New Roman', serif" font-size="45">♥</text>
+      <text x="125" y="298" text-anchor="middle" font-family="Arial Black, Arial, sans-serif" font-size="200" font-weight="900" letter-spacing="-7">7</text>
+    </g>
+  </g>
+<g transform="translate(1910 400) scale(1)">
+    <defs>
+      <linearGradient id="gradient-sheet-8h" x1="0" y1="0" x2="0.72" y2="1"><stop stop-color="#5f0713"/><stop offset=".26" stop-color="#e98486"/><stop offset=".54" stop-color="#b83845"/><stop offset="1" stop-color="#5f0713"/></linearGradient>
+      <linearGradient id="shine-sheet-8h" x1="0" y1="0" x2="0" y2="1"><stop stop-color="#fff" stop-opacity=".52"/><stop offset=".1" stop-color="#fff" stop-opacity=".16"/><stop offset=".43" stop-color="#fff" stop-opacity="0"/></linearGradient>
+      <radialGradient id="glow-sheet-8h" cx="78%" cy="5%" r="68%"><stop stop-color="#fff" stop-opacity=".35"/><stop offset=".5" stop-color="#fff" stop-opacity="0"/></radialGradient>
+      <filter id="shadow-sheet-8h" x="-20%" y="-20%" width="140%" height="140%"><feDropShadow dx="4" dy="6" stdDeviation="4" flood-color="#000" flood-opacity=".48"/></filter>
+      <filter id="text-shadow-sheet-8h" x="-20%" y="-20%" width="140%" height="150%"><feDropShadow dx="2" dy="3" stdDeviation="1.5" flood-color="#000" flood-opacity=".72"/></filter>
+    </defs>
+    <rect x="0" y="0" width="250" height="360" rx="19" fill="#0a0e14" filter="url(#shadow-sheet-8h)"/>
+    <rect x="5" y="5" width="240" height="350" rx="15" fill="url(#gradient-sheet-8h)" stroke="#05080b" stroke-width="3"/>
+    <rect x="9" y="9" width="232" height="342" rx="12" fill="none" stroke="#fff" stroke-opacity=".25" stroke-width="2"/>
+    <rect x="10" y="10" width="230" height="340" rx="11" fill="url(#glow-sheet-8h)"/>
+    <rect x="10" y="10" width="230" height="340" rx="11" fill="url(#shine-sheet-8h)"/>
+    <g fill="#fff" filter="url(#text-shadow-sheet-8h)">
+      <text x="24" y="70" font-family="Arial Black, Arial, sans-serif" font-size="56" font-weight="900" letter-spacing="-3">8</text>
+      <text x="27" y="119" font-family="Georgia, 'Times New Roman', serif" font-size="45">♥</text>
+      <text x="125" y="298" text-anchor="middle" font-family="Arial Black, Arial, sans-serif" font-size="200" font-weight="900" letter-spacing="-7">8</text>
+    </g>
+  </g>
+<g transform="translate(2180 400) scale(1)">
+    <defs>
+      <linearGradient id="gradient-sheet-9h" x1="0" y1="0" x2="0.72" y2="1"><stop stop-color="#5f0713"/><stop offset=".26" stop-color="#e98486"/><stop offset=".54" stop-color="#b83845"/><stop offset="1" stop-color="#5f0713"/></linearGradient>
+      <linearGradient id="shine-sheet-9h" x1="0" y1="0" x2="0" y2="1"><stop stop-color="#fff" stop-opacity=".52"/><stop offset=".1" stop-color="#fff" stop-opacity=".16"/><stop offset=".43" stop-color="#fff" stop-opacity="0"/></linearGradient>
+      <radialGradient id="glow-sheet-9h" cx="78%" cy="5%" r="68%"><stop stop-color="#fff" stop-opacity=".35"/><stop offset=".5" stop-color="#fff" stop-opacity="0"/></radialGradient>
+      <filter id="shadow-sheet-9h" x="-20%" y="-20%" width="140%" height="140%"><feDropShadow dx="4" dy="6" stdDeviation="4" flood-color="#000" flood-opacity=".48"/></filter>
+      <filter id="text-shadow-sheet-9h" x="-20%" y="-20%" width="140%" height="150%"><feDropShadow dx="2" dy="3" stdDeviation="1.5" flood-color="#000" flood-opacity=".72"/></filter>
+    </defs>
+    <rect x="0" y="0" width="250" height="360" rx="19" fill="#0a0e14" filter="url(#shadow-sheet-9h)"/>
+    <rect x="5" y="5" width="240" height="350" rx="15" fill="url(#gradient-sheet-9h)" stroke="#05080b" stroke-width="3"/>
+    <rect x="9" y="9" width="232" height="342" rx="12" fill="none" stroke="#fff" stroke-opacity=".25" stroke-width="2"/>
+    <rect x="10" y="10" width="230" height="340" rx="11" fill="url(#glow-sheet-9h)"/>
+    <rect x="10" y="10" width="230" height="340" rx="11" fill="url(#shine-sheet-9h)"/>
+    <g fill="#fff" filter="url(#text-shadow-sheet-9h)">
+      <text x="24" y="70" font-family="Arial Black, Arial, sans-serif" font-size="56" font-weight="900" letter-spacing="-3">9</text>
+      <text x="27" y="119" font-family="Georgia, 'Times New Roman', serif" font-size="45">♥</text>
+      <text x="125" y="298" text-anchor="middle" font-family="Arial Black, Arial, sans-serif" font-size="200" font-weight="900" letter-spacing="-7">9</text>
+    </g>
+  </g>
+<g transform="translate(2450 400) scale(1)">
+    <defs>
+      <linearGradient id="gradient-sheet-Th" x1="0" y1="0" x2="0.72" y2="1"><stop stop-color="#5f0713"/><stop offset=".26" stop-color="#e98486"/><stop offset=".54" stop-color="#b83845"/><stop offset="1" stop-color="#5f0713"/></linearGradient>
+      <linearGradient id="shine-sheet-Th" x1="0" y1="0" x2="0" y2="1"><stop stop-color="#fff" stop-opacity=".52"/><stop offset=".1" stop-color="#fff" stop-opacity=".16"/><stop offset=".43" stop-color="#fff" stop-opacity="0"/></linearGradient>
+      <radialGradient id="glow-sheet-Th" cx="78%" cy="5%" r="68%"><stop stop-color="#fff" stop-opacity=".35"/><stop offset=".5" stop-color="#fff" stop-opacity="0"/></radialGradient>
+      <filter id="shadow-sheet-Th" x="-20%" y="-20%" width="140%" height="140%"><feDropShadow dx="4" dy="6" stdDeviation="4" flood-color="#000" flood-opacity=".48"/></filter>
+      <filter id="text-shadow-sheet-Th" x="-20%" y="-20%" width="140%" height="150%"><feDropShadow dx="2" dy="3" stdDeviation="1.5" flood-color="#000" flood-opacity=".72"/></filter>
+    </defs>
+    <rect x="0" y="0" width="250" height="360" rx="19" fill="#0a0e14" filter="url(#shadow-sheet-Th)"/>
+    <rect x="5" y="5" width="240" height="350" rx="15" fill="url(#gradient-sheet-Th)" stroke="#05080b" stroke-width="3"/>
+    <rect x="9" y="9" width="232" height="342" rx="12" fill="none" stroke="#fff" stroke-opacity=".25" stroke-width="2"/>
+    <rect x="10" y="10" width="230" height="340" rx="11" fill="url(#glow-sheet-Th)"/>
+    <rect x="10" y="10" width="230" height="340" rx="11" fill="url(#shine-sheet-Th)"/>
+    <g fill="#fff" filter="url(#text-shadow-sheet-Th)">
+      <text x="24" y="70" font-family="Arial Black, Arial, sans-serif" font-size="56" font-weight="900" letter-spacing="-3">T</text>
+      <text x="27" y="119" font-family="Georgia, 'Times New Roman', serif" font-size="45">♥</text>
+      <text x="125" y="298" text-anchor="middle" font-family="Arial Black, Arial, sans-serif" font-size="200" font-weight="900" letter-spacing="-7">T</text>
+    </g>
+  </g>
+<g transform="translate(2720 400) scale(1)">
+    <defs>
+      <linearGradient id="gradient-sheet-Jh" x1="0" y1="0" x2="0.72" y2="1"><stop stop-color="#5f0713"/><stop offset=".26" stop-color="#e98486"/><stop offset=".54" stop-color="#b83845"/><stop offset="1" stop-color="#5f0713"/></linearGradient>
+      <linearGradient id="shine-sheet-Jh" x1="0" y1="0" x2="0" y2="1"><stop stop-color="#fff" stop-opacity=".52"/><stop offset=".1" stop-color="#fff" stop-opacity=".16"/><stop offset=".43" stop-color="#fff" stop-opacity="0"/></linearGradient>
+      <radialGradient id="glow-sheet-Jh" cx="78%" cy="5%" r="68%"><stop stop-color="#fff" stop-opacity=".35"/><stop offset=".5" stop-color="#fff" stop-opacity="0"/></radialGradient>
+      <filter id="shadow-sheet-Jh" x="-20%" y="-20%" width="140%" height="140%"><feDropShadow dx="4" dy="6" stdDeviation="4" flood-color="#000" flood-opacity=".48"/></filter>
+      <filter id="text-shadow-sheet-Jh" x="-20%" y="-20%" width="140%" height="150%"><feDropShadow dx="2" dy="3" stdDeviation="1.5" flood-color="#000" flood-opacity=".72"/></filter>
+    </defs>
+    <rect x="0" y="0" width="250" height="360" rx="19" fill="#0a0e14" filter="url(#shadow-sheet-Jh)"/>
+    <rect x="5" y="5" width="240" height="350" rx="15" fill="url(#gradient-sheet-Jh)" stroke="#05080b" stroke-width="3"/>
+    <rect x="9" y="9" width="232" height="342" rx="12" fill="none" stroke="#fff" stroke-opacity=".25" stroke-width="2"/>
+    <rect x="10" y="10" width="230" height="340" rx="11" fill="url(#glow-sheet-Jh)"/>
+    <rect x="10" y="10" width="230" height="340" rx="11" fill="url(#shine-sheet-Jh)"/>
+    <g fill="#fff" filter="url(#text-shadow-sheet-Jh)">
+      <text x="24" y="70" font-family="Arial Black, Arial, sans-serif" font-size="56" font-weight="900" letter-spacing="-3">J</text>
+      <text x="27" y="119" font-family="Georgia, 'Times New Roman', serif" font-size="45">♥</text>
+      <text x="125" y="298" text-anchor="middle" font-family="Arial Black, Arial, sans-serif" font-size="200" font-weight="900" letter-spacing="-7">J</text>
+    </g>
+  </g>
+<g transform="translate(2990 400) scale(1)">
+    <defs>
+      <linearGradient id="gradient-sheet-Qh" x1="0" y1="0" x2="0.72" y2="1"><stop stop-color="#5f0713"/><stop offset=".26" stop-color="#e98486"/><stop offset=".54" stop-color="#b83845"/><stop offset="1" stop-color="#5f0713"/></linearGradient>
+      <linearGradient id="shine-sheet-Qh" x1="0" y1="0" x2="0" y2="1"><stop stop-color="#fff" stop-opacity=".52"/><stop offset=".1" stop-color="#fff" stop-opacity=".16"/><stop offset=".43" stop-color="#fff" stop-opacity="0"/></linearGradient>
+      <radialGradient id="glow-sheet-Qh" cx="78%" cy="5%" r="68%"><stop stop-color="#fff" stop-opacity=".35"/><stop offset=".5" stop-color="#fff" stop-opacity="0"/></radialGradient>
+      <filter id="shadow-sheet-Qh" x="-20%" y="-20%" width="140%" height="140%"><feDropShadow dx="4" dy="6" stdDeviation="4" flood-color="#000" flood-opacity=".48"/></filter>
+      <filter id="text-shadow-sheet-Qh" x="-20%" y="-20%" width="140%" height="150%"><feDropShadow dx="2" dy="3" stdDeviation="1.5" flood-color="#000" flood-opacity=".72"/></filter>
+    </defs>
+    <rect x="0" y="0" width="250" height="360" rx="19" fill="#0a0e14" filter="url(#shadow-sheet-Qh)"/>
+    <rect x="5" y="5" width="240" height="350" rx="15" fill="url(#gradient-sheet-Qh)" stroke="#05080b" stroke-width="3"/>
+    <rect x="9" y="9" width="232" height="342" rx="12" fill="none" stroke="#fff" stroke-opacity=".25" stroke-width="2"/>
+    <rect x="10" y="10" width="230" height="340" rx="11" fill="url(#glow-sheet-Qh)"/>
+    <rect x="10" y="10" width="230" height="340" rx="11" fill="url(#shine-sheet-Qh)"/>
+    <g fill="#fff" filter="url(#text-shadow-sheet-Qh)">
+      <text x="24" y="70" font-family="Arial Black, Arial, sans-serif" font-size="56" font-weight="900" letter-spacing="-3">Q</text>
+      <text x="27" y="119" font-family="Georgia, 'Times New Roman', serif" font-size="45">♥</text>
+      <text x="125" y="298" text-anchor="middle" font-family="Arial Black, Arial, sans-serif" font-size="200" font-weight="900" letter-spacing="-7">Q</text>
+    </g>
+  </g>
+<g transform="translate(3260 400) scale(1)">
+    <defs>
+      <linearGradient id="gradient-sheet-Kh" x1="0" y1="0" x2="0.72" y2="1"><stop stop-color="#5f0713"/><stop offset=".26" stop-color="#e98486"/><stop offset=".54" stop-color="#b83845"/><stop offset="1" stop-color="#5f0713"/></linearGradient>
+      <linearGradient id="shine-sheet-Kh" x1="0" y1="0" x2="0" y2="1"><stop stop-color="#fff" stop-opacity=".52"/><stop offset=".1" stop-color="#fff" stop-opacity=".16"/><stop offset=".43" stop-color="#fff" stop-opacity="0"/></linearGradient>
+      <radialGradient id="glow-sheet-Kh" cx="78%" cy="5%" r="68%"><stop stop-color="#fff" stop-opacity=".35"/><stop offset=".5" stop-color="#fff" stop-opacity="0"/></radialGradient>
+      <filter id="shadow-sheet-Kh" x="-20%" y="-20%" width="140%" height="140%"><feDropShadow dx="4" dy="6" stdDeviation="4" flood-color="#000" flood-opacity=".48"/></filter>
+      <filter id="text-shadow-sheet-Kh" x="-20%" y="-20%" width="140%" height="150%"><feDropShadow dx="2" dy="3" stdDeviation="1.5" flood-color="#000" flood-opacity=".72"/></filter>
+    </defs>
+    <rect x="0" y="0" width="250" height="360" rx="19" fill="#0a0e14" filter="url(#shadow-sheet-Kh)"/>
+    <rect x="5" y="5" width="240" height="350" rx="15" fill="url(#gradient-sheet-Kh)" stroke="#05080b" stroke-width="3"/>
+    <rect x="9" y="9" width="232" height="342" rx="12" fill="none" stroke="#fff" stroke-opacity=".25" stroke-width="2"/>
+    <rect x="10" y="10" width="230" height="340" rx="11" fill="url(#glow-sheet-Kh)"/>
+    <rect x="10" y="10" width="230" height="340" rx="11" fill="url(#shine-sheet-Kh)"/>
+    <g fill="#fff" filter="url(#text-shadow-sheet-Kh)">
+      <text x="24" y="70" font-family="Arial Black, Arial, sans-serif" font-size="56" font-weight="900" letter-spacing="-3">K</text>
+      <text x="27" y="119" font-family="Georgia, 'Times New Roman', serif" font-size="45">♥</text>
+      <text x="125" y="298" text-anchor="middle" font-family="Arial Black, Arial, sans-serif" font-size="200" font-weight="900" letter-spacing="-7">K</text>
+    </g>
+  </g>
+<g transform="translate(20 780) scale(1)">
+    <defs>
+      <linearGradient id="gradient-sheet-Ad" x1="0" y1="0" x2="0.72" y2="1"><stop stop-color="#06436f"/><stop offset=".26" stop-color="#67b6de"/><stop offset=".54" stop-color="#1d79ad"/><stop offset="1" stop-color="#06436f"/></linearGradient>
+      <linearGradient id="shine-sheet-Ad" x1="0" y1="0" x2="0" y2="1"><stop stop-color="#fff" stop-opacity=".52"/><stop offset=".1" stop-color="#fff" stop-opacity=".16"/><stop offset=".43" stop-color="#fff" stop-opacity="0"/></linearGradient>
+      <radialGradient id="glow-sheet-Ad" cx="78%" cy="5%" r="68%"><stop stop-color="#fff" stop-opacity=".35"/><stop offset=".5" stop-color="#fff" stop-opacity="0"/></radialGradient>
+      <filter id="shadow-sheet-Ad" x="-20%" y="-20%" width="140%" height="140%"><feDropShadow dx="4" dy="6" stdDeviation="4" flood-color="#000" flood-opacity=".48"/></filter>
+      <filter id="text-shadow-sheet-Ad" x="-20%" y="-20%" width="140%" height="150%"><feDropShadow dx="2" dy="3" stdDeviation="1.5" flood-color="#000" flood-opacity=".72"/></filter>
+    </defs>
+    <rect x="0" y="0" width="250" height="360" rx="19" fill="#0a0e14" filter="url(#shadow-sheet-Ad)"/>
+    <rect x="5" y="5" width="240" height="350" rx="15" fill="url(#gradient-sheet-Ad)" stroke="#05080b" stroke-width="3"/>
+    <rect x="9" y="9" width="232" height="342" rx="12" fill="none" stroke="#fff" stroke-opacity=".25" stroke-width="2"/>
+    <rect x="10" y="10" width="230" height="340" rx="11" fill="url(#glow-sheet-Ad)"/>
+    <rect x="10" y="10" width="230" height="340" rx="11" fill="url(#shine-sheet-Ad)"/>
+    <g fill="#fff" filter="url(#text-shadow-sheet-Ad)">
+      <text x="24" y="70" font-family="Arial Black, Arial, sans-serif" font-size="56" font-weight="900" letter-spacing="-3">A</text>
+      <text x="27" y="119" font-family="Georgia, 'Times New Roman', serif" font-size="45">♦</text>
+      <text x="125" y="298" text-anchor="middle" font-family="Arial Black, Arial, sans-serif" font-size="200" font-weight="900" letter-spacing="-7">A</text>
+    </g>
+  </g>
+<g transform="translate(290 780) scale(1)">
+    <defs>
+      <linearGradient id="gradient-sheet-2d" x1="0" y1="0" x2="0.72" y2="1"><stop stop-color="#06436f"/><stop offset=".26" stop-color="#67b6de"/><stop offset=".54" stop-color="#1d79ad"/><stop offset="1" stop-color="#06436f"/></linearGradient>
+      <linearGradient id="shine-sheet-2d" x1="0" y1="0" x2="0" y2="1"><stop stop-color="#fff" stop-opacity=".52"/><stop offset=".1" stop-color="#fff" stop-opacity=".16"/><stop offset=".43" stop-color="#fff" stop-opacity="0"/></linearGradient>
+      <radialGradient id="glow-sheet-2d" cx="78%" cy="5%" r="68%"><stop stop-color="#fff" stop-opacity=".35"/><stop offset=".5" stop-color="#fff" stop-opacity="0"/></radialGradient>
+      <filter id="shadow-sheet-2d" x="-20%" y="-20%" width="140%" height="140%"><feDropShadow dx="4" dy="6" stdDeviation="4" flood-color="#000" flood-opacity=".48"/></filter>
+      <filter id="text-shadow-sheet-2d" x="-20%" y="-20%" width="140%" height="150%"><feDropShadow dx="2" dy="3" stdDeviation="1.5" flood-color="#000" flood-opacity=".72"/></filter>
+    </defs>
+    <rect x="0" y="0" width="250" height="360" rx="19" fill="#0a0e14" filter="url(#shadow-sheet-2d)"/>
+    <rect x="5" y="5" width="240" height="350" rx="15" fill="url(#gradient-sheet-2d)" stroke="#05080b" stroke-width="3"/>
+    <rect x="9" y="9" width="232" height="342" rx="12" fill="none" stroke="#fff" stroke-opacity=".25" stroke-width="2"/>
+    <rect x="10" y="10" width="230" height="340" rx="11" fill="url(#glow-sheet-2d)"/>
+    <rect x="10" y="10" width="230" height="340" rx="11" fill="url(#shine-sheet-2d)"/>
+    <g fill="#fff" filter="url(#text-shadow-sheet-2d)">
+      <text x="24" y="70" font-family="Arial Black, Arial, sans-serif" font-size="56" font-weight="900" letter-spacing="-3">2</text>
+      <text x="27" y="119" font-family="Georgia, 'Times New Roman', serif" font-size="45">♦</text>
+      <text x="125" y="298" text-anchor="middle" font-family="Arial Black, Arial, sans-serif" font-size="200" font-weight="900" letter-spacing="-7">2</text>
+    </g>
+  </g>
+<g transform="translate(560 780) scale(1)">
+    <defs>
+      <linearGradient id="gradient-sheet-3d" x1="0" y1="0" x2="0.72" y2="1"><stop stop-color="#06436f"/><stop offset=".26" stop-color="#67b6de"/><stop offset=".54" stop-color="#1d79ad"/><stop offset="1" stop-color="#06436f"/></linearGradient>
+      <linearGradient id="shine-sheet-3d" x1="0" y1="0" x2="0" y2="1"><stop stop-color="#fff" stop-opacity=".52"/><stop offset=".1" stop-color="#fff" stop-opacity=".16"/><stop offset=".43" stop-color="#fff" stop-opacity="0"/></linearGradient>
+      <radialGradient id="glow-sheet-3d" cx="78%" cy="5%" r="68%"><stop stop-color="#fff" stop-opacity=".35"/><stop offset=".5" stop-color="#fff" stop-opacity="0"/></radialGradient>
+      <filter id="shadow-sheet-3d" x="-20%" y="-20%" width="140%" height="140%"><feDropShadow dx="4" dy="6" stdDeviation="4" flood-color="#000" flood-opacity=".48"/></filter>
+      <filter id="text-shadow-sheet-3d" x="-20%" y="-20%" width="140%" height="150%"><feDropShadow dx="2" dy="3" stdDeviation="1.5" flood-color="#000" flood-opacity=".72"/></filter>
+    </defs>
+    <rect x="0" y="0" width="250" height="360" rx="19" fill="#0a0e14" filter="url(#shadow-sheet-3d)"/>
+    <rect x="5" y="5" width="240" height="350" rx="15" fill="url(#gradient-sheet-3d)" stroke="#05080b" stroke-width="3"/>
+    <rect x="9" y="9" width="232" height="342" rx="12" fill="none" stroke="#fff" stroke-opacity=".25" stroke-width="2"/>
+    <rect x="10" y="10" width="230" height="340" rx="11" fill="url(#glow-sheet-3d)"/>
+    <rect x="10" y="10" width="230" height="340" rx="11" fill="url(#shine-sheet-3d)"/>
+    <g fill="#fff" filter="url(#text-shadow-sheet-3d)">
+      <text x="24" y="70" font-family="Arial Black, Arial, sans-serif" font-size="56" font-weight="900" letter-spacing="-3">3</text>
+      <text x="27" y="119" font-family="Georgia, 'Times New Roman', serif" font-size="45">♦</text>
+      <text x="125" y="298" text-anchor="middle" font-family="Arial Black, Arial, sans-serif" font-size="200" font-weight="900" letter-spacing="-7">3</text>
+    </g>
+  </g>
+<g transform="translate(830 780) scale(1)">
+    <defs>
+      <linearGradient id="gradient-sheet-4d" x1="0" y1="0" x2="0.72" y2="1"><stop stop-color="#06436f"/><stop offset=".26" stop-color="#67b6de"/><stop offset=".54" stop-color="#1d79ad"/><stop offset="1" stop-color="#06436f"/></linearGradient>
+      <linearGradient id="shine-sheet-4d" x1="0" y1="0" x2="0" y2="1"><stop stop-color="#fff" stop-opacity=".52"/><stop offset=".1" stop-color="#fff" stop-opacity=".16"/><stop offset=".43" stop-color="#fff" stop-opacity="0"/></linearGradient>
+      <radialGradient id="glow-sheet-4d" cx="78%" cy="5%" r="68%"><stop stop-color="#fff" stop-opacity=".35"/><stop offset=".5" stop-color="#fff" stop-opacity="0"/></radialGradient>
+      <filter id="shadow-sheet-4d" x="-20%" y="-20%" width="140%" height="140%"><feDropShadow dx="4" dy="6" stdDeviation="4" flood-color="#000" flood-opacity=".48"/></filter>
+      <filter id="text-shadow-sheet-4d" x="-20%" y="-20%" width="140%" height="150%"><feDropShadow dx="2" dy="3" stdDeviation="1.5" flood-color="#000" flood-opacity=".72"/></filter>
+    </defs>
+    <rect x="0" y="0" width="250" height="360" rx="19" fill="#0a0e14" filter="url(#shadow-sheet-4d)"/>
+    <rect x="5" y="5" width="240" height="350" rx="15" fill="url(#gradient-sheet-4d)" stroke="#05080b" stroke-width="3"/>
+    <rect x="9" y="9" width="232" height="342" rx="12" fill="none" stroke="#fff" stroke-opacity=".25" stroke-width="2"/>
+    <rect x="10" y="10" width="230" height="340" rx="11" fill="url(#glow-sheet-4d)"/>
+    <rect x="10" y="10" width="230" height="340" rx="11" fill="url(#shine-sheet-4d)"/>
+    <g fill="#fff" filter="url(#text-shadow-sheet-4d)">
+      <text x="24" y="70" font-family="Arial Black, Arial, sans-serif" font-size="56" font-weight="900" letter-spacing="-3">4</text>
+      <text x="27" y="119" font-family="Georgia, 'Times New Roman', serif" font-size="45">♦</text>
+      <text x="125" y="298" text-anchor="middle" font-family="Arial Black, Arial, sans-serif" font-size="200" font-weight="900" letter-spacing="-7">4</text>
+    </g>
+  </g>
+<g transform="translate(1100 780) scale(1)">
+    <defs>
+      <linearGradient id="gradient-sheet-5d" x1="0" y1="0" x2="0.72" y2="1"><stop stop-color="#06436f"/><stop offset=".26" stop-color="#67b6de"/><stop offset=".54" stop-color="#1d79ad"/><stop offset="1" stop-color="#06436f"/></linearGradient>
+      <linearGradient id="shine-sheet-5d" x1="0" y1="0" x2="0" y2="1"><stop stop-color="#fff" stop-opacity=".52"/><stop offset=".1" stop-color="#fff" stop-opacity=".16"/><stop offset=".43" stop-color="#fff" stop-opacity="0"/></linearGradient>
+      <radialGradient id="glow-sheet-5d" cx="78%" cy="5%" r="68%"><stop stop-color="#fff" stop-opacity=".35"/><stop offset=".5" stop-color="#fff" stop-opacity="0"/></radialGradient>
+      <filter id="shadow-sheet-5d" x="-20%" y="-20%" width="140%" height="140%"><feDropShadow dx="4" dy="6" stdDeviation="4" flood-color="#000" flood-opacity=".48"/></filter>
+      <filter id="text-shadow-sheet-5d" x="-20%" y="-20%" width="140%" height="150%"><feDropShadow dx="2" dy="3" stdDeviation="1.5" flood-color="#000" flood-opacity=".72"/></filter>
+    </defs>
+    <rect x="0" y="0" width="250" height="360" rx="19" fill="#0a0e14" filter="url(#shadow-sheet-5d)"/>
+    <rect x="5" y="5" width="240" height="350" rx="15" fill="url(#gradient-sheet-5d)" stroke="#05080b" stroke-width="3"/>
+    <rect x="9" y="9" width="232" height="342" rx="12" fill="none" stroke="#fff" stroke-opacity=".25" stroke-width="2"/>
+    <rect x="10" y="10" width="230" height="340" rx="11" fill="url(#glow-sheet-5d)"/>
+    <rect x="10" y="10" width="230" height="340" rx="11" fill="url(#shine-sheet-5d)"/>
+    <g fill="#fff" filter="url(#text-shadow-sheet-5d)">
+      <text x="24" y="70" font-family="Arial Black, Arial, sans-serif" font-size="56" font-weight="900" letter-spacing="-3">5</text>
+      <text x="27" y="119" font-family="Georgia, 'Times New Roman', serif" font-size="45">♦</text>
+      <text x="125" y="298" text-anchor="middle" font-family="Arial Black, Arial, sans-serif" font-size="200" font-weight="900" letter-spacing="-7">5</text>
+    </g>
+  </g>
+<g transform="translate(1370 780) scale(1)">
+    <defs>
+      <linearGradient id="gradient-sheet-6d" x1="0" y1="0" x2="0.72" y2="1"><stop stop-color="#06436f"/><stop offset=".26" stop-color="#67b6de"/><stop offset=".54" stop-color="#1d79ad"/><stop offset="1" stop-color="#06436f"/></linearGradient>
+      <linearGradient id="shine-sheet-6d" x1="0" y1="0" x2="0" y2="1"><stop stop-color="#fff" stop-opacity=".52"/><stop offset=".1" stop-color="#fff" stop-opacity=".16"/><stop offset=".43" stop-color="#fff" stop-opacity="0"/></linearGradient>
+      <radialGradient id="glow-sheet-6d" cx="78%" cy="5%" r="68%"><stop stop-color="#fff" stop-opacity=".35"/><stop offset=".5" stop-color="#fff" stop-opacity="0"/></radialGradient>
+      <filter id="shadow-sheet-6d" x="-20%" y="-20%" width="140%" height="140%"><feDropShadow dx="4" dy="6" stdDeviation="4" flood-color="#000" flood-opacity=".48"/></filter>
+      <filter id="text-shadow-sheet-6d" x="-20%" y="-20%" width="140%" height="150%"><feDropShadow dx="2" dy="3" stdDeviation="1.5" flood-color="#000" flood-opacity=".72"/></filter>
+    </defs>
+    <rect x="0" y="0" width="250" height="360" rx="19" fill="#0a0e14" filter="url(#shadow-sheet-6d)"/>
+    <rect x="5" y="5" width="240" height="350" rx="15" fill="url(#gradient-sheet-6d)" stroke="#05080b" stroke-width="3"/>
+    <rect x="9" y="9" width="232" height="342" rx="12" fill="none" stroke="#fff" stroke-opacity=".25" stroke-width="2"/>
+    <rect x="10" y="10" width="230" height="340" rx="11" fill="url(#glow-sheet-6d)"/>
+    <rect x="10" y="10" width="230" height="340" rx="11" fill="url(#shine-sheet-6d)"/>
+    <g fill="#fff" filter="url(#text-shadow-sheet-6d)">
+      <text x="24" y="70" font-family="Arial Black, Arial, sans-serif" font-size="56" font-weight="900" letter-spacing="-3">6</text>
+      <text x="27" y="119" font-family="Georgia, 'Times New Roman', serif" font-size="45">♦</text>
+      <text x="125" y="298" text-anchor="middle" font-family="Arial Black, Arial, sans-serif" font-size="200" font-weight="900" letter-spacing="-7">6</text>
+    </g>
+  </g>
+<g transform="translate(1640 780) scale(1)">
+    <defs>
+      <linearGradient id="gradient-sheet-7d" x1="0" y1="0" x2="0.72" y2="1"><stop stop-color="#06436f"/><stop offset=".26" stop-color="#67b6de"/><stop offset=".54" stop-color="#1d79ad"/><stop offset="1" stop-color="#06436f"/></linearGradient>
+      <linearGradient id="shine-sheet-7d" x1="0" y1="0" x2="0" y2="1"><stop stop-color="#fff" stop-opacity=".52"/><stop offset=".1" stop-color="#fff" stop-opacity=".16"/><stop offset=".43" stop-color="#fff" stop-opacity="0"/></linearGradient>
+      <radialGradient id="glow-sheet-7d" cx="78%" cy="5%" r="68%"><stop stop-color="#fff" stop-opacity=".35"/><stop offset=".5" stop-color="#fff" stop-opacity="0"/></radialGradient>
+      <filter id="shadow-sheet-7d" x="-20%" y="-20%" width="140%" height="140%"><feDropShadow dx="4" dy="6" stdDeviation="4" flood-color="#000" flood-opacity=".48"/></filter>
+      <filter id="text-shadow-sheet-7d" x="-20%" y="-20%" width="140%" height="150%"><feDropShadow dx="2" dy="3" stdDeviation="1.5" flood-color="#000" flood-opacity=".72"/></filter>
+    </defs>
+    <rect x="0" y="0" width="250" height="360" rx="19" fill="#0a0e14" filter="url(#shadow-sheet-7d)"/>
+    <rect x="5" y="5" width="240" height="350" rx="15" fill="url(#gradient-sheet-7d)" stroke="#05080b" stroke-width="3"/>
+    <rect x="9" y="9" width="232" height="342" rx="12" fill="none" stroke="#fff" stroke-opacity=".25" stroke-width="2"/>
+    <rect x="10" y="10" width="230" height="340" rx="11" fill="url(#glow-sheet-7d)"/>
+    <rect x="10" y="10" width="230" height="340" rx="11" fill="url(#shine-sheet-7d)"/>
+    <g fill="#fff" filter="url(#text-shadow-sheet-7d)">
+      <text x="24" y="70" font-family="Arial Black, Arial, sans-serif" font-size="56" font-weight="900" letter-spacing="-3">7</text>
+      <text x="27" y="119" font-family="Georgia, 'Times New Roman', serif" font-size="45">♦</text>
+      <text x="125" y="298" text-anchor="middle" font-family="Arial Black, Arial, sans-serif" font-size="200" font-weight="900" letter-spacing="-7">7</text>
+    </g>
+  </g>
+<g transform="translate(1910 780) scale(1)">
+    <defs>
+      <linearGradient id="gradient-sheet-8d" x1="0" y1="0" x2="0.72" y2="1"><stop stop-color="#06436f"/><stop offset=".26" stop-color="#67b6de"/><stop offset=".54" stop-color="#1d79ad"/><stop offset="1" stop-color="#06436f"/></linearGradient>
+      <linearGradient id="shine-sheet-8d" x1="0" y1="0" x2="0" y2="1"><stop stop-color="#fff" stop-opacity=".52"/><stop offset=".1" stop-color="#fff" stop-opacity=".16"/><stop offset=".43" stop-color="#fff" stop-opacity="0"/></linearGradient>
+      <radialGradient id="glow-sheet-8d" cx="78%" cy="5%" r="68%"><stop stop-color="#fff" stop-opacity=".35"/><stop offset=".5" stop-color="#fff" stop-opacity="0"/></radialGradient>
+      <filter id="shadow-sheet-8d" x="-20%" y="-20%" width="140%" height="140%"><feDropShadow dx="4" dy="6" stdDeviation="4" flood-color="#000" flood-opacity=".48"/></filter>
+      <filter id="text-shadow-sheet-8d" x="-20%" y="-20%" width="140%" height="150%"><feDropShadow dx="2" dy="3" stdDeviation="1.5" flood-color="#000" flood-opacity=".72"/></filter>
+    </defs>
+    <rect x="0" y="0" width="250" height="360" rx="19" fill="#0a0e14" filter="url(#shadow-sheet-8d)"/>
+    <rect x="5" y="5" width="240" height="350" rx="15" fill="url(#gradient-sheet-8d)" stroke="#05080b" stroke-width="3"/>
+    <rect x="9" y="9" width="232" height="342" rx="12" fill="none" stroke="#fff" stroke-opacity=".25" stroke-width="2"/>
+    <rect x="10" y="10" width="230" height="340" rx="11" fill="url(#glow-sheet-8d)"/>
+    <rect x="10" y="10" width="230" height="340" rx="11" fill="url(#shine-sheet-8d)"/>
+    <g fill="#fff" filter="url(#text-shadow-sheet-8d)">
+      <text x="24" y="70" font-family="Arial Black, Arial, sans-serif" font-size="56" font-weight="900" letter-spacing="-3">8</text>
+      <text x="27" y="119" font-family="Georgia, 'Times New Roman', serif" font-size="45">♦</text>
+      <text x="125" y="298" text-anchor="middle" font-family="Arial Black, Arial, sans-serif" font-size="200" font-weight="900" letter-spacing="-7">8</text>
+    </g>
+  </g>
+<g transform="translate(2180 780) scale(1)">
+    <defs>
+      <linearGradient id="gradient-sheet-9d" x1="0" y1="0" x2="0.72" y2="1"><stop stop-color="#06436f"/><stop offset=".26" stop-color="#67b6de"/><stop offset=".54" stop-color="#1d79ad"/><stop offset="1" stop-color="#06436f"/></linearGradient>
+      <linearGradient id="shine-sheet-9d" x1="0" y1="0" x2="0" y2="1"><stop stop-color="#fff" stop-opacity=".52"/><stop offset=".1" stop-color="#fff" stop-opacity=".16"/><stop offset=".43" stop-color="#fff" stop-opacity="0"/></linearGradient>
+      <radialGradient id="glow-sheet-9d" cx="78%" cy="5%" r="68%"><stop stop-color="#fff" stop-opacity=".35"/><stop offset=".5" stop-color="#fff" stop-opacity="0"/></radialGradient>
+      <filter id="shadow-sheet-9d" x="-20%" y="-20%" width="140%" height="140%"><feDropShadow dx="4" dy="6" stdDeviation="4" flood-color="#000" flood-opacity=".48"/></filter>
+      <filter id="text-shadow-sheet-9d" x="-20%" y="-20%" width="140%" height="150%"><feDropShadow dx="2" dy="3" stdDeviation="1.5" flood-color="#000" flood-opacity=".72"/></filter>
+    </defs>
+    <rect x="0" y="0" width="250" height="360" rx="19" fill="#0a0e14" filter="url(#shadow-sheet-9d)"/>
+    <rect x="5" y="5" width="240" height="350" rx="15" fill="url(#gradient-sheet-9d)" stroke="#05080b" stroke-width="3"/>
+    <rect x="9" y="9" width="232" height="342" rx="12" fill="none" stroke="#fff" stroke-opacity=".25" stroke-width="2"/>
+    <rect x="10" y="10" width="230" height="340" rx="11" fill="url(#glow-sheet-9d)"/>
+    <rect x="10" y="10" width="230" height="340" rx="11" fill="url(#shine-sheet-9d)"/>
+    <g fill="#fff" filter="url(#text-shadow-sheet-9d)">
+      <text x="24" y="70" font-family="Arial Black, Arial, sans-serif" font-size="56" font-weight="900" letter-spacing="-3">9</text>
+      <text x="27" y="119" font-family="Georgia, 'Times New Roman', serif" font-size="45">♦</text>
+      <text x="125" y="298" text-anchor="middle" font-family="Arial Black, Arial, sans-serif" font-size="200" font-weight="900" letter-spacing="-7">9</text>
+    </g>
+  </g>
+<g transform="translate(2450 780) scale(1)">
+    <defs>
+      <linearGradient id="gradient-sheet-Td" x1="0" y1="0" x2="0.72" y2="1"><stop stop-color="#06436f"/><stop offset=".26" stop-color="#67b6de"/><stop offset=".54" stop-color="#1d79ad"/><stop offset="1" stop-color="#06436f"/></linearGradient>
+      <linearGradient id="shine-sheet-Td" x1="0" y1="0" x2="0" y2="1"><stop stop-color="#fff" stop-opacity=".52"/><stop offset=".1" stop-color="#fff" stop-opacity=".16"/><stop offset=".43" stop-color="#fff" stop-opacity="0"/></linearGradient>
+      <radialGradient id="glow-sheet-Td" cx="78%" cy="5%" r="68%"><stop stop-color="#fff" stop-opacity=".35"/><stop offset=".5" stop-color="#fff" stop-opacity="0"/></radialGradient>
+      <filter id="shadow-sheet-Td" x="-20%" y="-20%" width="140%" height="140%"><feDropShadow dx="4" dy="6" stdDeviation="4" flood-color="#000" flood-opacity=".48"/></filter>
+      <filter id="text-shadow-sheet-Td" x="-20%" y="-20%" width="140%" height="150%"><feDropShadow dx="2" dy="3" stdDeviation="1.5" flood-color="#000" flood-opacity=".72"/></filter>
+    </defs>
+    <rect x="0" y="0" width="250" height="360" rx="19" fill="#0a0e14" filter="url(#shadow-sheet-Td)"/>
+    <rect x="5" y="5" width="240" height="350" rx="15" fill="url(#gradient-sheet-Td)" stroke="#05080b" stroke-width="3"/>
+    <rect x="9" y="9" width="232" height="342" rx="12" fill="none" stroke="#fff" stroke-opacity=".25" stroke-width="2"/>
+    <rect x="10" y="10" width="230" height="340" rx="11" fill="url(#glow-sheet-Td)"/>
+    <rect x="10" y="10" width="230" height="340" rx="11" fill="url(#shine-sheet-Td)"/>
+    <g fill="#fff" filter="url(#text-shadow-sheet-Td)">
+      <text x="24" y="70" font-family="Arial Black, Arial, sans-serif" font-size="56" font-weight="900" letter-spacing="-3">T</text>
+      <text x="27" y="119" font-family="Georgia, 'Times New Roman', serif" font-size="45">♦</text>
+      <text x="125" y="298" text-anchor="middle" font-family="Arial Black, Arial, sans-serif" font-size="200" font-weight="900" letter-spacing="-7">T</text>
+    </g>
+  </g>
+<g transform="translate(2720 780) scale(1)">
+    <defs>
+      <linearGradient id="gradient-sheet-Jd" x1="0" y1="0" x2="0.72" y2="1"><stop stop-color="#06436f"/><stop offset=".26" stop-color="#67b6de"/><stop offset=".54" stop-color="#1d79ad"/><stop offset="1" stop-color="#06436f"/></linearGradient>
+      <linearGradient id="shine-sheet-Jd" x1="0" y1="0" x2="0" y2="1"><stop stop-color="#fff" stop-opacity=".52"/><stop offset=".1" stop-color="#fff" stop-opacity=".16"/><stop offset=".43" stop-color="#fff" stop-opacity="0"/></linearGradient>
+      <radialGradient id="glow-sheet-Jd" cx="78%" cy="5%" r="68%"><stop stop-color="#fff" stop-opacity=".35"/><stop offset=".5" stop-color="#fff" stop-opacity="0"/></radialGradient>
+      <filter id="shadow-sheet-Jd" x="-20%" y="-20%" width="140%" height="140%"><feDropShadow dx="4" dy="6" stdDeviation="4" flood-color="#000" flood-opacity=".48"/></filter>
+      <filter id="text-shadow-sheet-Jd" x="-20%" y="-20%" width="140%" height="150%"><feDropShadow dx="2" dy="3" stdDeviation="1.5" flood-color="#000" flood-opacity=".72"/></filter>
+    </defs>
+    <rect x="0" y="0" width="250" height="360" rx="19" fill="#0a0e14" filter="url(#shadow-sheet-Jd)"/>
+    <rect x="5" y="5" width="240" height="350" rx="15" fill="url(#gradient-sheet-Jd)" stroke="#05080b" stroke-width="3"/>
+    <rect x="9" y="9" width="232" height="342" rx="12" fill="none" stroke="#fff" stroke-opacity=".25" stroke-width="2"/>
+    <rect x="10" y="10" width="230" height="340" rx="11" fill="url(#glow-sheet-Jd)"/>
+    <rect x="10" y="10" width="230" height="340" rx="11" fill="url(#shine-sheet-Jd)"/>
+    <g fill="#fff" filter="url(#text-shadow-sheet-Jd)">
+      <text x="24" y="70" font-family="Arial Black, Arial, sans-serif" font-size="56" font-weight="900" letter-spacing="-3">J</text>
+      <text x="27" y="119" font-family="Georgia, 'Times New Roman', serif" font-size="45">♦</text>
+      <text x="125" y="298" text-anchor="middle" font-family="Arial Black, Arial, sans-serif" font-size="200" font-weight="900" letter-spacing="-7">J</text>
+    </g>
+  </g>
+<g transform="translate(2990 780) scale(1)">
+    <defs>
+      <linearGradient id="gradient-sheet-Qd" x1="0" y1="0" x2="0.72" y2="1"><stop stop-color="#06436f"/><stop offset=".26" stop-color="#67b6de"/><stop offset=".54" stop-color="#1d79ad"/><stop offset="1" stop-color="#06436f"/></linearGradient>
+      <linearGradient id="shine-sheet-Qd" x1="0" y1="0" x2="0" y2="1"><stop stop-color="#fff" stop-opacity=".52"/><stop offset=".1" stop-color="#fff" stop-opacity=".16"/><stop offset=".43" stop-color="#fff" stop-opacity="0"/></linearGradient>
+      <radialGradient id="glow-sheet-Qd" cx="78%" cy="5%" r="68%"><stop stop-color="#fff" stop-opacity=".35"/><stop offset=".5" stop-color="#fff" stop-opacity="0"/></radialGradient>
+      <filter id="shadow-sheet-Qd" x="-20%" y="-20%" width="140%" height="140%"><feDropShadow dx="4" dy="6" stdDeviation="4" flood-color="#000" flood-opacity=".48"/></filter>
+      <filter id="text-shadow-sheet-Qd" x="-20%" y="-20%" width="140%" height="150%"><feDropShadow dx="2" dy="3" stdDeviation="1.5" flood-color="#000" flood-opacity=".72"/></filter>
+    </defs>
+    <rect x="0" y="0" width="250" height="360" rx="19" fill="#0a0e14" filter="url(#shadow-sheet-Qd)"/>
+    <rect x="5" y="5" width="240" height="350" rx="15" fill="url(#gradient-sheet-Qd)" stroke="#05080b" stroke-width="3"/>
+    <rect x="9" y="9" width="232" height="342" rx="12" fill="none" stroke="#fff" stroke-opacity=".25" stroke-width="2"/>
+    <rect x="10" y="10" width="230" height="340" rx="11" fill="url(#glow-sheet-Qd)"/>
+    <rect x="10" y="10" width="230" height="340" rx="11" fill="url(#shine-sheet-Qd)"/>
+    <g fill="#fff" filter="url(#text-shadow-sheet-Qd)">
+      <text x="24" y="70" font-family="Arial Black, Arial, sans-serif" font-size="56" font-weight="900" letter-spacing="-3">Q</text>
+      <text x="27" y="119" font-family="Georgia, 'Times New Roman', serif" font-size="45">♦</text>
+      <text x="125" y="298" text-anchor="middle" font-family="Arial Black, Arial, sans-serif" font-size="200" font-weight="900" letter-spacing="-7">Q</text>
+    </g>
+  </g>
+<g transform="translate(3260 780) scale(1)">
+    <defs>
+      <linearGradient id="gradient-sheet-Kd" x1="0" y1="0" x2="0.72" y2="1"><stop stop-color="#06436f"/><stop offset=".26" stop-color="#67b6de"/><stop offset=".54" stop-color="#1d79ad"/><stop offset="1" stop-color="#06436f"/></linearGradient>
+      <linearGradient id="shine-sheet-Kd" x1="0" y1="0" x2="0" y2="1"><stop stop-color="#fff" stop-opacity=".52"/><stop offset=".1" stop-color="#fff" stop-opacity=".16"/><stop offset=".43" stop-color="#fff" stop-opacity="0"/></linearGradient>
+      <radialGradient id="glow-sheet-Kd" cx="78%" cy="5%" r="68%"><stop stop-color="#fff" stop-opacity=".35"/><stop offset=".5" stop-color="#fff" stop-opacity="0"/></radialGradient>
+      <filter id="shadow-sheet-Kd" x="-20%" y="-20%" width="140%" height="140%"><feDropShadow dx="4" dy="6" stdDeviation="4" flood-color="#000" flood-opacity=".48"/></filter>
+      <filter id="text-shadow-sheet-Kd" x="-20%" y="-20%" width="140%" height="150%"><feDropShadow dx="2" dy="3" stdDeviation="1.5" flood-color="#000" flood-opacity=".72"/></filter>
+    </defs>
+    <rect x="0" y="0" width="250" height="360" rx="19" fill="#0a0e14" filter="url(#shadow-sheet-Kd)"/>
+    <rect x="5" y="5" width="240" height="350" rx="15" fill="url(#gradient-sheet-Kd)" stroke="#05080b" stroke-width="3"/>
+    <rect x="9" y="9" width="232" height="342" rx="12" fill="none" stroke="#fff" stroke-opacity=".25" stroke-width="2"/>
+    <rect x="10" y="10" width="230" height="340" rx="11" fill="url(#glow-sheet-Kd)"/>
+    <rect x="10" y="10" width="230" height="340" rx="11" fill="url(#shine-sheet-Kd)"/>
+    <g fill="#fff" filter="url(#text-shadow-sheet-Kd)">
+      <text x="24" y="70" font-family="Arial Black, Arial, sans-serif" font-size="56" font-weight="900" letter-spacing="-3">K</text>
+      <text x="27" y="119" font-family="Georgia, 'Times New Roman', serif" font-size="45">♦</text>
+      <text x="125" y="298" text-anchor="middle" font-family="Arial Black, Arial, sans-serif" font-size="200" font-weight="900" letter-spacing="-7">K</text>
+    </g>
+  </g>
+<g transform="translate(20 1160) scale(1)">
+    <defs>
+      <linearGradient id="gradient-sheet-Ac" x1="0" y1="0" x2="0.72" y2="1"><stop stop-color="#075d24"/><stop offset=".26" stop-color="#70c56d"/><stop offset=".54" stop-color="#29923c"/><stop offset="1" stop-color="#075d24"/></linearGradient>
+      <linearGradient id="shine-sheet-Ac" x1="0" y1="0" x2="0" y2="1"><stop stop-color="#fff" stop-opacity=".52"/><stop offset=".1" stop-color="#fff" stop-opacity=".16"/><stop offset=".43" stop-color="#fff" stop-opacity="0"/></linearGradient>
+      <radialGradient id="glow-sheet-Ac" cx="78%" cy="5%" r="68%"><stop stop-color="#fff" stop-opacity=".35"/><stop offset=".5" stop-color="#fff" stop-opacity="0"/></radialGradient>
+      <filter id="shadow-sheet-Ac" x="-20%" y="-20%" width="140%" height="140%"><feDropShadow dx="4" dy="6" stdDeviation="4" flood-color="#000" flood-opacity=".48"/></filter>
+      <filter id="text-shadow-sheet-Ac" x="-20%" y="-20%" width="140%" height="150%"><feDropShadow dx="2" dy="3" stdDeviation="1.5" flood-color="#000" flood-opacity=".72"/></filter>
+    </defs>
+    <rect x="0" y="0" width="250" height="360" rx="19" fill="#0a0e14" filter="url(#shadow-sheet-Ac)"/>
+    <rect x="5" y="5" width="240" height="350" rx="15" fill="url(#gradient-sheet-Ac)" stroke="#05080b" stroke-width="3"/>
+    <rect x="9" y="9" width="232" height="342" rx="12" fill="none" stroke="#fff" stroke-opacity=".25" stroke-width="2"/>
+    <rect x="10" y="10" width="230" height="340" rx="11" fill="url(#glow-sheet-Ac)"/>
+    <rect x="10" y="10" width="230" height="340" rx="11" fill="url(#shine-sheet-Ac)"/>
+    <g fill="#fff" filter="url(#text-shadow-sheet-Ac)">
+      <text x="24" y="70" font-family="Arial Black, Arial, sans-serif" font-size="56" font-weight="900" letter-spacing="-3">A</text>
+      <text x="27" y="119" font-family="Georgia, 'Times New Roman', serif" font-size="45">♣</text>
+      <text x="125" y="298" text-anchor="middle" font-family="Arial Black, Arial, sans-serif" font-size="200" font-weight="900" letter-spacing="-7">A</text>
+    </g>
+  </g>
+<g transform="translate(290 1160) scale(1)">
+    <defs>
+      <linearGradient id="gradient-sheet-2c" x1="0" y1="0" x2="0.72" y2="1"><stop stop-color="#075d24"/><stop offset=".26" stop-color="#70c56d"/><stop offset=".54" stop-color="#29923c"/><stop offset="1" stop-color="#075d24"/></linearGradient>
+      <linearGradient id="shine-sheet-2c" x1="0" y1="0" x2="0" y2="1"><stop stop-color="#fff" stop-opacity=".52"/><stop offset=".1" stop-color="#fff" stop-opacity=".16"/><stop offset=".43" stop-color="#fff" stop-opacity="0"/></linearGradient>
+      <radialGradient id="glow-sheet-2c" cx="78%" cy="5%" r="68%"><stop stop-color="#fff" stop-opacity=".35"/><stop offset=".5" stop-color="#fff" stop-opacity="0"/></radialGradient>
+      <filter id="shadow-sheet-2c" x="-20%" y="-20%" width="140%" height="140%"><feDropShadow dx="4" dy="6" stdDeviation="4" flood-color="#000" flood-opacity=".48"/></filter>
+      <filter id="text-shadow-sheet-2c" x="-20%" y="-20%" width="140%" height="150%"><feDropShadow dx="2" dy="3" stdDeviation="1.5" flood-color="#000" flood-opacity=".72"/></filter>
+    </defs>
+    <rect x="0" y="0" width="250" height="360" rx="19" fill="#0a0e14" filter="url(#shadow-sheet-2c)"/>
+    <rect x="5" y="5" width="240" height="350" rx="15" fill="url(#gradient-sheet-2c)" stroke="#05080b" stroke-width="3"/>
+    <rect x="9" y="9" width="232" height="342" rx="12" fill="none" stroke="#fff" stroke-opacity=".25" stroke-width="2"/>
+    <rect x="10" y="10" width="230" height="340" rx="11" fill="url(#glow-sheet-2c)"/>
+    <rect x="10" y="10" width="230" height="340" rx="11" fill="url(#shine-sheet-2c)"/>
+    <g fill="#fff" filter="url(#text-shadow-sheet-2c)">
+      <text x="24" y="70" font-family="Arial Black, Arial, sans-serif" font-size="56" font-weight="900" letter-spacing="-3">2</text>
+      <text x="27" y="119" font-family="Georgia, 'Times New Roman', serif" font-size="45">♣</text>
+      <text x="125" y="298" text-anchor="middle" font-family="Arial Black, Arial, sans-serif" font-size="200" font-weight="900" letter-spacing="-7">2</text>
+    </g>
+  </g>
+<g transform="translate(560 1160) scale(1)">
+    <defs>
+      <linearGradient id="gradient-sheet-3c" x1="0" y1="0" x2="0.72" y2="1"><stop stop-color="#075d24"/><stop offset=".26" stop-color="#70c56d"/><stop offset=".54" stop-color="#29923c"/><stop offset="1" stop-color="#075d24"/></linearGradient>
+      <linearGradient id="shine-sheet-3c" x1="0" y1="0" x2="0" y2="1"><stop stop-color="#fff" stop-opacity=".52"/><stop offset=".1" stop-color="#fff" stop-opacity=".16"/><stop offset=".43" stop-color="#fff" stop-opacity="0"/></linearGradient>
+      <radialGradient id="glow-sheet-3c" cx="78%" cy="5%" r="68%"><stop stop-color="#fff" stop-opacity=".35"/><stop offset=".5" stop-color="#fff" stop-opacity="0"/></radialGradient>
+      <filter id="shadow-sheet-3c" x="-20%" y="-20%" width="140%" height="140%"><feDropShadow dx="4" dy="6" stdDeviation="4" flood-color="#000" flood-opacity=".48"/></filter>
+      <filter id="text-shadow-sheet-3c" x="-20%" y="-20%" width="140%" height="150%"><feDropShadow dx="2" dy="3" stdDeviation="1.5" flood-color="#000" flood-opacity=".72"/></filter>
+    </defs>
+    <rect x="0" y="0" width="250" height="360" rx="19" fill="#0a0e14" filter="url(#shadow-sheet-3c)"/>
+    <rect x="5" y="5" width="240" height="350" rx="15" fill="url(#gradient-sheet-3c)" stroke="#05080b" stroke-width="3"/>
+    <rect x="9" y="9" width="232" height="342" rx="12" fill="none" stroke="#fff" stroke-opacity=".25" stroke-width="2"/>
+    <rect x="10" y="10" width="230" height="340" rx="11" fill="url(#glow-sheet-3c)"/>
+    <rect x="10" y="10" width="230" height="340" rx="11" fill="url(#shine-sheet-3c)"/>
+    <g fill="#fff" filter="url(#text-shadow-sheet-3c)">
+      <text x="24" y="70" font-family="Arial Black, Arial, sans-serif" font-size="56" font-weight="900" letter-spacing="-3">3</text>
+      <text x="27" y="119" font-family="Georgia, 'Times New Roman', serif" font-size="45">♣</text>
+      <text x="125" y="298" text-anchor="middle" font-family="Arial Black, Arial, sans-serif" font-size="200" font-weight="900" letter-spacing="-7">3</text>
+    </g>
+  </g>
+<g transform="translate(830 1160) scale(1)">
+    <defs>
+      <linearGradient id="gradient-sheet-4c" x1="0" y1="0" x2="0.72" y2="1"><stop stop-color="#075d24"/><stop offset=".26" stop-color="#70c56d"/><stop offset=".54" stop-color="#29923c"/><stop offset="1" stop-color="#075d24"/></linearGradient>
+      <linearGradient id="shine-sheet-4c" x1="0" y1="0" x2="0" y2="1"><stop stop-color="#fff" stop-opacity=".52"/><stop offset=".1" stop-color="#fff" stop-opacity=".16"/><stop offset=".43" stop-color="#fff" stop-opacity="0"/></linearGradient>
+      <radialGradient id="glow-sheet-4c" cx="78%" cy="5%" r="68%"><stop stop-color="#fff" stop-opacity=".35"/><stop offset=".5" stop-color="#fff" stop-opacity="0"/></radialGradient>
+      <filter id="shadow-sheet-4c" x="-20%" y="-20%" width="140%" height="140%"><feDropShadow dx="4" dy="6" stdDeviation="4" flood-color="#000" flood-opacity=".48"/></filter>
+      <filter id="text-shadow-sheet-4c" x="-20%" y="-20%" width="140%" height="150%"><feDropShadow dx="2" dy="3" stdDeviation="1.5" flood-color="#000" flood-opacity=".72"/></filter>
+    </defs>
+    <rect x="0" y="0" width="250" height="360" rx="19" fill="#0a0e14" filter="url(#shadow-sheet-4c)"/>
+    <rect x="5" y="5" width="240" height="350" rx="15" fill="url(#gradient-sheet-4c)" stroke="#05080b" stroke-width="3"/>
+    <rect x="9" y="9" width="232" height="342" rx="12" fill="none" stroke="#fff" stroke-opacity=".25" stroke-width="2"/>
+    <rect x="10" y="10" width="230" height="340" rx="11" fill="url(#glow-sheet-4c)"/>
+    <rect x="10" y="10" width="230" height="340" rx="11" fill="url(#shine-sheet-4c)"/>
+    <g fill="#fff" filter="url(#text-shadow-sheet-4c)">
+      <text x="24" y="70" font-family="Arial Black, Arial, sans-serif" font-size="56" font-weight="900" letter-spacing="-3">4</text>
+      <text x="27" y="119" font-family="Georgia, 'Times New Roman', serif" font-size="45">♣</text>
+      <text x="125" y="298" text-anchor="middle" font-family="Arial Black, Arial, sans-serif" font-size="200" font-weight="900" letter-spacing="-7">4</text>
+    </g>
+  </g>
+<g transform="translate(1100 1160) scale(1)">
+    <defs>
+      <linearGradient id="gradient-sheet-5c" x1="0" y1="0" x2="0.72" y2="1"><stop stop-color="#075d24"/><stop offset=".26" stop-color="#70c56d"/><stop offset=".54" stop-color="#29923c"/><stop offset="1" stop-color="#075d24"/></linearGradient>
+      <linearGradient id="shine-sheet-5c" x1="0" y1="0" x2="0" y2="1"><stop stop-color="#fff" stop-opacity=".52"/><stop offset=".1" stop-color="#fff" stop-opacity=".16"/><stop offset=".43" stop-color="#fff" stop-opacity="0"/></linearGradient>
+      <radialGradient id="glow-sheet-5c" cx="78%" cy="5%" r="68%"><stop stop-color="#fff" stop-opacity=".35"/><stop offset=".5" stop-color="#fff" stop-opacity="0"/></radialGradient>
+      <filter id="shadow-sheet-5c" x="-20%" y="-20%" width="140%" height="140%"><feDropShadow dx="4" dy="6" stdDeviation="4" flood-color="#000" flood-opacity=".48"/></filter>
+      <filter id="text-shadow-sheet-5c" x="-20%" y="-20%" width="140%" height="150%"><feDropShadow dx="2" dy="3" stdDeviation="1.5" flood-color="#000" flood-opacity=".72"/></filter>
+    </defs>
+    <rect x="0" y="0" width="250" height="360" rx="19" fill="#0a0e14" filter="url(#shadow-sheet-5c)"/>
+    <rect x="5" y="5" width="240" height="350" rx="15" fill="url(#gradient-sheet-5c)" stroke="#05080b" stroke-width="3"/>
+    <rect x="9" y="9" width="232" height="342" rx="12" fill="none" stroke="#fff" stroke-opacity=".25" stroke-width="2"/>
+    <rect x="10" y="10" width="230" height="340" rx="11" fill="url(#glow-sheet-5c)"/>
+    <rect x="10" y="10" width="230" height="340" rx="11" fill="url(#shine-sheet-5c)"/>
+    <g fill="#fff" filter="url(#text-shadow-sheet-5c)">
+      <text x="24" y="70" font-family="Arial Black, Arial, sans-serif" font-size="56" font-weight="900" letter-spacing="-3">5</text>
+      <text x="27" y="119" font-family="Georgia, 'Times New Roman', serif" font-size="45">♣</text>
+      <text x="125" y="298" text-anchor="middle" font-family="Arial Black, Arial, sans-serif" font-size="200" font-weight="900" letter-spacing="-7">5</text>
+    </g>
+  </g>
+<g transform="translate(1370 1160) scale(1)">
+    <defs>
+      <linearGradient id="gradient-sheet-6c" x1="0" y1="0" x2="0.72" y2="1"><stop stop-color="#075d24"/><stop offset=".26" stop-color="#70c56d"/><stop offset=".54" stop-color="#29923c"/><stop offset="1" stop-color="#075d24"/></linearGradient>
+      <linearGradient id="shine-sheet-6c" x1="0" y1="0" x2="0" y2="1"><stop stop-color="#fff" stop-opacity=".52"/><stop offset=".1" stop-color="#fff" stop-opacity=".16"/><stop offset=".43" stop-color="#fff" stop-opacity="0"/></linearGradient>
+      <radialGradient id="glow-sheet-6c" cx="78%" cy="5%" r="68%"><stop stop-color="#fff" stop-opacity=".35"/><stop offset=".5" stop-color="#fff" stop-opacity="0"/></radialGradient>
+      <filter id="shadow-sheet-6c" x="-20%" y="-20%" width="140%" height="140%"><feDropShadow dx="4" dy="6" stdDeviation="4" flood-color="#000" flood-opacity=".48"/></filter>
+      <filter id="text-shadow-sheet-6c" x="-20%" y="-20%" width="140%" height="150%"><feDropShadow dx="2" dy="3" stdDeviation="1.5" flood-color="#000" flood-opacity=".72"/></filter>
+    </defs>
+    <rect x="0" y="0" width="250" height="360" rx="19" fill="#0a0e14" filter="url(#shadow-sheet-6c)"/>
+    <rect x="5" y="5" width="240" height="350" rx="15" fill="url(#gradient-sheet-6c)" stroke="#05080b" stroke-width="3"/>
+    <rect x="9" y="9" width="232" height="342" rx="12" fill="none" stroke="#fff" stroke-opacity=".25" stroke-width="2"/>
+    <rect x="10" y="10" width="230" height="340" rx="11" fill="url(#glow-sheet-6c)"/>
+    <rect x="10" y="10" width="230" height="340" rx="11" fill="url(#shine-sheet-6c)"/>
+    <g fill="#fff" filter="url(#text-shadow-sheet-6c)">
+      <text x="24" y="70" font-family="Arial Black, Arial, sans-serif" font-size="56" font-weight="900" letter-spacing="-3">6</text>
+      <text x="27" y="119" font-family="Georgia, 'Times New Roman', serif" font-size="45">♣</text>
+      <text x="125" y="298" text-anchor="middle" font-family="Arial Black, Arial, sans-serif" font-size="200" font-weight="900" letter-spacing="-7">6</text>
+    </g>
+  </g>
+<g transform="translate(1640 1160) scale(1)">
+    <defs>
+      <linearGradient id="gradient-sheet-7c" x1="0" y1="0" x2="0.72" y2="1"><stop stop-color="#075d24"/><stop offset=".26" stop-color="#70c56d"/><stop offset=".54" stop-color="#29923c"/><stop offset="1" stop-color="#075d24"/></linearGradient>
+      <linearGradient id="shine-sheet-7c" x1="0" y1="0" x2="0" y2="1"><stop stop-color="#fff" stop-opacity=".52"/><stop offset=".1" stop-color="#fff" stop-opacity=".16"/><stop offset=".43" stop-color="#fff" stop-opacity="0"/></linearGradient>
+      <radialGradient id="glow-sheet-7c" cx="78%" cy="5%" r="68%"><stop stop-color="#fff" stop-opacity=".35"/><stop offset=".5" stop-color="#fff" stop-opacity="0"/></radialGradient>
+      <filter id="shadow-sheet-7c" x="-20%" y="-20%" width="140%" height="140%"><feDropShadow dx="4" dy="6" stdDeviation="4" flood-color="#000" flood-opacity=".48"/></filter>
+      <filter id="text-shadow-sheet-7c" x="-20%" y="-20%" width="140%" height="150%"><feDropShadow dx="2" dy="3" stdDeviation="1.5" flood-color="#000" flood-opacity=".72"/></filter>
+    </defs>
+    <rect x="0" y="0" width="250" height="360" rx="19" fill="#0a0e14" filter="url(#shadow-sheet-7c)"/>
+    <rect x="5" y="5" width="240" height="350" rx="15" fill="url(#gradient-sheet-7c)" stroke="#05080b" stroke-width="3"/>
+    <rect x="9" y="9" width="232" height="342" rx="12" fill="none" stroke="#fff" stroke-opacity=".25" stroke-width="2"/>
+    <rect x="10" y="10" width="230" height="340" rx="11" fill="url(#glow-sheet-7c)"/>
+    <rect x="10" y="10" width="230" height="340" rx="11" fill="url(#shine-sheet-7c)"/>
+    <g fill="#fff" filter="url(#text-shadow-sheet-7c)">
+      <text x="24" y="70" font-family="Arial Black, Arial, sans-serif" font-size="56" font-weight="900" letter-spacing="-3">7</text>
+      <text x="27" y="119" font-family="Georgia, 'Times New Roman', serif" font-size="45">♣</text>
+      <text x="125" y="298" text-anchor="middle" font-family="Arial Black, Arial, sans-serif" font-size="200" font-weight="900" letter-spacing="-7">7</text>
+    </g>
+  </g>
+<g transform="translate(1910 1160) scale(1)">
+    <defs>
+      <linearGradient id="gradient-sheet-8c" x1="0" y1="0" x2="0.72" y2="1"><stop stop-color="#075d24"/><stop offset=".26" stop-color="#70c56d"/><stop offset=".54" stop-color="#29923c"/><stop offset="1" stop-color="#075d24"/></linearGradient>
+      <linearGradient id="shine-sheet-8c" x1="0" y1="0" x2="0" y2="1"><stop stop-color="#fff" stop-opacity=".52"/><stop offset=".1" stop-color="#fff" stop-opacity=".16"/><stop offset=".43" stop-color="#fff" stop-opacity="0"/></linearGradient>
+      <radialGradient id="glow-sheet-8c" cx="78%" cy="5%" r="68%"><stop stop-color="#fff" stop-opacity=".35"/><stop offset=".5" stop-color="#fff" stop-opacity="0"/></radialGradient>
+      <filter id="shadow-sheet-8c" x="-20%" y="-20%" width="140%" height="140%"><feDropShadow dx="4" dy="6" stdDeviation="4" flood-color="#000" flood-opacity=".48"/></filter>
+      <filter id="text-shadow-sheet-8c" x="-20%" y="-20%" width="140%" height="150%"><feDropShadow dx="2" dy="3" stdDeviation="1.5" flood-color="#000" flood-opacity=".72"/></filter>
+    </defs>
+    <rect x="0" y="0" width="250" height="360" rx="19" fill="#0a0e14" filter="url(#shadow-sheet-8c)"/>
+    <rect x="5" y="5" width="240" height="350" rx="15" fill="url(#gradient-sheet-8c)" stroke="#05080b" stroke-width="3"/>
+    <rect x="9" y="9" width="232" height="342" rx="12" fill="none" stroke="#fff" stroke-opacity=".25" stroke-width="2"/>
+    <rect x="10" y="10" width="230" height="340" rx="11" fill="url(#glow-sheet-8c)"/>
+    <rect x="10" y="10" width="230" height="340" rx="11" fill="url(#shine-sheet-8c)"/>
+    <g fill="#fff" filter="url(#text-shadow-sheet-8c)">
+      <text x="24" y="70" font-family="Arial Black, Arial, sans-serif" font-size="56" font-weight="900" letter-spacing="-3">8</text>
+      <text x="27" y="119" font-family="Georgia, 'Times New Roman', serif" font-size="45">♣</text>
+      <text x="125" y="298" text-anchor="middle" font-family="Arial Black, Arial, sans-serif" font-size="200" font-weight="900" letter-spacing="-7">8</text>
+    </g>
+  </g>
+<g transform="translate(2180 1160) scale(1)">
+    <defs>
+      <linearGradient id="gradient-sheet-9c" x1="0" y1="0" x2="0.72" y2="1"><stop stop-color="#075d24"/><stop offset=".26" stop-color="#70c56d"/><stop offset=".54" stop-color="#29923c"/><stop offset="1" stop-color="#075d24"/></linearGradient>
+      <linearGradient id="shine-sheet-9c" x1="0" y1="0" x2="0" y2="1"><stop stop-color="#fff" stop-opacity=".52"/><stop offset=".1" stop-color="#fff" stop-opacity=".16"/><stop offset=".43" stop-color="#fff" stop-opacity="0"/></linearGradient>
+      <radialGradient id="glow-sheet-9c" cx="78%" cy="5%" r="68%"><stop stop-color="#fff" stop-opacity=".35"/><stop offset=".5" stop-color="#fff" stop-opacity="0"/></radialGradient>
+      <filter id="shadow-sheet-9c" x="-20%" y="-20%" width="140%" height="140%"><feDropShadow dx="4" dy="6" stdDeviation="4" flood-color="#000" flood-opacity=".48"/></filter>
+      <filter id="text-shadow-sheet-9c" x="-20%" y="-20%" width="140%" height="150%"><feDropShadow dx="2" dy="3" stdDeviation="1.5" flood-color="#000" flood-opacity=".72"/></filter>
+    </defs>
+    <rect x="0" y="0" width="250" height="360" rx="19" fill="#0a0e14" filter="url(#shadow-sheet-9c)"/>
+    <rect x="5" y="5" width="240" height="350" rx="15" fill="url(#gradient-sheet-9c)" stroke="#05080b" stroke-width="3"/>
+    <rect x="9" y="9" width="232" height="342" rx="12" fill="none" stroke="#fff" stroke-opacity=".25" stroke-width="2"/>
+    <rect x="10" y="10" width="230" height="340" rx="11" fill="url(#glow-sheet-9c)"/>
+    <rect x="10" y="10" width="230" height="340" rx="11" fill="url(#shine-sheet-9c)"/>
+    <g fill="#fff" filter="url(#text-shadow-sheet-9c)">
+      <text x="24" y="70" font-family="Arial Black, Arial, sans-serif" font-size="56" font-weight="900" letter-spacing="-3">9</text>
+      <text x="27" y="119" font-family="Georgia, 'Times New Roman', serif" font-size="45">♣</text>
+      <text x="125" y="298" text-anchor="middle" font-family="Arial Black, Arial, sans-serif" font-size="200" font-weight="900" letter-spacing="-7">9</text>
+    </g>
+  </g>
+<g transform="translate(2450 1160) scale(1)">
+    <defs>
+      <linearGradient id="gradient-sheet-Tc" x1="0" y1="0" x2="0.72" y2="1"><stop stop-color="#075d24"/><stop offset=".26" stop-color="#70c56d"/><stop offset=".54" stop-color="#29923c"/><stop offset="1" stop-color="#075d24"/></linearGradient>
+      <linearGradient id="shine-sheet-Tc" x1="0" y1="0" x2="0" y2="1"><stop stop-color="#fff" stop-opacity=".52"/><stop offset=".1" stop-color="#fff" stop-opacity=".16"/><stop offset=".43" stop-color="#fff" stop-opacity="0"/></linearGradient>
+      <radialGradient id="glow-sheet-Tc" cx="78%" cy="5%" r="68%"><stop stop-color="#fff" stop-opacity=".35"/><stop offset=".5" stop-color="#fff" stop-opacity="0"/></radialGradient>
+      <filter id="shadow-sheet-Tc" x="-20%" y="-20%" width="140%" height="140%"><feDropShadow dx="4" dy="6" stdDeviation="4" flood-color="#000" flood-opacity=".48"/></filter>
+      <filter id="text-shadow-sheet-Tc" x="-20%" y="-20%" width="140%" height="150%"><feDropShadow dx="2" dy="3" stdDeviation="1.5" flood-color="#000" flood-opacity=".72"/></filter>
+    </defs>
+    <rect x="0" y="0" width="250" height="360" rx="19" fill="#0a0e14" filter="url(#shadow-sheet-Tc)"/>
+    <rect x="5" y="5" width="240" height="350" rx="15" fill="url(#gradient-sheet-Tc)" stroke="#05080b" stroke-width="3"/>
+    <rect x="9" y="9" width="232" height="342" rx="12" fill="none" stroke="#fff" stroke-opacity=".25" stroke-width="2"/>
+    <rect x="10" y="10" width="230" height="340" rx="11" fill="url(#glow-sheet-Tc)"/>
+    <rect x="10" y="10" width="230" height="340" rx="11" fill="url(#shine-sheet-Tc)"/>
+    <g fill="#fff" filter="url(#text-shadow-sheet-Tc)">
+      <text x="24" y="70" font-family="Arial Black, Arial, sans-serif" font-size="56" font-weight="900" letter-spacing="-3">T</text>
+      <text x="27" y="119" font-family="Georgia, 'Times New Roman', serif" font-size="45">♣</text>
+      <text x="125" y="298" text-anchor="middle" font-family="Arial Black, Arial, sans-serif" font-size="200" font-weight="900" letter-spacing="-7">T</text>
+    </g>
+  </g>
+<g transform="translate(2720 1160) scale(1)">
+    <defs>
+      <linearGradient id="gradient-sheet-Jc" x1="0" y1="0" x2="0.72" y2="1"><stop stop-color="#075d24"/><stop offset=".26" stop-color="#70c56d"/><stop offset=".54" stop-color="#29923c"/><stop offset="1" stop-color="#075d24"/></linearGradient>
+      <linearGradient id="shine-sheet-Jc" x1="0" y1="0" x2="0" y2="1"><stop stop-color="#fff" stop-opacity=".52"/><stop offset=".1" stop-color="#fff" stop-opacity=".16"/><stop offset=".43" stop-color="#fff" stop-opacity="0"/></linearGradient>
+      <radialGradient id="glow-sheet-Jc" cx="78%" cy="5%" r="68%"><stop stop-color="#fff" stop-opacity=".35"/><stop offset=".5" stop-color="#fff" stop-opacity="0"/></radialGradient>
+      <filter id="shadow-sheet-Jc" x="-20%" y="-20%" width="140%" height="140%"><feDropShadow dx="4" dy="6" stdDeviation="4" flood-color="#000" flood-opacity=".48"/></filter>
+      <filter id="text-shadow-sheet-Jc" x="-20%" y="-20%" width="140%" height="150%"><feDropShadow dx="2" dy="3" stdDeviation="1.5" flood-color="#000" flood-opacity=".72"/></filter>
+    </defs>
+    <rect x="0" y="0" width="250" height="360" rx="19" fill="#0a0e14" filter="url(#shadow-sheet-Jc)"/>
+    <rect x="5" y="5" width="240" height="350" rx="15" fill="url(#gradient-sheet-Jc)" stroke="#05080b" stroke-width="3"/>
+    <rect x="9" y="9" width="232" height="342" rx="12" fill="none" stroke="#fff" stroke-opacity=".25" stroke-width="2"/>
+    <rect x="10" y="10" width="230" height="340" rx="11" fill="url(#glow-sheet-Jc)"/>
+    <rect x="10" y="10" width="230" height="340" rx="11" fill="url(#shine-sheet-Jc)"/>
+    <g fill="#fff" filter="url(#text-shadow-sheet-Jc)">
+      <text x="24" y="70" font-family="Arial Black, Arial, sans-serif" font-size="56" font-weight="900" letter-spacing="-3">J</text>
+      <text x="27" y="119" font-family="Georgia, 'Times New Roman', serif" font-size="45">♣</text>
+      <text x="125" y="298" text-anchor="middle" font-family="Arial Black, Arial, sans-serif" font-size="200" font-weight="900" letter-spacing="-7">J</text>
+    </g>
+  </g>
+<g transform="translate(2990 1160) scale(1)">
+    <defs>
+      <linearGradient id="gradient-sheet-Qc" x1="0" y1="0" x2="0.72" y2="1"><stop stop-color="#075d24"/><stop offset=".26" stop-color="#70c56d"/><stop offset=".54" stop-color="#29923c"/><stop offset="1" stop-color="#075d24"/></linearGradient>
+      <linearGradient id="shine-sheet-Qc" x1="0" y1="0" x2="0" y2="1"><stop stop-color="#fff" stop-opacity=".52"/><stop offset=".1" stop-color="#fff" stop-opacity=".16"/><stop offset=".43" stop-color="#fff" stop-opacity="0"/></linearGradient>
+      <radialGradient id="glow-sheet-Qc" cx="78%" cy="5%" r="68%"><stop stop-color="#fff" stop-opacity=".35"/><stop offset=".5" stop-color="#fff" stop-opacity="0"/></radialGradient>
+      <filter id="shadow-sheet-Qc" x="-20%" y="-20%" width="140%" height="140%"><feDropShadow dx="4" dy="6" stdDeviation="4" flood-color="#000" flood-opacity=".48"/></filter>
+      <filter id="text-shadow-sheet-Qc" x="-20%" y="-20%" width="140%" height="150%"><feDropShadow dx="2" dy="3" stdDeviation="1.5" flood-color="#000" flood-opacity=".72"/></filter>
+    </defs>
+    <rect x="0" y="0" width="250" height="360" rx="19" fill="#0a0e14" filter="url(#shadow-sheet-Qc)"/>
+    <rect x="5" y="5" width="240" height="350" rx="15" fill="url(#gradient-sheet-Qc)" stroke="#05080b" stroke-width="3"/>
+    <rect x="9" y="9" width="232" height="342" rx="12" fill="none" stroke="#fff" stroke-opacity=".25" stroke-width="2"/>
+    <rect x="10" y="10" width="230" height="340" rx="11" fill="url(#glow-sheet-Qc)"/>
+    <rect x="10" y="10" width="230" height="340" rx="11" fill="url(#shine-sheet-Qc)"/>
+    <g fill="#fff" filter="url(#text-shadow-sheet-Qc)">
+      <text x="24" y="70" font-family="Arial Black, Arial, sans-serif" font-size="56" font-weight="900" letter-spacing="-3">Q</text>
+      <text x="27" y="119" font-family="Georgia, 'Times New Roman', serif" font-size="45">♣</text>
+      <text x="125" y="298" text-anchor="middle" font-family="Arial Black, Arial, sans-serif" font-size="200" font-weight="900" letter-spacing="-7">Q</text>
+    </g>
+  </g>
+<g transform="translate(3260 1160) scale(1)">
+    <defs>
+      <linearGradient id="gradient-sheet-Kc" x1="0" y1="0" x2="0.72" y2="1"><stop stop-color="#075d24"/><stop offset=".26" stop-color="#70c56d"/><stop offset=".54" stop-color="#29923c"/><stop offset="1" stop-color="#075d24"/></linearGradient>
+      <linearGradient id="shine-sheet-Kc" x1="0" y1="0" x2="0" y2="1"><stop stop-color="#fff" stop-opacity=".52"/><stop offset=".1" stop-color="#fff" stop-opacity=".16"/><stop offset=".43" stop-color="#fff" stop-opacity="0"/></linearGradient>
+      <radialGradient id="glow-sheet-Kc" cx="78%" cy="5%" r="68%"><stop stop-color="#fff" stop-opacity=".35"/><stop offset=".5" stop-color="#fff" stop-opacity="0"/></radialGradient>
+      <filter id="shadow-sheet-Kc" x="-20%" y="-20%" width="140%" height="140%"><feDropShadow dx="4" dy="6" stdDeviation="4" flood-color="#000" flood-opacity=".48"/></filter>
+      <filter id="text-shadow-sheet-Kc" x="-20%" y="-20%" width="140%" height="150%"><feDropShadow dx="2" dy="3" stdDeviation="1.5" flood-color="#000" flood-opacity=".72"/></filter>
+    </defs>
+    <rect x="0" y="0" width="250" height="360" rx="19" fill="#0a0e14" filter="url(#shadow-sheet-Kc)"/>
+    <rect x="5" y="5" width="240" height="350" rx="15" fill="url(#gradient-sheet-Kc)" stroke="#05080b" stroke-width="3"/>
+    <rect x="9" y="9" width="232" height="342" rx="12" fill="none" stroke="#fff" stroke-opacity=".25" stroke-width="2"/>
+    <rect x="10" y="10" width="230" height="340" rx="11" fill="url(#glow-sheet-Kc)"/>
+    <rect x="10" y="10" width="230" height="340" rx="11" fill="url(#shine-sheet-Kc)"/>
+    <g fill="#fff" filter="url(#text-shadow-sheet-Kc)">
+      <text x="24" y="70" font-family="Arial Black, Arial, sans-serif" font-size="56" font-weight="900" letter-spacing="-3">K</text>
+      <text x="27" y="119" font-family="Georgia, 'Times New Roman', serif" font-size="45">♣</text>
+      <text x="125" y="298" text-anchor="middle" font-family="Arial Black, Arial, sans-serif" font-size="200" font-weight="900" letter-spacing="-7">K</text>
+    </g>
+  </g></svg>

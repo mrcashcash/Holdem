@@ -1,0 +1,19 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 250 360"><g transform="translate(0 0) scale(1)">
+    <defs>
+      <linearGradient id="gradient-9h" x1="0" y1="0" x2="0.72" y2="1"><stop stop-color="#5f0713"/><stop offset=".26" stop-color="#e98486"/><stop offset=".54" stop-color="#b83845"/><stop offset="1" stop-color="#5f0713"/></linearGradient>
+      <linearGradient id="shine-9h" x1="0" y1="0" x2="0" y2="1"><stop stop-color="#fff" stop-opacity=".52"/><stop offset=".1" stop-color="#fff" stop-opacity=".16"/><stop offset=".43" stop-color="#fff" stop-opacity="0"/></linearGradient>
+      <radialGradient id="glow-9h" cx="78%" cy="5%" r="68%"><stop stop-color="#fff" stop-opacity=".35"/><stop offset=".5" stop-color="#fff" stop-opacity="0"/></radialGradient>
+      <filter id="shadow-9h" x="-20%" y="-20%" width="140%" height="140%"><feDropShadow dx="4" dy="6" stdDeviation="4" flood-color="#000" flood-opacity=".48"/></filter>
+      <filter id="text-shadow-9h" x="-20%" y="-20%" width="140%" height="150%"><feDropShadow dx="2" dy="3" stdDeviation="1.5" flood-color="#000" flood-opacity=".72"/></filter>
+    </defs>
+    <rect x="0" y="0" width="250" height="360" rx="19" fill="#0a0e14" filter="url(#shadow-9h)"/>
+    <rect x="5" y="5" width="240" height="350" rx="15" fill="url(#gradient-9h)" stroke="#05080b" stroke-width="3"/>
+    <rect x="9" y="9" width="232" height="342" rx="12" fill="none" stroke="#fff" stroke-opacity=".25" stroke-width="2"/>
+    <rect x="10" y="10" width="230" height="340" rx="11" fill="url(#glow-9h)"/>
+    <rect x="10" y="10" width="230" height="340" rx="11" fill="url(#shine-9h)"/>
+    <g fill="#fff" filter="url(#text-shadow-9h)">
+      <text x="24" y="70" font-family="Arial Black, Arial, sans-serif" font-size="56" font-weight="900" letter-spacing="-3">9</text>
+      <text x="27" y="119" font-family="Georgia, 'Times New Roman', serif" font-size="45">♥</text>
+      <text x="125" y="298" text-anchor="middle" font-family="Arial Black, Arial, sans-serif" font-size="200" font-weight="900" letter-spacing="-7">9</text>
+    </g>
+  </g></svg>

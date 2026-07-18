@@ -2,7 +2,9 @@ import type { GameState, TrainingStatus } from './types'
 
 export interface ModelLoadResult {
   ok: boolean
+  agent: string
   source: string
+  iteration: number | null
   status: TrainingStatus
 }
 

@@ -311,7 +311,17 @@ class VectorCFR:
 
             node_buckets = buckets[self.t_street[decisions]]  # [L, C]
             legal = self.t_legal[decisions].unsqueeze(1).float()  # [L, 1, A]
-            node_value = (strategy * child_values).sum(dim=2)  # [L, C]
+            # Vector-CFR value aggregation (b-inary/OpenSpiel convention):
+            # at the TRAVERSER's nodes, v = sum_a sigma(a) v(child_a);
+            # at the OPPONENT's nodes, v = plain sum over children — the
+            # opponent's sigma was already applied via the reach folded into
+            # the terminal values. Weighting again applies it twice (and with
+            # the traverser's bucket indexing, which isn't even their hand).
+            node_value = torch.where(
+                (self.t_actor[decisions] == traverser).unsqueeze(1),
+                (strategy * child_values).sum(dim=2),
+                child_values.sum(dim=2),
+            )
             values[decisions, :] = node_value
 
             acted_rows = plan["actor_rows"][traverser]
@@ -319,9 +329,11 @@ class VectorCFR:
                 own = decisions[acted_rows]
                 # Terminal values are opponent-reach weighted already, so the
                 # counterfactual regret is simply the child/node value gap.
+                # Board-colliding combos (bucket -1, clamped to 0) carry
+                # nonzero fold values — mask them or they pollute bucket 0.
                 regret_increment = (
                     child_values[acted_rows] - node_value[acted_rows].unsqueeze(2)
-                ) * legal[acted_rows]
+                ) * legal[acted_rows] * valid.float().unsqueeze(0).unsqueeze(2)
                 sum_increment = strategy[acted_rows] * reach[traverser, own, :].unsqueeze(2)
                 flat_index = (own.unsqueeze(1) * MAX_BUCKETS + node_buckets[acted_rows]).reshape(-1)
                 self.regrets.view(-1, self.num_actions).index_add_(

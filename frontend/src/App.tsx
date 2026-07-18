@@ -7,7 +7,18 @@ import {
   type CSSProperties,
 } from "react";
 import { api } from "./api";
-import type { GameState, LegalActions, TrainingStatus } from "./types";
+import {
+  loadSoundSettings,
+  type SoundSettings,
+  sound,
+  storeSoundSettings,
+} from "./sound";
+import type {
+  GameState,
+  LegalActions,
+  PlayerSessionStats,
+  TrainingStatus,
+} from "./types";
 
 const MIN_EPISODES = 10;
 const MAX_EPISODES = 500_000;
@@ -17,7 +28,7 @@ const clamp = (value: number, minimum: number, maximum: number) =>
 const cardAssetPath = (card: string) => {
   const suit = card.slice(-1);
   const suitCode = { "♥": "h", "♦": "d", "♣": "c", "♠": "s" }[suit];
-  return suitCode ? `/assets/cards/${card.slice(0, -1)}${suitCode}.png` : "";
+  return suitCode ? `/assets/casino-cards/${card.slice(0, -1)}${suitCode}.svg` : "";
 };
 type ChipColour = "white" | "green" | "red" | "black" | "purple";
 type ChipGroup = { value: number; colour: ChipColour; count: number };
@@ -46,6 +57,27 @@ type HandHistory = {
   community: string[];
   result: string | null;
   winner: number | null;
+};
+
+type HudRate = {
+  successes: number;
+  opportunities: number;
+};
+
+type DerivedPlayerHudStats = {
+  threeBet: HudRate;
+  foldToThreeBet: HudRate;
+  flopCBet: HudRate;
+  foldToFlopCBet: HudRate;
+  wentToShowdown: HudRate;
+  wonAtShowdown: HudRate;
+  wonWhenSawFlop: HudRate;
+};
+
+type ParsedHandAction = {
+  player: 0 | 1;
+  street: 0 | 1 | 2 | 3;
+  action: "fold" | "check" | "call" | "raise";
 };
 
 const snapshotOf = (game: GameState): HandHistory => ({
@@ -100,6 +132,151 @@ const handOutcome = (hand: HandHistory) => {
     : { label: "Agent won", tone: "opponent" as const };
 };
 
+const emptyHudRate = (): HudRate => ({ successes: 0, opportunities: 0 });
+const emptyDerivedHudStats = (): DerivedPlayerHudStats => ({
+  threeBet: emptyHudRate(),
+  foldToThreeBet: emptyHudRate(),
+  flopCBet: emptyHudRate(),
+  foldToFlopCBet: emptyHudRate(),
+  wentToShowdown: emptyHudRate(),
+  wonAtShowdown: emptyHudRate(),
+  wonWhenSawFlop: emptyHudRate(),
+});
+
+const parsedActions = (hand: HandHistory): ParsedHandAction[] => {
+  let street: ParsedHandAction["street"] = 0;
+  return hand.entries.flatMap((entry) => {
+    if (/^Flop:/i.test(entry)) street = 1;
+    else if (/^Turn:/i.test(entry)) street = 2;
+    else if (/^River:/i.test(entry)) street = 3;
+
+    const match = entry.match(
+      /^Player ([12]) (folds|checks|calls\b|raises to\b)/i,
+    );
+    if (!match) return [];
+    const verb = match[2].toLowerCase();
+    const action: ParsedHandAction["action"] = verb.startsWith("fold")
+      ? "fold"
+      : verb.startsWith("check")
+        ? "check"
+        : verb.startsWith("call")
+          ? "call"
+          : "raise";
+    return [
+      {
+        player: (Number(match[1]) - 1) as 0 | 1,
+        street,
+        action,
+      },
+    ];
+  });
+};
+
+const derivePlayerHudStats = (
+  hands: HandHistory[],
+): [DerivedPlayerHudStats, DerivedPlayerHudStats] => {
+  const players: [DerivedPlayerHudStats, DerivedPlayerHudStats] = [
+    emptyDerivedHudStats(),
+    emptyDerivedHudStats(),
+  ];
+
+  for (const hand of hands) {
+    const actions = parsedActions(hand);
+    const preflop = actions.filter((action) => action.street === 0);
+    const flop = actions.filter((action) => action.street === 1);
+    const firstRaiseIndex = preflop.findIndex(
+      (action) => action.action === "raise",
+    );
+
+    if (firstRaiseIndex >= 0) {
+      const opener = preflop[firstRaiseIndex].player;
+      const responderIndex = preflop.findIndex(
+        (action, index) => index > firstRaiseIndex && action.player !== opener,
+      );
+      if (responderIndex >= 0) {
+        const response = preflop[responderIndex];
+        players[response.player].threeBet.opportunities += 1;
+        if (response.action === "raise") {
+          players[response.player].threeBet.successes += 1;
+          const openerResponse = preflop.find(
+            (action, index) =>
+              index > responderIndex && action.player === opener,
+          );
+          if (openerResponse) {
+            players[opener].foldToThreeBet.opportunities += 1;
+            if (openerResponse.action === "fold")
+              players[opener].foldToThreeBet.successes += 1;
+          }
+        }
+      }
+    }
+
+    const preflopAggressor = [...preflop]
+      .reverse()
+      .find((action) => action.action === "raise")?.player;
+    if (preflopAggressor !== undefined && flop.length > 0) {
+      let aggressorActionIndex = -1;
+      let facedDonkBet = false;
+      for (let index = 0; index < flop.length; index += 1) {
+        const action = flop[index];
+        if (action.player === preflopAggressor) {
+          aggressorActionIndex = index;
+          break;
+        }
+        if (action.action === "raise") {
+          facedDonkBet = true;
+          break;
+        }
+      }
+      if (!facedDonkBet && aggressorActionIndex >= 0) {
+        const aggressorAction = flop[aggressorActionIndex];
+        players[preflopAggressor].flopCBet.opportunities += 1;
+        if (aggressorAction.action === "raise") {
+          players[preflopAggressor].flopCBet.successes += 1;
+          const defender = (1 - preflopAggressor) as 0 | 1;
+          const response = flop.find(
+            (action, index) =>
+              index > aggressorActionIndex && action.player === defender,
+          );
+          if (response) {
+            players[defender].foldToFlopCBet.opportunities += 1;
+            if (response.action === "fold")
+              players[defender].foldToFlopCBet.successes += 1;
+          }
+        }
+      }
+    }
+
+    const sawFlop = hand.entries.some((entry) => /^Flop:/i.test(entry));
+    const showdown = Boolean(hand.result && !/after a fold/i.test(hand.result));
+    for (const player of [0, 1] as const) {
+      if (sawFlop) {
+        players[player].wentToShowdown.opportunities += 1;
+        players[player].wonWhenSawFlop.opportunities += 1;
+        if (showdown) players[player].wentToShowdown.successes += 1;
+        if (hand.winner === player)
+          players[player].wonWhenSawFlop.successes += 1;
+        else if (hand.winner === null)
+          players[player].wonWhenSawFlop.successes += 0.5;
+      }
+      if (showdown) {
+        players[player].wonAtShowdown.opportunities += 1;
+        if (hand.winner === player)
+          players[player].wonAtShowdown.successes += 1;
+        else if (hand.winner === null)
+          players[player].wonAtShowdown.successes += 0.5;
+      }
+    }
+  }
+
+  return players;
+};
+
+const hudRateText = (rate: HudRate) =>
+  rate.opportunities > 0
+    ? `${Math.round((rate.successes / rate.opportunities) * 100)}%`
+    : "—";
+
 const CHIP_DENOMINATIONS: { value: number; colour: ChipColour }[] = [
   { value: 500, colour: "black" },
   { value: 100, colour: "red" },
@@ -132,6 +309,14 @@ const actionPopupText = (entry: string) =>
     .replace(/^Player 1\b/, "YOU")
     .replace(/^Player 2\b/, "AGENT")
     .replace(/^Hand \d+:\s*/, "NEW HAND · ");
+
+const latestActionSound = (entries: string[]) => {
+  const entry = entries.at(-1) ?? "";
+  if (/\bfolds\b/i.test(entry)) return "fold" as const;
+  if (/\bchecks\b/i.test(entry)) return "check" as const;
+  if (/\b(calls|raises to)\b/i.test(entry)) return "chips" as const;
+  return null;
+};
 
 function PlayingCard({
   card,
@@ -180,6 +365,78 @@ function Cards({
         <PlayingCard card={card} key={`${card}-${index}`} />
       ))}
     </div>
+  );
+}
+
+function PlayerHud({
+  stats,
+  hands,
+  derived,
+  historyHands,
+  player,
+}: {
+  stats: PlayerSessionStats;
+  hands: number;
+  derived: DerivedPlayerHudStats;
+  historyHands: number;
+  player: string;
+}) {
+  const hasSample = hands > 0;
+  const aggression =
+    hasSample && stats.aggression !== null ? `${stats.aggression}%` : "—";
+
+  const advancedMetrics = [
+    ["3B", derived.threeBet, "3-bet"],
+    ["F3B", derived.foldToThreeBet, "Fold to 3-bet"],
+    ["CB", derived.flopCBet, "Flop continuation bet"],
+    ["FCB", derived.foldToFlopCBet, "Fold to flop continuation bet"],
+    ["WTSD", derived.wentToShowdown, "Went to showdown after seeing a flop"],
+    ["W$SD", derived.wonAtShowdown, "Won money at showdown"],
+    ["WWSF", derived.wonWhenSawFlop, "Won when seeing a flop"],
+  ] as const;
+
+  return (
+    <dl
+      className="player-hud"
+      aria-label={`${player} session statistics over ${hands} completed ${hands === 1 ? "hand" : "hands"}`}
+      title="Session-only statistics from completed hands"
+    >
+      <div>
+        <dt>VPIP</dt>
+        <dd>{hasSample ? `${stats.vpip}%` : "—"}</dd>
+      </div>
+      <div>
+        <dt>PFR</dt>
+        <dd>{hasSample ? `${stats.pfr}%` : "—"}</dd>
+      </div>
+      <div>
+        <dt>AGG</dt>
+        <dd>{aggression}</dd>
+      </div>
+      {advancedMetrics.map(([label, rate, description]) => (
+        <div
+          key={label}
+          title={`${description}: ${rate.successes}/${rate.opportunities} opportunities`}
+        >
+          <dt>{label}</dt>
+          <dd>{hudRateText(rate)}</dd>
+        </div>
+      ))}
+      <div
+        className="player-hud-sample"
+        title={
+          historyHands < hands
+            ? `${historyHands} of ${hands} completed hand histories are available in this browser for advanced stats`
+            : `${hands} completed hands`
+        }
+      >
+        <dt>Hands</dt>
+        <dd>
+          {hands}
+          {historyHands < hands && <span>*</span>}
+        </dd>
+      </div>
+    </dl>
   );
 }
 
@@ -259,10 +516,13 @@ function App() {
   const [replayPlaying, setReplayPlaying] = useState(false);
   const [displayedDealer, setDisplayedDealer] = useState<0 | 1 | null>(null);
   const [dealerFlight, setDealerFlight] = useState<DealerFlight | null>(null);
+  const [soundSettings, setSoundSettings] =
+    useState<SoundSettings>(loadSoundSettings);
   const gameRef = useRef<GameState | null>(null);
   const chipFlightId = useRef(0);
   const dealerFlightId = useRef(0);
   const autoDealTimer = useRef<number | null>(null);
+  const betControlsRef = useRef<HTMLDivElement | null>(null);
 
   const cancelAutoDeal = useCallback(() => {
     if (autoDealTimer.current !== null) {
@@ -271,6 +531,11 @@ function App() {
     }
     setAutoDealing(false);
   }, []);
+
+  useEffect(() => {
+    sound.configure(soundSettings);
+    storeSoundSettings(soundSettings);
+  }, [soundSettings]);
 
   const acceptGame = useCallback((next: GameState, newMatch = false) => {
     const previous = gameRef.current;
@@ -282,6 +547,18 @@ function App() {
     const handJustCompleted = Boolean(
       previous && !previous.complete && next.complete,
     );
+    const newHistoryEntries = previous
+      ? next.history.slice(previous.history.length)
+      : [];
+    if (previous) {
+      if (handJustCompleted) sound.play("win");
+      else if (startsFreshHand || next.community.length > previous.community.length)
+        sound.play("deal");
+      else {
+        const actionSound = latestActionSound(newHistoryEntries);
+        if (actionSound) sound.play(actionSound);
+      }
+    }
     if (previous && !reducedMotion) {
       const previousBets = startsFreshHand ? [0, 0] : previous.round_bets;
       const wagerFlights = ([0, 1] as const).flatMap((target) => {
@@ -419,6 +696,7 @@ function App() {
 
   const sendAction = async (action: string) => {
     if (!game) return;
+    void sound.unlock();
     setBusy(true);
     try {
       const amount =
@@ -438,6 +716,7 @@ function App() {
   const deal = useCallback(
     async (kind: "new" | "next") => {
       cancelAutoDeal();
+      void sound.unlock();
       setBusy(true);
       try {
         acceptGame(
@@ -485,7 +764,13 @@ function App() {
     try {
       const result = await api.reloadLastModel();
       setTraining(result.status);
-      setMessage(`Latest checkpoint reloaded (${result.source}).`);
+      const label =
+        result.agent === "GpuBlueprintAgent" ? "GPU blueprint" : "CPU blueprint";
+      const iterationSuffix =
+        result.iteration !== null
+          ? ` at iteration ${result.iteration.toLocaleString()}`
+          : "";
+      setMessage(`Now serving ${label}${iterationSuffix} (${result.source}).`);
     } catch (error) {
       setMessage(
         error instanceof Error
@@ -555,6 +840,36 @@ function App() {
     return () => window.clearTimeout(timer);
   }, [replayPlaying, replayOpen, replayHandNumber, replayStep, hands]);
 
+  useEffect(() => {
+    const controls = betControlsRef.current;
+    if (!controls) return;
+
+    const handleBetWheel = (event: WheelEvent) => {
+      const target = event.target;
+      const overBetControl =
+        target instanceof Element &&
+        target.matches(".table-bet-input, .table-bet-slider");
+      const legal = game?.legal_actions;
+      const canAdjust =
+        overBetControl &&
+        game?.current_player === 0 &&
+        !game.complete &&
+        !busy &&
+        legal?.raise &&
+        event.deltaY !== 0;
+      if (!canAdjust || !legal) return;
+
+      event.preventDefault();
+      const direction = event.deltaY < 0 ? 1 : -1;
+      setRaiseTo((value) =>
+        boundedRaise(value + direction * 10, legal, value),
+      );
+    };
+
+    controls.addEventListener("wheel", handleBetWheel, { passive: false });
+    return () => controls.removeEventListener("wheel", handleBetWheel);
+  }, [busy, game]);
+
   const statusLine = useMemo(() => {
     if (!game) return "Loading game state…";
     if (game.complete) return game.result ?? "Hand complete.";
@@ -583,6 +898,10 @@ function App() {
   const sessionStats = game.session_stats;
   const heroStats = sessionStats.players[0];
   const agentStats = sessionStats.players[1];
+  const completedHudHands = hands
+    .filter((hand) => hand.result !== null)
+    .slice(-sessionStats.hands_completed);
+  const derivedHudStats = derivePlayerHudStats(completedHudHands);
   const decidedHands = sessionStats.hands_completed - sessionStats.split_pots;
   const heroWinRate =
     decidedHands > 0
@@ -594,7 +913,7 @@ function App() {
       : null;
   const heroAggression =
     heroStats.aggression === null ? "—" : `${heroStats.aggression}%`;
-  const quickRaisePresets = (
+  const sizedRaisePresets = (
     preflop
       ? [
           { label: "2 BB", target: bigBlind * 2 },
@@ -616,6 +935,15 @@ function App() {
         presets.findIndex((candidate) => candidate.target === preset.target) ===
         index,
     );
+  const quickRaisePresets =
+    legal.raise_max === undefined
+      ? sizedRaisePresets
+      : [
+          ...sizedRaisePresets.filter(
+            (preset) => preset.target !== legal.raise_max,
+          ),
+          { label: "Max", target: legal.raise_max },
+        ];
 
   const replayHand =
     hands.find((entry) => entry.handNumber === replayHandNumber) ?? null;
@@ -651,13 +979,31 @@ function App() {
     if (replayFinished) setReplayStep(0);
     setReplayPlaying((playing) => !playing);
   };
+  const updateSoundSettings = (next: SoundSettings) => {
+    sound.configure(next);
+    setSoundSettings(next);
+  };
 
   return (
     <main className="app-shell">
       <header className="masthead">
-        <div>
+        <div className="brand-lockup">
           <p className="eyebrow">SELF-PLAY LAB / TABLE 01</p>
           <h1>TEXT HOLD’EM</h1>
+        </div>
+        <div className="masthead-hand-summary" aria-label="Current hand summary">
+          <span>
+            <small>Hand</small>
+            <strong>#{game.hand_number}</strong>
+          </span>
+          <span>
+            <small>Street</small>
+            <strong>{game.street}</strong>
+          </span>
+          <span>
+            <small>{game.complete ? "Last pot" : "Pot"}</small>
+            <strong>{potDisplay.toLocaleString()}</strong>
+          </span>
         </div>
         <div className="masthead-controls">
           <section
@@ -699,6 +1045,42 @@ function App() {
             >
               Hand replay{latestHand ? ` (${hands.length})` : ""}
             </button>
+            <div className="sound-controls" aria-label="Sound controls">
+              <button
+                className="top-action-sound"
+                type="button"
+                onClick={() => {
+                  const next = {
+                    ...soundSettings,
+                    enabled: !soundSettings.enabled,
+                  };
+                  updateSoundSettings(next);
+                  if (next.enabled) void sound.unlock();
+                }}
+                aria-label={soundSettings.enabled ? "Mute sounds" : "Enable sounds"}
+                aria-pressed={soundSettings.enabled}
+                title={soundSettings.enabled ? "Mute sounds" : "Enable sounds"}
+              >
+                {soundSettings.enabled ? "Sound on" : "Sound off"}
+              </button>
+              <label>
+                <span className="sr-only">Sound volume</span>
+                <input
+                  type="range"
+                  min="0"
+                  max="1"
+                  step="0.05"
+                  value={soundSettings.volume}
+                  onChange={(event) =>
+                    updateSoundSettings({
+                      ...soundSettings,
+                      volume: Number(event.target.value),
+                    })
+                  }
+                  aria-label="Sound volume"
+                />
+              </label>
+            </div>
             {message && (
               <p className="top-action-message" role="alert">
                 {message}
@@ -731,12 +1113,21 @@ function App() {
             New match
           </button>
           <div className="seat opponent-seat">
-            <div className="player-plaque">
+            <div className="player-plaque player-plaque-hud">
               <span className="seat-indicator">02</span>
-              <div>
+              <div className="player-info">
                 <p>AGENT {game.button === 1 && <em>BUTTON</em>}</p>
-                <strong>{game.stacks[1].toLocaleString()}</strong>
-                <small>chips</small>
+                <div className="player-stack">
+                  <strong>{game.stacks[1].toLocaleString()}</strong>
+                  <small>chips</small>
+                </div>
+                <PlayerHud
+                  stats={agentStats}
+                  hands={sessionStats.hands_completed}
+                  derived={derivedHudStats[1]}
+                  historyHands={completedHudHands.length}
+                  player="Agent"
+                />
               </div>
             </div>
             <Cards
@@ -841,13 +1232,7 @@ function App() {
                 <div
                   className="table-bet-presets"
                   aria-label="Quick raise sizes"
-                  style={
-                    {
-                      "--quick-size-count": quickRaisePresets.length,
-                    } as CSSProperties
-                  }
                 >
-                  <span className="table-bet-presets-title">Quick raise</span>
                   {quickRaisePresets.map((preset) => (
                     <button
                       className={`table-bet-preset ${raiseTo === preset.target ? "active" : ""}`}
@@ -858,84 +1243,82 @@ function App() {
                       onClick={() => setRaiseTo(preset.target)}
                       disabled={!canAct}
                     >
-                      <span className="table-bet-preset-name">
-                        {preset.label}
-                      </span>
-                      <span className="table-bet-preset-amount">
-                        to {preset.target.toLocaleString()}
-                      </span>
+                      {preset.label}
                     </button>
                   ))}
                 </div>
               )}
-              <button
-                className="table-fold"
-                onClick={() => void sendAction("fold")}
-                disabled={!canAct || !legal.fold}
-              >
-                Fold
-              </button>
-              {legal.check && (
-                <button
-                  className="table-check"
-                  onClick={() => void sendAction("check")}
-                  disabled={!canAct}
-                >
-                  Check
-                </button>
-              )}
-              {legal.call && (
-                <button
-                  className="table-call"
-                  onClick={() => void sendAction("call")}
-                  disabled={!canAct}
-                >
-                  Call {legal.to_call?.toLocaleString()}
-                </button>
-              )}
               {legal.raise && (
-                <label className="table-raise">
-                  <span>Raise to</span>
+                <div className="table-bet-controls" ref={betControlsRef}>
                   <input
+                    className="table-bet-input"
                     type="number"
                     min={legal.raise_min}
                     max={legal.raise_max}
                     step={10}
                     value={raiseTo}
+                    aria-label="Raise-to amount"
+                    title="Scroll to adjust by 10 chips"
                     onChange={(event) => setRaiseTo(Number(event.target.value))}
-                    onWheel={(event) => {
-                      if (!canAct || event.deltaY === 0) return;
-                      event.preventDefault();
-                      setRaiseTo((value) =>
-                        boundedRaise(
-                          value + (event.deltaY < 0 ? 10 : -10),
-                          legal,
-                          value,
-                        ),
-                      );
-                    }}
                     onBlur={() =>
                       setRaiseTo((value) => boundedRaise(value, legal, value))
                     }
                     disabled={!canAct}
                   />
+                  <input
+                    className="table-bet-slider"
+                    type="range"
+                    min={legal.raise_min}
+                    max={legal.raise_max}
+                    step={1}
+                    value={raiseTo}
+                    aria-label="Raise-to amount slider"
+                    title="Scroll to adjust by 10 chips"
+                    onChange={(event) => setRaiseTo(Number(event.target.value))}
+                    disabled={!canAct}
+                  />
+                </div>
+              )}
+              <div className="table-main-actions">
+                {legal.fold && (
                   <button
+                    className="table-fold"
+                    onClick={() => void sendAction("fold")}
+                    disabled={!canAct}
+                  >
+                    Fold
+                  </button>
+                )}
+                {legal.check && (
+                  <button
+                    className="table-check"
+                    onClick={() => void sendAction("check")}
+                    disabled={!canAct}
+                  >
+                    Check
+                  </button>
+                )}
+                {legal.call && (
+                  <button
+                    className="table-call"
+                    onClick={() => void sendAction("call")}
+                    disabled={!canAct}
+                  >
+                    <span>Call</span>
+                    <strong>{legal.to_call?.toLocaleString()}</strong>
+                  </button>
+                )}
+                {legal.raise && (
+                  <button
+                    className="table-raise-action"
                     onClick={() => void sendAction("raise")}
                     disabled={!canAct}
                   >
-                    Raise
+                    <span>{currentBet === 0 ? "Bet" : "Raise To"}</span>
+                    <strong>{raiseTo.toLocaleString()}</strong>
                   </button>
-                </label>
-              )}
-              {legal.all_in && (
-                <button
-                  className="table-all-in"
-                  onClick={() => void sendAction("all_in")}
-                  disabled={!canAct}
-                >
-                  All-in
-                </button>
-              )}
+                )}
+              </div>
             </div>
           )}
 
@@ -945,19 +1328,28 @@ function App() {
               cards={game.hero_cards}
               className="hero-cards"
             />
-            <div className="player-plaque">
+            <div className="player-plaque player-plaque-hud">
               <span className="seat-indicator">01</span>
-              <div>
+              <div className="player-info">
                 <p>YOU {game.button === 0 && <em>BUTTON</em>}</p>
-                <strong>{game.stacks[0].toLocaleString()}</strong>
-                <small>chips</small>
-              </div>
-              {game.hero_hand_strength && (
-                <div className="hand-strength" aria-live="polite">
-                  <span>Hand strength</span>
-                  <strong>{game.hero_hand_strength}</strong>
+                <div className="player-stack">
+                  <strong>{game.stacks[0].toLocaleString()}</strong>
+                  <small>chips</small>
                 </div>
-              )}
+                <PlayerHud
+                  stats={heroStats}
+                  hands={sessionStats.hands_completed}
+                  derived={derivedHudStats[0]}
+                  historyHands={completedHudHands.length}
+                  player="Your"
+                />
+                {game.hero_hand_strength && (
+                  <div className="hand-strength" aria-live="polite">
+                    <span>Hand strength</span>
+                    <strong>{game.hero_hand_strength}</strong>
+                  </div>
+                )}
+              </div>
             </div>
           </div>
         </section>
@@ -970,60 +1362,52 @@ function App() {
             </div>
             <p>SESSION · HAND #{game.hand_number}</p>
           </header>
-          <div className="match-stats-grid">
-            <div className="match-stat">
-              <span>Hands complete</span>
-              <strong>{sessionStats.hands_completed}</strong>
-              <small>
-                {game.complete ? "Hand settled" : "Hand in progress"}
-              </small>
-            </div>
-            <div className="match-stat match-score">
-              <span>Match score</span>
-              <strong>
-                {heroStats.match_wins}
-                <i>—</i>
-                {agentStats.match_wins}
-              </strong>
-              <small>Points awarded on bust-outs</small>
-            </div>
-            <div className="match-stat match-score">
+          <div className="match-scoreboard">
+            <div className="match-scoreboard-title">
               <span>Hand record</span>
-              <strong>
-                {heroStats.hand_wins}
-                <i>—</i>
-                {agentStats.hand_wins}
-              </strong>
-              <small>You · Agent</small>
-            </div>
-            <div className="match-stat">
-              <span>Your win rate</span>
-              <strong>{heroWinRate === null ? "—" : `${heroWinRate}%`}</strong>
               <small>
-                {decidedHands
-                  ? `${decidedHands} decided hands`
-                  : "Awaiting a result"}
+                Match {heroStats.match_wins}—{agentStats.match_wins}
               </small>
             </div>
-            <div className="match-stat">
-              <span>Showdowns</span>
-              <strong>{sessionStats.showdown_hands}</strong>
-              <small>
-                Y {heroStats.showdown_wins} · A {agentStats.showdown_wins} ·{" "}
-                {sessionStats.split_pots} split
-              </small>
-            </div>
-            <div className="match-stat match-score">
-              <span>Fold wins</span>
-              <strong>
-                {heroStats.fold_wins}
-                <i>—</i>
-                {agentStats.fold_wins}
-              </strong>
-              <small>You · Agent</small>
+            <div className="match-scoreboard-duel">
+              <div className="match-player hero">
+                <span>You</span>
+                <strong>{heroStats.hand_wins}</strong>
+                <small>hand wins</small>
+              </div>
+              <div className="match-win-rate">
+                <span>Win rate</span>
+                <strong>{heroWinRate === null ? "—" : `${heroWinRate}%`}</strong>
+                <small>
+                  {decidedHands ? `${decidedHands} decided` : "No results"}
+                </small>
+              </div>
+              <div className="match-player agent">
+                <span>Agent</span>
+                <strong>{agentStats.hand_wins}</strong>
+                <small>hand wins</small>
+              </div>
             </div>
             <div
-              className={`match-stat ${chipLead === 0 ? "" : chipLead > 0 ? "hero-lead" : "agent-lead"}`}
+              className="match-win-track"
+              role="progressbar"
+              aria-label="Your hand win rate"
+              aria-valuenow={heroWinRate ?? 0}
+              aria-valuemin={0}
+              aria-valuemax={100}
+            >
+              <span style={{ width: `${heroWinRate ?? 0}%` }} />
+            </div>
+          </div>
+
+          <div className="match-primary-grid">
+            <div className="match-primary-stat">
+              <span>Hands</span>
+              <strong>{sessionStats.hands_completed}</strong>
+              <small>{game.complete ? "Settled" : "In progress"}</small>
+            </div>
+            <div
+              className={`match-primary-stat ${chipLead === 0 ? "" : chipLead > 0 ? "hero-lead" : "agent-lead"}`}
             >
               <span>Chip lead</span>
               <strong>
@@ -1031,36 +1415,50 @@ function App() {
               </strong>
               <small>{chipLeadLabel}</small>
             </div>
-            <div className="match-stat">
+            <div className="match-primary-stat">
               <span>Average pot</span>
               <strong>
                 {averagePot === null ? "—" : averagePot.toLocaleString()}
               </strong>
-              <small>
-                {averagePot === null ? "Awaiting a result" : "chips contested"}
-              </small>
+              <small>chips contested</small>
             </div>
-            <div className="match-stat match-biggest-pot">
+            <div className="match-primary-stat highlight">
               <span>Biggest pot</span>
               <strong>
                 {sessionStats.biggest_pot
                   ? sessionStats.biggest_pot.toLocaleString()
                   : "—"}
               </strong>
+              <small>session high</small>
+            </div>
+          </div>
+
+          <div className="match-secondary-stats">
+            <div className="match-secondary-title">Session detail</div>
+            <div className="match-secondary-row">
+              <span>Showdowns</span>
+              <strong>{sessionStats.showdown_hands}</strong>
               <small>
-                {sessionStats.biggest_pot
-                  ? "chips contested"
-                  : "Awaiting a result"}
+                You {heroStats.showdown_wins} · Agent {agentStats.showdown_wins} ·{" "}
+                {sessionStats.split_pots} split
               </small>
             </div>
-            <div className="match-stat">
-              <span>Your style</span>
+            <div className="match-secondary-row">
+              <span>Fold wins</span>
+              <strong>
+                {heroStats.fold_wins}—{agentStats.fold_wins}
+              </strong>
+              <small>You · Agent</small>
+            </div>
+            <div className="match-secondary-row">
+              <span>Playing style</span>
               <strong>{heroStats.vpip}% VPIP</strong>
               <small>
                 PFR {heroStats.pfr}% · Agg {heroAggression}
               </small>
             </div>
           </div>
+
         </section>
 
         <aside className="workspace-sidebar">

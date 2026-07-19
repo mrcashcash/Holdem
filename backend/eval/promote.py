@@ -45,8 +45,18 @@ def evaluate_checkpoint(checkpoint_path, hands: int = 150) -> dict:
     agent.subgame_search = False  # gate on blueprint strength; search is a separate layer
     report = benchmark_against_styles(agent, hands_per_style=hands, styles=GATE_STYLES, seed=STYLES_SEED)
 
-    solver = gpu_train.build_solver(device="cuda")  # loads checkpoint.npz
-    exploitability = cfr_br_exploitability(solver, br_iterations=60, eval_boards=8)
+    # Use the trainer's own logged CFR-BR reading (same metric) instead of
+    # recomputing on the GPU — evaluation must never contend with training
+    # for VRAM (see the 2026-07-19 stall incident).
+    exploitability = None
+    if gpu_train.TELEMETRY_PATH.exists():
+        history = json.loads(gpu_train.TELEMETRY_PATH.read_text(encoding="utf-8"))
+        readings = [r["exploitability_mbb_per_hand"] for r in history if r.get("exploitability_mbb_per_hand") is not None]
+        if readings:
+            exploitability = readings[-1]
+    if exploitability is None:
+        solver = gpu_train.build_solver(device="cpu")
+        exploitability = cfr_br_exploitability(solver, br_iterations=60, eval_boards=8)
     return {
         "iteration": agent.iteration,
         "styles_mean_bb_per_100": report["mean_bb_per_100"],

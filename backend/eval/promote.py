@@ -29,8 +29,12 @@ CHAMPION_META_PATH = gpu_train.DATA_DIR / "champion_meta.json"
 
 GATE_STYLES = ("calling_station", "maniac", "tight_aggressive", "nit")
 STYLES_SEED = 3
-MEAN_MARGIN_BB100 = 50.0  # benchmark noise allowance
+# Calibrated 2026-07-19 from a 1000-hand A/B: at ~150 hands/style the
+# benchmark noise is ~±250 bb/100, dwarfing a 50 margin (coin-flip verdicts).
+# 300 hands + 120 margin keeps the gate fast with far fewer false verdicts.
+MEAN_MARGIN_BB100 = 120.0
 EXPLOIT_RATIO_LIMIT = 1.25
+DEFAULT_GATE_HANDS = 300
 
 
 def evaluate_checkpoint(checkpoint_path, hands: int = 150) -> dict:
@@ -99,7 +103,7 @@ def promote_if_better(hands: int = 150, force: bool = False, progress: bool = Tr
 
 def main() -> None:
     parser = argparse.ArgumentParser(description="Promote the latest checkpoint if it beats the champion")
-    parser.add_argument("--hands", type=int, default=150)
+    parser.add_argument("--hands", type=int, default=DEFAULT_GATE_HANDS)
     parser.add_argument("--force", action="store_true", help="promote unconditionally")
     arguments = parser.parse_args()
     promote_if_better(hands=arguments.hands, force=arguments.force)

@@ -27,6 +27,7 @@ from backend.solver.gpu.cfr import VectorCFR
 from backend.solver.gpu.deals import (
     _PREFLOP_CLASS,
     NUM_COMBOS,
+    Deal,
     DealSampler,
     combos,
     equity_from_scores,
@@ -42,22 +43,58 @@ _STREET_BOARD = (0, 3, 4, 5)
 
 
 class FixedBoardSampler:
-    """DealSampler view that completes a fixed partial board."""
+    """DealSampler view that completes a fixed partial board.
+
+    Streets already on the board have identical buckets in every sample, so
+    they are computed once and reused; per sample only the river-dependent
+    parts (scores, exact-equity buckets, validity) are recomputed. For a full
+    5-card board the deal is fully deterministic and cached outright.
+    """
 
     def __init__(self, base: DealSampler, partial_board: tuple[int, ...]) -> None:
         self.base = base
         self.partial_board = tuple(int(card) for card in partial_board)
         for name in ("flop_buckets", "turn_buckets", "river_buckets", "flop_samples", "turn_samples"):
             setattr(self, name, getattr(base, name))
+        self._full_deal = None
+        self._prefix_buckets = None
 
     def bucket_counts(self):
         return self.base.bucket_counts()
 
     def sample(self, rng: random.Random):
+        if len(self.partial_board) == 5:
+            if self._full_deal is None:
+                self._full_deal = self.base.for_board(self.partial_board, rng)
+            return self._full_deal
+
+        if len(self.partial_board) == 4:
+            if self._prefix_buckets is None:
+                template = self.base.for_board(
+                    self.partial_board + (self._any_river(rng),), rng
+                )
+                self._prefix_buckets = template.buckets[:3].copy()  # pre/flop/turn: river-independent
+            river = self._any_river(rng)
+            board = self.partial_board + (river,)
+            scores = score_all_combos(board)
+            equity = equity_from_scores(scores)
+            valid = scores >= 0
+            buckets = np.full((4, NUM_COMBOS), -1, dtype=np.int32)
+            buckets[:3] = self._prefix_buckets
+            buckets[:3, ~valid] = -1  # combos blocked by the river card
+            counts = self.bucket_counts()
+            seen = valid & (equity >= 0)
+            buckets[3][seen] = np.minimum((equity[seen] * counts[3]).astype(np.int32), counts[3] - 1)
+            return Deal(board=board, buckets=buckets, valid=valid, river_scores=scores)
+
         used = set(self.partial_board)
         remaining = [card for card in range(52) if card not in used]
         completion = rng.sample(remaining, 5 - len(self.partial_board))
         return self.base.for_board(self.partial_board + tuple(completion), rng)
+
+    def _any_river(self, rng: random.Random) -> int:
+        remaining = [card for card in range(52) if card not in self.partial_board]
+        return rng.choice(remaining)
 
 
 def partial_board_buckets(board_ids: tuple[int, ...], sampler: DealSampler, seed: int = 11) -> np.ndarray:

@@ -95,6 +95,15 @@ class VectorCFR:
             members = np.flatnonzero(depth == level)
             self.levels.append(torch.tensor(members, dtype=torch.long, device=self.device))
 
+        # Combos holding each card — static; precomputed so the showdown loop
+        # is free of torch.nonzero (a sync op, illegal under graph capture).
+        self.card_holders = [
+            torch.tensor(
+                np.flatnonzero((CARD_IN_COMBO[card])), dtype=torch.long, device=device
+            )
+            for card in range(52)
+        ]
+
         kind = tree.kind
         self.decision_mask = torch.tensor(kind == DECISION, device=device)
         self.showdown_nodes = torch.tensor(np.flatnonzero(kind == SHOWDOWN), dtype=torch.long, device=device)
@@ -223,8 +232,12 @@ class VectorCFR:
         t = float(self.iteration)
         positive_factor = t**self.discount_alpha / (t**self.discount_alpha + 1.0)
         negative_factor = t**self.discount_beta / (t**self.discount_beta + 1.0)
-        self.regrets = torch.where(
-            self.regrets > 0, self.regrets * positive_factor, self.regrets * negative_factor
+        self.regrets.mul_(
+            torch.where(
+                self.regrets > 0,
+                torch.tensor(positive_factor, dtype=torch.float32, device=self.device),
+                torch.tensor(negative_factor, dtype=torch.float32, device=self.device),
+            )
         )
         if self.iteration > self.averaging_delay:
             self.strategy_sums *= (t / (t + 1.0)) ** self.discount_gamma
@@ -257,18 +270,24 @@ class VectorCFR:
         terminal functions are board-aware. With ``frozen_average``/
         ``frozen_player`` set, that player follows the given average-strategy
         tensor instead of regret matching (CFR-BR)."""
-        deals = deal if isinstance(deal, list) else [deal]
-        batch = len(deals)
         device = self.device
         nodes = len(self.tree)
+        if isinstance(deal, list) or isinstance(deal, Deal):
+            deals = deal if isinstance(deal, list) else [deal]
+            batch = len(deals)
+            valid = torch.tensor(np.concatenate([d.valid for d in deals]), device=device)  # [B*C]
+            buckets = torch.tensor(
+                np.concatenate([d.buckets for d in deals], axis=1), dtype=torch.long, device=device
+            ).clamp_min(0)  # [4, B*C]
+            scores = torch.tensor(
+                np.stack([d.river_scores for d in deals]), dtype=torch.long, device=device
+            )  # [B, C]
+        else:
+            # Graph-capture sentinel: read the runner's static input buffers
+            # (backend/solver/gpu/graph.py) so replays see fresh deal data.
+            batch = deal.batch
+            valid, buckets, scores = self._graph_inputs(None)
         self._batch = batch
-        valid = torch.tensor(np.concatenate([d.valid for d in deals]), device=device)  # [B*C]
-        buckets = torch.tensor(
-            np.concatenate([d.buckets for d in deals], axis=1), dtype=torch.long, device=device
-        ).clamp_min(0)  # [4, B*C]
-        scores = torch.tensor(
-            np.stack([d.river_scores for d in deals]), dtype=torch.long, device=device
-        )  # [B, C]
 
         width = batch * NUM_COMBOS
         reach = torch.zeros((2, nodes, width), dtype=torch.float32, device=device)
@@ -445,9 +464,7 @@ class VectorCFR:
             card_prefix = torch.cumsum(masked, dim=2)
             card_total = card_prefix[..., -1:]
             card_padded = torch.cat([zeros, card_prefix], dim=2)
-            holders = torch.nonzero(
-                (combo_cards[:, 0] == card) | (combo_cards[:, 1] == card)
-            ).squeeze(1)
+            holders = self.card_holders[card]
             left_h = boundaries_left[:, holders].unsqueeze(0).expand(showdowns, -1, -1)
             right_h = boundaries_right[:, holders].unsqueeze(0).expand(showdowns, -1, -1)
             worse_blocked = torch.gather(card_padded, 2, left_h)

@@ -56,7 +56,12 @@ class GpuBlueprintAgent:
     def try_load(cls, checkpoint_path: Path | None = None) -> "GpuBlueprintAgent | None":
         from backend.solver.gpu import train as gpu_train
 
-        path = checkpoint_path or gpu_train.CHECKPOINT_PATH
+        if checkpoint_path is None:
+            # Prefer the promoted champion (backend/eval/promote.py) — the
+            # newest raw checkpoint may not have passed the quality gate.
+            champion = gpu_train.DATA_DIR / "champion.npz"
+            checkpoint_path = champion if champion.exists() else gpu_train.CHECKPOINT_PATH
+        path = checkpoint_path
         if not path.exists():
             return None
         payload = np.load(path, allow_pickle=False)

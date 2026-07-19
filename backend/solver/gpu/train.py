@@ -35,13 +35,20 @@ DEFAULT_CONFIG = GpuActionConfig(
 DEFAULT_SAMPLER = dict(flop_buckets=20, turn_buckets=20, river_buckets=20, flop_samples=8, turn_samples=8)
 
 
-def build_solver(device: str = "cuda", seed: int = 0) -> VectorCFR:
+def build_solver(device: str = "cuda", seed: int = 0, batch_boards: int = 1) -> VectorCFR:
     if device == "cuda" and not torch.cuda.is_available():
         device = "cpu"
     tree = BettingTree(DEFAULT_CONFIG)
     # averaging_delay: the earliest strategies are noise; keep them out of the
     # average (Supremus' DCFR+ delayed averaging).
-    solver = VectorCFR(tree, DealSampler(**DEFAULT_SAMPLER), device=device, seed=seed, averaging_delay=1000)
+    solver = VectorCFR(
+        tree,
+        DealSampler(**DEFAULT_SAMPLER),
+        device=device,
+        seed=seed,
+        averaging_delay=1000,
+        batch_boards=batch_boards,
+    )
     if CHECKPOINT_PATH.exists():
         payload = np.load(CHECKPOINT_PATH, allow_pickle=False)
         stored = json.loads(str(payload["config"]))
@@ -83,8 +90,15 @@ def save_solver(solver: VectorCFR) -> None:
         shutil.copy2(CHECKPOINT_PATH, DATA_DIR / f"checkpoint-{solver.iteration}.npz")
 
 
-def train(iterations: int, device: str = "cuda", save_every: int = 200, seed: int = 0, progress: bool = True) -> VectorCFR:
-    solver = build_solver(device=device, seed=seed)
+def train(
+    iterations: int,
+    device: str = "cuda",
+    save_every: int = 200,
+    seed: int = 0,
+    progress: bool = True,
+    batch_boards: int = 1,
+) -> VectorCFR:
+    solver = build_solver(device=device, seed=seed, batch_boards=batch_boards)
     completed = 0
     started = time.time()
     while completed < iterations:
@@ -123,8 +137,15 @@ def main() -> None:
     parser.add_argument("--device", type=str, default="cuda")
     parser.add_argument("--save-every", type=int, default=200)
     parser.add_argument("--seed", type=int, default=0)
+    parser.add_argument("--batch-boards", type=int, default=1, help="boards per iteration (mini-batch)")
     arguments = parser.parse_args()
-    train(arguments.iterations, device=arguments.device, save_every=arguments.save_every, seed=arguments.seed)
+    train(
+        arguments.iterations,
+        device=arguments.device,
+        save_every=arguments.save_every,
+        seed=arguments.seed,
+        batch_boards=arguments.batch_boards,
+    )
 
 
 if __name__ == "__main__":

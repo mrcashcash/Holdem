@@ -189,17 +189,24 @@ class VectorCFR:
         stop = threading.Event()
 
         def producer() -> None:
-            for _ in range(iterations):
-                if stop.is_set():
-                    return
-                deals.put([self.sampler.sample(self.rng) for _ in range(self.batch_boards)])
+            try:
+                for _ in range(iterations):
+                    if stop.is_set():
+                        return
+                    deals.put([self.sampler.sample(self.rng) for _ in range(self.batch_boards)])
+            except BaseException as error:  # surface producer death to the consumer
+                deals.put(error)
 
         worker = threading.Thread(target=producer, daemon=True)
         worker.start()
         try:
             for _ in range(iterations):
                 self.iteration += 1
-                deal = deals.get()
+                # Timeout guards against a silently dead producer: blocking
+                # forever here is how the 2026-07-19 4-hour wedge presented.
+                deal = deals.get(timeout=600)
+                if isinstance(deal, BaseException):
+                    raise deal
                 # Alternating updates (Burch et al. JAIR 2019): each player's
                 # regrets are updated in their own pass against the opponent's
                 # freshly regret-matched strategy.

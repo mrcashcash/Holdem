@@ -48,6 +48,7 @@ class GpuBlueprintAgent:
         self.subgame_search = subgame_search
         self.subgame_iterations = subgame_iterations
         self._raise_fraction: float | None = None
+        self._raise_target: int | None = None
         self._rng = random.Random(97)
         self._equity_cache: dict[tuple, float] = {}
         self._subgame_cache: dict[tuple, object] = {}
@@ -79,6 +80,7 @@ class GpuBlueprintAgent:
 
     def select(self, game: HeadsUpHoldem, player: int) -> int:
         self._raise_fraction = None
+        self._raise_target = None
         if self.subgame_search and game.street >= 2:
             subgame_choice = self._subgame_decision(game, player)
             if subgame_choice is not None:
@@ -105,6 +107,15 @@ class GpuBlueprintAgent:
         return self._to_neural_raise(game, player, int(self.tree.street[node]), choice)
 
     def execute(self, game: HeadsUpHoldem, player: int, choice: int) -> None:
+        # Raises execute at the blueprint's computed chip target directly.
+        # Routing through execute_action's fraction mapping re-scales the
+        # target into rl_env's legacy PPO-era preflop caps (3-bet <= 2x pot,
+        # open <= 3.5bb), which collapsed every 3-bet toward a min-click.
+        if choice == NEURAL_RAISE and self._raise_target is not None:
+            legal = game.legal_actions(player)
+            amount = max(int(legal["raise_min"]), min(int(legal["raise_max"]), self._raise_target))
+            game.act(player, "raise", amount)
+            return
         execute_action(game, player, choice, self._raise_fraction)
 
     def observe_completed_hand(self, game: HeadsUpHoldem, player: int) -> None:
@@ -283,6 +294,9 @@ class GpuBlueprintAgent:
         fraction = tree.config.fractions(street)[choice - 3]
         raise_by = fraction * (game.pot + to_call)
         target = float(legal["player_bet"]) + to_call + raise_by
+        # Executed directly by execute() — the chip amount the abstract tree
+        # actually trained with, not a fraction of someone else's interval.
+        self._raise_target = int(round(target))
         minimum, maximum = float(legal["raise_min"]), float(legal["raise_max"])
         if maximum <= minimum:
             self._raise_fraction = 0.5

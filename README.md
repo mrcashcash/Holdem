@@ -28,6 +28,28 @@ npm run dev
 
 Open the local address printed by Vite (normally `http://localhost:5173`). The frontend proxies `/api` calls to FastAPI during development. Self-play accepts 10 to 500,000 hands per requested run. Once started, it runs in an app-owned worker rather than the originating browser request, so it continues if the page refreshes; keep the backend process running for the duration.
 
+## Hand history from a screenshot
+
+Install the backend requirements, then pass a full-resolution screenshot to the
+standalone extractor. A desktop screenshot of the **Hand Replay** dialog with
+the complete action timeline visible gives the best result.
+
+```powershell
+python tools/screenshot_to_hand_history.py C:\path\to\hand.png
+```
+
+The command writes `<name>.hand-history.json` and `<name>.hand-history.txt`
+beside the screenshot. It recognizes the simulator's card artwork, reads the
+visible action timeline, and replays those actions through the rules engine.
+It exits with code `0` for a valid, completed replay, `3` when output was
+created but is partial or needs manual review, and `1` when extraction fails.
+
+Use `--starting-stacks PLAYER_1 PLAYER_2` when the hand did not start at
+2,000/2,000. If automatic timeline detection is wrong, pass
+`--timeline-crop left,top,right,bottom`; fractional coordinates from `0` to `1`
+work across resolutions. The script never invents actions that are not visible,
+so a clipped timeline is explicitly marked incomplete.
+
 ## RTX / CUDA training
 
 The trainer uses CUDA automatically when a CUDA-enabled PyTorch build detects an NVIDIA GPU. With an RTX 3060, PPO batches and optimizer updates run on the GPU. CUDA rollout inference uses a safe single collector on Windows while the rules engine remains CPU-driven.

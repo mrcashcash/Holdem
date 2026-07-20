@@ -7,6 +7,7 @@ import {
   type CSSProperties,
 } from "react";
 import { api } from "./api";
+import ChampionLab from "./ChampionLab";
 import {
   loadSoundSettings,
   type SoundSettings,
@@ -14,6 +15,7 @@ import {
   storeSoundSettings,
 } from "./sound";
 import type {
+  ChampionQueryResult,
   GameState,
   LegalActions,
   PlayerSessionStats,
@@ -514,6 +516,11 @@ function App() {
   const [replayHandNumber, setReplayHandNumber] = useState<number | null>(null);
   const [replayStep, setReplayStep] = useState(0);
   const [replayPlaying, setReplayPlaying] = useState(false);
+  const [championOpen, setChampionOpen] = useState(false);
+  const [championResult, setChampionResult] =
+    useState<ChampionQueryResult | null>(null);
+  const [championError, setChampionError] = useState("");
+  const [championBusy, setChampionBusy] = useState(false);
   const [displayedDealer, setDisplayedDealer] = useState<0 | 1 | null>(null);
   const [dealerFlight, setDealerFlight] = useState<DealerFlight | null>(null);
   const [soundSettings, setSoundSettings] =
@@ -782,6 +789,28 @@ function App() {
     }
   };
 
+  const queryCurrentChampion = async () => {
+    setChampionOpen(true);
+    setChampionBusy(true);
+    setChampionError("");
+    setChampionResult(null);
+    try {
+      setChampionResult(await api.queryChampion({ current: true }));
+    } catch (error) {
+      setChampionError(
+        error instanceof Error ? error.message : "Could not query the champion.",
+      );
+    } finally {
+      setChampionBusy(false);
+    }
+  };
+
+  const openChampionLab = () => {
+    setChampionError("");
+    setChampionResult(null);
+    setChampionOpen(true);
+  };
+
   useEffect(() => {
     if (
       !game?.complete ||
@@ -1044,6 +1073,15 @@ function App() {
               disabled={!latestHand}
             >
               Hand replay{latestHand ? ` (${hands.length})` : ""}
+            </button>
+            <button
+              className="top-action-champion"
+              onClick={() =>
+                canAct ? void queryCurrentChampion() : openChampionLab()
+              }
+              disabled={championBusy}
+            >
+              {canAct ? "Ask champion" : "Hand lab"}
             </button>
             <div className="sound-controls" aria-label="Sound controls">
               <button
@@ -1500,6 +1538,18 @@ function App() {
             >
               Hand replay{latestHand ? ` (${hands.length})` : ""}
             </button>
+            <div className="champion-launchers">
+              <button
+                className="champion-button"
+                onClick={() => void queryCurrentChampion()}
+                disabled={!canAct || championBusy}
+              >
+                Ask champion
+              </button>
+              <button onClick={openChampionLab} disabled={championBusy}>
+                Hand lab
+              </button>
+            </div>
             {message && (
               <p className="message" role="alert">
                 {message}
@@ -1626,6 +1676,16 @@ function App() {
           </section>
         </aside>
       </div>
+      {championOpen && (
+        <ChampionLab
+          canUseCurrent={canAct}
+          initialBusy={championBusy}
+          initialError={championError}
+          initialResult={championResult}
+          onClose={() => setChampionOpen(false)}
+          onUseCurrent={() => void queryCurrentChampion()}
+        />
+      )}
       {replayOpen && replayHand && (
         <div
           className="hand-history-backdrop"

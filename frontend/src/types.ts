@@ -69,8 +69,78 @@ export interface TrainingStatus {
   updates: number
   parameters: number
   iterations_per_second: number
-  serving_agent: 'BlueprintAgent' | 'HeuristicAgent'
+  serving_agent: 'GpuBlueprintAgent' | 'BlueprintAgent' | 'HeuristicAgent'
   river_search: boolean
   artifacts: TrainingArtifacts
   trainer: string
+}
+
+export interface ChampionHistoryAction {
+  player: 0 | 1
+  action: 'fold' | 'check' | 'call' | 'raise' | 'all_in'
+  amount?: number
+}
+
+export interface ChampionSpotRequest {
+  hero_cards?: string[]
+  board?: string[]
+  button?: 0 | 1
+  stacks?: number[]
+  actions?: ChampionHistoryAction[]
+}
+
+export interface ChampionQueryRequest extends ChampionSpotRequest {
+  current?: boolean
+}
+
+export interface ChampionSpotMetrics {
+  effective_stack: number
+  effective_stack_bb: number
+  spr: number
+  pot_odds_percent: number
+  hand_strength: string | null
+}
+
+export interface ChampionSpotState {
+  hero_cards: string[]
+  board: string[]
+  staged_board: string[]
+  button: 0 | 1
+  street: string
+  current_player: 0 | 1 | null
+  starting_stacks: number[]
+  stacks: number[]
+  round_bets: number[]
+  pot: number
+  to_call: number
+  legal_actions: LegalActions
+  complete: boolean
+  result: string | null
+  required_board_count: number | null
+  metrics: ChampionSpotMetrics
+}
+
+export interface ChampionQueryAction {
+  action: string
+  label: string
+  amount: number | null
+  probability: number
+  percentage: number
+}
+
+export interface ChampionQueryResult {
+  source: string
+  iteration: number
+  street: string
+  position: string
+  pot: number
+  to_call: number
+  legal_actions: LegalActions
+  exact_match: boolean
+  node: number | null
+  bucket: number | null
+  actions: ChampionQueryAction[]
+  recommended: ChampionQueryAction
+  warnings: string[]
+  spot: ChampionSpotState | null
 }

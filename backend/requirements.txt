@@ -3,5 +3,8 @@ uvicorn[standard]==0.35.0
 pydantic==2.11.7
 numpy>=1.26,<2.3
 numba>=0.61,<0.62
+rapidocr>=3.9,<4
+onnxruntime>=1.18,<2
+cairosvg>=2.7,<3
 # torch is no longer required by the backend (the PPO trainer was retired to
 # legacy/); reinstall it only if you want to run the legacy code.

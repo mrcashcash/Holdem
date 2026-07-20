@@ -1,4 +1,11 @@
-import type { GameState, TrainingStatus } from './types'
+import type {
+  ChampionQueryRequest,
+  ChampionQueryResult,
+  ChampionSpotRequest,
+  ChampionSpotState,
+  GameState,
+  TrainingStatus,
+} from './types'
 
 export interface ModelLoadResult {
   ok: boolean
@@ -26,6 +33,12 @@ export const api = {
   nextHand: () => request<GameState>('/game/next', { method: 'POST' }),
   action: (action: string, amount?: number) => request<GameState>('/game/action', {
     method: 'POST', body: JSON.stringify({ action, amount }),
+  }),
+  queryChampion: (query: ChampionQueryRequest) => request<ChampionQueryResult>('/champion/query', {
+    method: 'POST', body: JSON.stringify(query),
+  }),
+  previewChampionSpot: (spot: ChampionSpotRequest) => request<ChampionSpotState>('/champion/spot', {
+    method: 'POST', body: JSON.stringify(spot),
   }),
   trainingStatus: () => request<TrainingStatus>('/training/status'),
   train: (episodes: number) => request<TrainingStatus>('/training/start', {

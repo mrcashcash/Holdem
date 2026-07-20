@@ -60,15 +60,27 @@ def load_serving_agent():
     import os
 
     from backend.agents.gpu_blueprint_agent import GpuBlueprintAgent
+    from backend.agents.multistack_agent import MultiStackBlueprintAgent
 
-    gpu_agent = GpuBlueprintAgent.try_load()
-    if gpu_agent is not None:
-        # Turn/river re-solving is ON by default: CUDA-graph replay brought
-        # solves to ~3s turn / <1s river (once per hand, cached). Set
-        # HOLDEM_SUBGAME_ITERS=0 to disable, or tune the iteration count.
-        subgame_iterations = int(os.environ.get("HOLDEM_SUBGAME_ITERS", "120"))
-        gpu_agent.subgame_search = subgame_iterations > 0
-        gpu_agent.subgame_iterations = subgame_iterations or gpu_agent.subgame_iterations
+    subgame_iterations = int(os.environ.get("HOLDEM_SUBGAME_ITERS", "120"))
+
+    def apply_search(agent):
+        if agent is None:
+            return None
+        # Turn/river re-solving ON by default: CUDA-graph replay brought
+        # solves to ~3s turn / <1s river (once per hand, cached).
+        # HOLDEM_SUBGAME_ITERS=0 disables it.
+        agent.subgame_search = subgame_iterations > 0
+        agent.subgame_iterations = subgame_iterations or agent.subgame_iterations
+        return agent
+
+    # Prefer the depth-routing library when 2+ stack blueprints exist — it
+    # picks the nearest-depth blueprint per hand (no manual switching).
+    router = MultiStackBlueprintAgent.try_load()
+    if router is not None and len(router.agents) >= 2 and router.iteration >= GPU_SERVE_MIN_ITERATIONS:
+        return apply_search(router)
+
+    gpu_agent = apply_search(GpuBlueprintAgent.try_load())
     if gpu_agent is not None and gpu_agent.iteration >= GPU_SERVE_MIN_ITERATIONS:
         return gpu_agent
     cpu_agent = BlueprintAgent.try_load()

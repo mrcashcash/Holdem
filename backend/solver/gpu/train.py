@@ -35,6 +35,22 @@ DEFAULT_CONFIG = GpuActionConfig(
 DEFAULT_SAMPLER = dict(flop_buckets=20, turn_buckets=20, river_buckets=20, flop_samples=8, turn_samples=8)
 
 
+def configure_stack(stack_bb: float) -> None:
+    """Retarget the trainer at a different stack depth with its own artifacts.
+
+    100bb keeps the canonical paths (the serving default); other depths get
+    backend/data/gpu_blueprint_<N>bb/ so multi-stack blueprints coexist.
+    """
+    global DEFAULT_CONFIG, DATA_DIR, CHECKPOINT_PATH, TELEMETRY_PATH
+    from dataclasses import replace
+
+    DEFAULT_CONFIG = replace(DEFAULT_CONFIG, stack_bb=float(stack_bb))
+    if stack_bb != 100.0:
+        DATA_DIR = DATA_DIR.parent / f"gpu_blueprint_{int(stack_bb)}bb"
+        CHECKPOINT_PATH = DATA_DIR / "checkpoint.npz"
+        TELEMETRY_PATH = DATA_DIR / "telemetry.json"
+
+
 def build_solver(device: str = "cuda", seed: int = 0, batch_boards: int = 1) -> VectorCFR:
     if device == "cuda" and not torch.cuda.is_available():
         device = "cpu"
@@ -138,7 +154,10 @@ def main() -> None:
     parser.add_argument("--save-every", type=int, default=200)
     parser.add_argument("--seed", type=int, default=0)
     parser.add_argument("--batch-boards", type=int, default=1, help="boards per iteration (mini-batch)")
+    parser.add_argument("--stack-bb", type=float, default=100.0, help="stack depth; non-100 gets its own artifact dir")
     arguments = parser.parse_args()
+    if arguments.stack_bb != 100.0:
+        configure_stack(arguments.stack_bb)
     train(
         arguments.iterations,
         device=arguments.device,

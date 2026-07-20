@@ -221,6 +221,22 @@ class HeadsUpHoldem:
         )
         self.current_player = self.button
 
+    def reload_cash(self, players: list[int], amount: int) -> None:
+        """Add chips between hands without changing the table configuration."""
+        if not self.hand_complete:
+            raise InvalidAction("Cash can only be reloaded after the current hand is complete.")
+        if amount <= 0:
+            raise ValueError("Reload amount must be greater than zero.")
+        if not players or any(player not in (0, 1) for player in players):
+            raise ValueError("Choose Hero, Agent, or both players.")
+
+        unique_players = sorted(set(players))
+        for player in unique_players:
+            self.stacks[player] += amount
+        labels = " and ".join("Hero" if player == 0 else "Agent" for player in unique_players)
+        verb = "reload" if len(unique_players) > 1 else "reloads"
+        self.history.append(f"{labels} {verb} {amount:,} chips.")
+
     def _put_chips(self, player: int, amount: int) -> None:
         amount = max(0, min(amount, self.stacks[player]))
         self.stacks[player] -= amount
@@ -491,4 +507,9 @@ class HeadsUpHoldem:
             "result": self.result,
             "winner": self.winner,
             "session_stats": self.session_stats.snapshot(),
+            "settings": {
+                "initial_stack": self.initial_stack,
+                "small_blind": self.small_blind,
+                "big_blind": self.big_blind,
+            },
         }

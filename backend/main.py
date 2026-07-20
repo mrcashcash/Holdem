@@ -170,6 +170,17 @@ class ActionRequest(BaseModel):
     amount: int | None = Field(default=None, ge=0)
 
 
+class GameSettingsRequest(BaseModel):
+    initial_stack: int = Field(ge=1, le=1_000_000_000)
+    small_blind: int = Field(ge=1, le=1_000_000_000)
+    big_blind: int = Field(ge=2, le=1_000_000_000)
+
+
+class CashReloadRequest(BaseModel):
+    player: Literal[0, 1, "both"]
+    amount: int = Field(ge=1, le=1_000_000_000)
+
+
 class TrainingRequest(BaseModel):
     episodes: int = Field(default=50_000, ge=10, le=100_000_000, description="MCCFR iterations to run")
 
@@ -358,6 +369,42 @@ def new_game() -> dict:
         game.new_match()
         play_agent_turns()
         return game.snapshot()
+
+
+@app.post("/api/game/settings")
+def update_game_settings(request: GameSettingsRequest) -> dict:
+    """Apply play-table settings and begin a fresh match.
+
+    Training owns its own stack-depth configuration under backend/solver and
+    deliberately does not read these live game values.
+    """
+    global game
+
+    if request.big_blind != request.small_blind * 2:
+        raise HTTPException(status_code=400, detail="Big blind must be exactly twice the small blind.")
+    if request.initial_stack < request.big_blind:
+        raise HTTPException(status_code=400, detail="Starting stack must be at least one big blind.")
+
+    with game_lock:
+        game = HeadsUpHoldem(
+            initial_stack=request.initial_stack,
+            small_blind=request.small_blind,
+            big_blind=request.big_blind,
+        )
+        play_agent_turns()
+        return game.snapshot()
+
+
+@app.post("/api/game/reload-cash")
+def reload_game_cash(request: CashReloadRequest) -> dict:
+    """Add play money between hands without resetting the match or trainer."""
+    try:
+        with game_lock:
+            players = [0, 1] if request.player == "both" else [request.player]
+            game.reload_cash(players, request.amount)
+            return game.snapshot()
+    except (InvalidAction, ValueError) as exc:
+        raise HTTPException(status_code=400, detail=str(exc)) from exc
 
 
 @app.post("/api/game/next")

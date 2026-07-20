@@ -8,6 +8,7 @@ import {
 } from "react";
 import { api } from "./api";
 import ChampionLab from "./ChampionLab";
+import GameSettingsDialog from "./GameSettingsDialog";
 import {
   loadSoundSettings,
   type SoundSettings,
@@ -15,7 +16,9 @@ import {
   storeSoundSettings,
 } from "./sound";
 import type {
+  CashReloadRequest,
   ChampionQueryResult,
+  GameSettings,
   GameState,
   LegalActions,
   PlayerSessionStats,
@@ -516,6 +519,7 @@ function App() {
   const [replayHandNumber, setReplayHandNumber] = useState<number | null>(null);
   const [replayStep, setReplayStep] = useState(0);
   const [replayPlaying, setReplayPlaying] = useState(false);
+  const [settingsOpen, setSettingsOpen] = useState(false);
   const [championOpen, setChampionOpen] = useState(false);
   const [championResult, setChampionResult] =
     useState<ChampionQueryResult | null>(null);
@@ -740,6 +744,32 @@ function App() {
     [acceptGame, cancelAutoDeal],
   );
 
+  const applyGameSettings = async (settings: GameSettings) => {
+    cancelAutoDeal();
+    void sound.unlock();
+    setBusy(true);
+    try {
+      acceptGame(await api.updateGameSettings(settings), true);
+      setMessage(
+        `New ${settings.small_blind.toLocaleString()}/${settings.big_blind.toLocaleString()} table started with ${settings.initial_stack.toLocaleString()}-chip stacks.`,
+      );
+      setSettingsOpen(false);
+    } finally {
+      setBusy(false);
+    }
+  };
+
+  const reloadGameCash = async (reload: CashReloadRequest) => {
+    cancelAutoDeal();
+    setBusy(true);
+    try {
+      acceptGame(await api.reloadCash(reload));
+      setMessage("Cash reloaded. Deal the next hand when ready.");
+    } finally {
+      setBusy(false);
+    }
+  };
+
   const startTraining = async () => {
     const safeEpisodes = clamp(
       Number.isFinite(episodes) ? Math.trunc(episodes) : MIN_EPISODES,
@@ -919,7 +949,7 @@ function App() {
   const trainingProgress = Math.round((training?.progress ?? 0) * 100);
   const dealerSeat = displayedDealer ?? (game.button as 0 | 1);
   const preflop = game.street.toLowerCase() === "preflop";
-  const bigBlind = bigBlindFromHistory(game.history);
+  const bigBlind = game.settings?.big_blind ?? bigBlindFromHistory(game.history);
   const currentBet = Math.max(...game.round_bets);
   const chipLead = game.stacks[0] - game.stacks[1];
   const chipLeadLabel =
@@ -1082,6 +1112,14 @@ function App() {
               disabled={championBusy}
             >
               {canAct ? "Ask champion" : "Hand lab"}
+            </button>
+            <button
+              className="top-action-settings"
+              type="button"
+              onClick={() => setSettingsOpen(true)}
+              disabled={busy}
+            >
+              Settings
             </button>
             <div className="sound-controls" aria-label="Sound controls">
               <button
@@ -1550,6 +1588,14 @@ function App() {
                 Hand lab
               </button>
             </div>
+            <button
+              className="settings-button"
+              type="button"
+              onClick={() => setSettingsOpen(true)}
+              disabled={busy}
+            >
+              Game settings
+            </button>
             {message && (
               <p className="message" role="alert">
                 {message}
@@ -1676,6 +1722,15 @@ function App() {
           </section>
         </aside>
       </div>
+      {settingsOpen && (
+        <GameSettingsDialog
+          game={game}
+          busy={busy}
+          onApply={applyGameSettings}
+          onReload={reloadGameCash}
+          onClose={() => setSettingsOpen(false)}
+        />
+      )}
       {championOpen && (
         <ChampionLab
           canUseCurrent={canAct}

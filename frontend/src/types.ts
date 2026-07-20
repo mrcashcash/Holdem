@@ -33,6 +33,17 @@ export interface SessionStats {
   players: PlayerSessionStats[]
 }
 
+export interface GameSettings {
+  initial_stack: number
+  small_blind: number
+  big_blind: number
+}
+
+export interface CashReloadRequest {
+  player: 0 | 1 | 'both'
+  amount: number
+}
+
 export interface GameState {
   hand_number: number
   street: string
@@ -53,6 +64,7 @@ export interface GameState {
   result: string | null
   winner: number | null
   session_stats: SessionStats
+  settings?: GameSettings
 }
 
 export interface TrainingArtifacts {

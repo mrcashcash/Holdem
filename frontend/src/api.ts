@@ -1,8 +1,10 @@
 import type {
+  CashReloadRequest,
   ChampionQueryRequest,
   ChampionQueryResult,
   ChampionSpotRequest,
   ChampionSpotState,
+  GameSettings,
   GameState,
   TrainingStatus,
 } from './types'
@@ -31,6 +33,12 @@ export const api = {
   getGame: () => request<GameState>('/game'),
   newGame: () => request<GameState>('/game/new', { method: 'POST' }),
   nextHand: () => request<GameState>('/game/next', { method: 'POST' }),
+  updateGameSettings: (settings: GameSettings) => request<GameState>('/game/settings', {
+    method: 'POST', body: JSON.stringify(settings),
+  }),
+  reloadCash: (reload: CashReloadRequest) => request<GameState>('/game/reload-cash', {
+    method: 'POST', body: JSON.stringify(reload),
+  }),
   action: (action: string, amount?: number) => request<GameState>('/game/action', {
     method: 'POST', body: JSON.stringify({ action, amount }),
   }),

@@ -1,0 +1,239 @@
+.top-action-settings {
+  min-height: 1.95rem;
+  padding: 0.32rem 0.58rem;
+  color: #dbe8d5;
+  border-color: #69816f;
+  background: linear-gradient(145deg, #263c2f, #0d1b14);
+  box-shadow:
+    inset 0 1px #efffdc26,
+    0 2px 0 #041009,
+    0 5px 8px #0007;
+  font-size: 0.63rem;
+  font-weight: 800;
+  white-space: nowrap;
+}
+
+.settings-button {
+  width: 100%;
+  min-height: 2.35rem;
+  color: #dbe8d5;
+  border-color: #69816f;
+  background: linear-gradient(145deg, #263c2f, #0d1b14);
+}
+
+.game-settings-backdrop {
+  position: fixed;
+  z-index: 130;
+  inset: 0;
+  display: grid;
+  place-items: center;
+  padding: 1.25rem;
+  background: #020805df;
+  backdrop-filter: blur(8px);
+}
+
+.game-settings-dialog {
+  width: min(760px, 100%);
+  max-height: calc(100dvh - 2.5rem);
+  overflow-y: auto;
+  border: 1px solid #806d45;
+  border-radius: 14px;
+  color: #e8f0e4;
+  background: linear-gradient(145deg, #17261e, #08110d);
+  box-shadow:
+    0 24px 70px #000e,
+    inset 0 1px #fff1b91f;
+}
+
+.game-settings-header {
+  position: sticky;
+  z-index: 2;
+  top: 0;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  padding: 0.9rem 1.1rem;
+  border-bottom: 1px solid #5b5037;
+  background: linear-gradient(90deg, #28382df7, #111912fa);
+}
+
+.game-settings-header h2,
+.game-settings-section-heading h3 {
+  margin: 0.08rem 0 0;
+  color: #f6f2df;
+  font-family: "Space Grotesk", sans-serif;
+}
+
+.game-settings-header h2 {
+  font-size: 1.25rem;
+}
+
+.game-settings-body {
+  display: grid;
+  grid-template-columns: minmax(0, 1.15fr) minmax(250px, 0.85fr);
+  gap: 0.9rem;
+  padding: 1rem;
+}
+
+.game-setup-card,
+.cash-reload-card {
+  display: grid;
+  align-content: start;
+  gap: 0.85rem;
+  padding: 1rem;
+  border: 1px solid #405848;
+  border-radius: 10px;
+  background: #09150fbb;
+}
+
+.game-settings-section-heading {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+}
+
+.game-settings-section-heading span,
+.game-settings-fields label > span,
+.cash-reload-card label > span,
+.cash-stack-summary span {
+  color: #9db09f;
+  font-size: 0.64rem;
+  font-weight: 700;
+  letter-spacing: 0.07em;
+  text-transform: uppercase;
+}
+
+.game-settings-section-heading h3 {
+  font-size: 1rem;
+}
+
+.game-settings-section-heading > strong {
+  padding: 0.34rem 0.5rem;
+  border: 1px solid #8d7338;
+  border-radius: 999px;
+  color: #f3d47c;
+  background: #3a2b12;
+  font-size: 0.7rem;
+}
+
+.game-settings-fields {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0.65rem;
+}
+
+.game-settings-fields .wide {
+  grid-column: 1 / -1;
+}
+
+.game-settings-fields label,
+.cash-reload-card label {
+  display: grid;
+  gap: 0.32rem;
+}
+
+.game-settings-fields input,
+.cash-reload-card input,
+.cash-reload-card select {
+  width: 100%;
+  min-width: 0;
+  min-height: 2.45rem;
+  padding: 0.45rem 0.55rem;
+  border: 1px solid #506a58;
+  border-radius: 7px;
+  outline: none;
+  color: #edf4e5;
+  background: #07110c;
+  font: inherit;
+  font-size: 0.8rem;
+}
+
+.game-settings-fields input:focus,
+.cash-reload-card input:focus,
+.cash-reload-card select:focus {
+  border-color: #d1ad60;
+  box-shadow: 0 0 0 2px #d1ad6026;
+}
+
+.game-settings-presets {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 0.4rem;
+}
+
+.game-settings-presets button {
+  min-height: 2rem;
+  padding: 0.3rem;
+  color: #cddccc;
+  border-color: #4e6856;
+  background: #13261b;
+  font-size: 0.68rem;
+}
+
+.game-settings-explainer {
+  margin: 0;
+  color: #8fa292;
+  font-size: 0.66rem;
+  line-height: 1.5;
+}
+
+.game-settings-apply {
+  min-height: 2.65rem;
+}
+
+.cash-stack-summary {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0.45rem;
+}
+
+.cash-stack-summary div {
+  display: grid;
+  gap: 0.2rem;
+  padding: 0.65rem;
+  border: 1px solid #344b3b;
+  border-radius: 7px;
+  background: #0d1c15;
+}
+
+.cash-stack-summary strong {
+  color: #f0d484;
+  font-size: 1rem;
+}
+
+.game-settings-feedback {
+  margin: 0 1rem 1rem;
+  padding: 0.65rem 0.8rem;
+  border: 1px solid;
+  border-radius: 7px;
+  font-size: 0.72rem;
+}
+
+.game-settings-feedback.error {
+  color: #f0b98f;
+  border-color: #80513a;
+  background: #2a160e;
+}
+
+.game-settings-feedback.success {
+  color: #bde5c4;
+  border-color: #54735e;
+  background: #173622;
+}
+
+@media (max-width: 680px) {
+  .game-settings-backdrop {
+    padding: 0.55rem;
+  }
+
+  .game-settings-dialog {
+    max-height: calc(100dvh - 1.1rem);
+  }
+
+  .game-settings-body {
+    grid-template-columns: 1fr;
+    padding: 0.7rem;
+  }
+}

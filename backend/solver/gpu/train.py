@@ -130,7 +130,12 @@ def train(
         if (completed // save_every) % 2 == 1 or completed >= iterations:
             from backend.solver.gpu.exploit import cfr_br_exploitability
 
-            exploitability_mbb = round(cfr_br_exploitability(solver, br_iterations=60, eval_boards=8), 2)
+            # The CFR-BR responder must out-train the blueprint it exploits, or
+            # it under-responds and the "exploitability" drifts negative (a
+            # measurement artifact, not real — exploitability is >= 0). Scale
+            # the responder budget with tree size so it stays a valid bound.
+            br_iterations = 300 if len(solver.tree) > 100_000 else 120
+            exploitability_mbb = round(cfr_br_exploitability(solver, br_iterations=br_iterations, eval_boards=8), 2)
         record = {
             "iteration": solver.iteration,
             "iterations_per_second": round(rate, 3),

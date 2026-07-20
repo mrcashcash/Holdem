@@ -141,7 +141,7 @@ class TrainingState:
                 "parameters": checkpoint["infosets"],
                 "iterations_per_second": recent_rate,
                 "serving_agent": type(serving_agent).__name__,
-                "river_search": getattr(serving_agent, "river_search", False),
+                "river_search": bool(getattr(serving_agent, "subgame_search", False)),
                 "artifacts": {
                     "abstraction": blueprint_trainer.ABSTRACTION_PATH.exists(),
                     "blueprint": blueprint_trainer.BLUEPRINT_PATH.exists(),

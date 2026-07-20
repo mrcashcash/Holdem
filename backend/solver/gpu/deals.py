@@ -80,6 +80,10 @@ if _NUMBA:
 def score_all_combos(board: tuple[int, ...] | np.ndarray) -> np.ndarray:
     """7-card score per combo on a 5-card board; -1 where the combo collides."""
     board_array = np.asarray(board, dtype=np.int64)
+    if board_array.shape != (5,) or board_array.min() < 0 or board_array.max() > 51:
+        # The numba kernel would read out of bounds (native crash, not an
+        # exception) — observed via a street-drift bug handing it 4 cards.
+        raise ValueError(f"score_all_combos requires 5 valid card ids, got {board_array.tolist()}")
     if _NUMBA:
         return _score_all_combos(board_array, _COMBOS)
     from backend.poker import best_score

@@ -106,6 +106,63 @@ class GpuBlueprintAgent:
             return NEURAL_ALL_IN
         return self._to_neural_raise(game, player, int(self.tree.street[node]), choice)
 
+    def strategy_for_state(self, game: HeadsUpHoldem, player: int) -> dict:
+        """Return the mixed strategy for a state without sampling or acting."""
+        legal = game.legal_actions(player)
+        if not legal:
+            raise ValueError("The requested player is not due to act.")
+
+        node = self._locate(game, player)
+        bucket = None if node is None else self._bucket(game, player, int(self.tree.street[node]))
+        warnings = [
+            "Cards and bet sizes are mapped into the champion's trained abstraction."
+        ]
+        if node is None or bucket is None:
+            warnings.append(
+                "This history did not map to a trained node; the serving fallback is shown."
+            )
+            return {
+                "exact_match": False,
+                "node": None,
+                "bucket": None,
+                "actions": [self._fallback_query_action(game, player)],
+                "warnings": warnings,
+            }
+
+        combined: dict[tuple[str, int | None], dict] = {}
+        probabilities = self.strategy[node, bucket]
+        street = int(self.tree.street[node])
+        for choice in range(self.tree.config.num_actions):
+            if not self.tree.legal[node][choice]:
+                continue
+            probability = max(float(probabilities[choice]), 0.0)
+            action = self._query_action(game, player, choice, probability, street)
+            key = (action["action"], action["amount"])
+            if key in combined:
+                combined[key]["probability"] += probability
+            else:
+                combined[key] = action
+
+        total = sum(action["probability"] for action in combined.values())
+        if total <= 0:
+            warnings.append("The stored strategy had no probability mass; the serving fallback is shown.")
+            actions = [self._fallback_query_action(game, player)]
+            exact_match = False
+        else:
+            actions = list(combined.values())
+            for action in actions:
+                action["probability"] /= total
+            actions.sort(key=lambda action: action["probability"], reverse=True)
+            exact_match = True
+
+        return {
+            "exact_match": exact_match,
+            "node": int(node),
+            "bucket": int(bucket),
+            "actions": actions,
+            "warnings": warnings,
+        }
+
     def execute(self, game: HeadsUpHoldem, player: int, choice: int) -> None:
         # Raises execute at the blueprint's computed chip target directly.
         # Routing through execute_action's fraction mapping re-scales the
@@ -266,6 +323,10 @@ class GpuBlueprintAgent:
         if street == 0:
             return preflop_class(hole)
         board = tuple(card_id(card) for card in game.community)[: (0, 3, 4, 5)[street]]
+        if len(board) < (0, 3, 4, 5)[street]:
+            # Translation drift: the abstract tree is a street ahead of the
+            # real board — no valid bucket exists; caller falls back safely.
+            return None
         cache_key = (hole, board, street)
         cached = self._equity_cache.get(cache_key)
         if cached is None:
@@ -290,19 +351,94 @@ class GpuBlueprintAgent:
         legal = game.legal_actions(player)
         if not legal.get("raise"):
             return NEURAL_ALL_IN if legal.get("all_in") else NEURAL_CHECK_CALL
-        to_call = float(legal["to_call"])
-        fraction = tree.config.fractions(street)[choice - 3]
-        raise_by = fraction * (game.pot + to_call)
-        target = float(legal["player_bet"]) + to_call + raise_by
+        target = self._raise_target_for_choice(game, player, street, choice, tree)
         # Executed directly by execute() — the chip amount the abstract tree
         # actually trained with, not a fraction of someone else's interval.
-        self._raise_target = int(round(target))
+        self._raise_target = target
         minimum, maximum = float(legal["raise_min"]), float(legal["raise_max"])
         if maximum <= minimum:
             self._raise_fraction = 0.5
         else:
             self._raise_fraction = min(0.995, max(0.005, (target - minimum) / (maximum - minimum)))
         return NEURAL_RAISE
+
+    @staticmethod
+    def _raise_target_for_choice(
+        game: HeadsUpHoldem,
+        player: int,
+        street: int,
+        choice: int,
+        tree: BettingTree,
+    ) -> int:
+        legal = game.legal_actions(player)
+        to_call = float(legal["to_call"])
+        fraction = tree.config.fractions(street)[choice - 3]
+        raise_by = fraction * (game.pot + to_call)
+        target = float(legal["player_bet"]) + to_call + raise_by
+        return max(int(legal["raise_min"]), min(int(legal["raise_max"]), int(round(target))))
+
+    def _query_action(
+        self,
+        game: HeadsUpHoldem,
+        player: int,
+        choice: int,
+        probability: float,
+        street: int,
+    ) -> dict:
+        legal = game.legal_actions(player)
+        if choice == FOLD:
+            if legal.get("fold"):
+                action, amount = "fold", None
+            else:
+                action = "check" if legal.get("check") else "call"
+                amount = int(legal.get("to_call", 0)) if action == "call" else None
+        elif choice == CHECK_CALL:
+            action = "check" if legal.get("check") else "call"
+            amount = int(legal.get("to_call", 0)) if action == "call" else None
+        elif choice == ALL_IN:
+            if legal.get("all_in"):
+                action = "all_in"
+                amount = int(legal.get("raise_max", 0))
+            else:
+                action = "check" if legal.get("check") else "call"
+                amount = int(legal.get("to_call", 0)) if action == "call" else None
+        else:
+            if legal.get("raise"):
+                action = "raise"
+                amount = self._raise_target_for_choice(game, player, street, choice, self.tree)
+            elif legal.get("all_in"):
+                action = "all_in"
+                amount = int(legal.get("raise_max", 0))
+            else:
+                action = "check" if legal.get("check") else "call"
+                amount = int(legal.get("to_call", 0)) if action == "call" else None
+        label = action.replace("_", " ").title()
+        if action == "raise" and amount is not None:
+            label = f"Raise to {amount:,}"
+        elif action == "call" and amount is not None:
+            label = f"Call {amount:,}"
+        return {
+            "action": action,
+            "label": label,
+            "amount": amount,
+            "probability": float(probability),
+        }
+
+    def _fallback_query_action(self, game: HeadsUpHoldem, player: int) -> dict:
+        choice = self._safe_default(game, player)
+        legal = game.legal_actions(player)
+        if choice == NEURAL_FOLD:
+            action, amount = "fold", None
+        elif choice == NEURAL_CHECK_CALL:
+            action = "check" if legal.get("check") else "call"
+            amount = int(legal.get("to_call", 0)) if action == "call" else None
+        else:
+            action = "all_in"
+            amount = int(legal.get("raise_max", 0))
+        label = action.replace("_", " ").title()
+        if action == "call" and amount is not None:
+            label = f"Call {amount:,}"
+        return {"action": action, "label": label, "amount": amount, "probability": 1.0}
 
     @staticmethod
     def _safe_default(game: HeadsUpHoldem, player: int) -> int:

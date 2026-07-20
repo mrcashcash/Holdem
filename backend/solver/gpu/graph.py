@@ -24,10 +24,24 @@ from backend.solver.gpu.deals import Deal
 class GraphRunner:
     """Capture-once / replay-many driver for a fixed-shape VectorCFR."""
 
-    def __init__(self, solver: VectorCFR, warmup: int = 3) -> None:
+    def __init__(
+        self,
+        solver: VectorCFR,
+        warmup: int = 3,
+        traversers: tuple[int, ...] = (0, 1),
+        frozen_average: torch.Tensor | None = None,
+        frozen_player: int | None = None,
+    ) -> None:
         if solver.device.type != "cuda":
             raise ValueError("CUDA graphs require a cuda solver")
         self.solver = solver
+        # Which traverser passes the captured body runs, and (for CFR-BR) which
+        # player follows a frozen average strategy instead of regret matching.
+        # The frozen tensor is constant across the run, so it is captured by
+        # reference — bit-identical to the eager path.
+        self.traversers = traversers
+        self.frozen_average = frozen_average
+        self.frozen_player = frozen_player
         batch = solver.batch_boards
         device = solver.device
         width = batch * NUM_COMBOS
@@ -66,8 +80,13 @@ class GraphRunner:
     def _captured_body(self) -> None:
         solver = self.solver
         sentinel = _BufferDeal(solver.batch_boards)
-        solver._iterate(sentinel, traverser=0)
-        solver._iterate(sentinel, traverser=1)
+        for traverser in self.traversers:
+            solver._iterate(
+                sentinel,
+                traverser=traverser,
+                frozen_average=self.frozen_average,
+                frozen_player=self.frozen_player,
+            )
         # Discount with device-resident factors — strictly IN-PLACE so the
         # regret tensor keeps its identity across graph replays (reassigning
         # would leave subsequent replays writing into a stale buffer).

@@ -126,14 +126,18 @@ def train(
         rate = chunk / (time.time() - chunk_started)
         # The gate costs ~2-3 minutes; every other checkpoint is plenty for
         # the trend while giving those minutes back to training.
+        # The CFR-BR probe is CPU-bound and slow (a valid responder needs
+        # hundreds of iterations on the 200bb tree); running it every save
+        # stole ~40% of wall-clock and made telemetry lag the checkpoint.
+        # It is diagnostic only — run it sparsely (every 5th save + final).
         exploitability_mbb = None
-        if (completed // save_every) % 2 == 1 or completed >= iterations:
+        gate_interval = 5 * save_every
+        if completed % gate_interval == 0 or completed >= iterations:
             from backend.solver.gpu.exploit import cfr_br_exploitability
 
-            # The CFR-BR responder must out-train the blueprint it exploits, or
-            # it under-responds and the "exploitability" drifts negative (a
-            # measurement artifact, not real — exploitability is >= 0). Scale
-            # the responder budget with tree size so it stays a valid bound.
+            # Responder must out-train the blueprint it exploits or the reading
+            # drifts negative (artifact — true exploitability is >= 0); scale
+            # the budget with tree size.
             br_iterations = 300 if len(solver.tree) > 100_000 else 120
             exploitability_mbb = round(cfr_br_exploitability(solver, br_iterations=br_iterations, eval_boards=8), 2)
         record = {

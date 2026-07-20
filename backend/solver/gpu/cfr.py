@@ -454,22 +454,45 @@ class VectorCFR:
         worse = torch.gather(padded, 2, left_e)  # opponents with lower score
         better = total - torch.gather(padded, 2, right_e)
 
-        # Blocker correction, one card at a time: subtract the worse/better
-        # mass contributed by opponent combos sharing a card with the hero.
-        correction = torch.zeros_like(worse)  # (worse_blocked - better_blocked)
-        for card in range(52):
-            members = card_in_combo[card]  # [C] combos containing this card
-            members_ordered = torch.gather(members.expand(batch, -1), 1, order)  # [B, C]
-            masked = ordered * members_ordered.unsqueeze(0)
-            card_prefix = torch.cumsum(masked, dim=2)
-            card_total = card_prefix[..., -1:]
-            card_padded = torch.cat([zeros, card_prefix], dim=2)
-            holders = self.card_holders[card]
-            left_h = boundaries_left[:, holders].unsqueeze(0).expand(showdowns, -1, -1)
-            right_h = boundaries_right[:, holders].unsqueeze(0).expand(showdowns, -1, -1)
-            worse_blocked = torch.gather(card_padded, 2, left_h)
-            better_blocked = card_total - torch.gather(card_padded, 2, right_h)
-            correction[:, :, holders] += worse_blocked - better_blocked
+        # Blocker correction: subtract the worse/better mass of opponent
+        # combos sharing a card with the hero. Small trees use one batched
+        # pass with cards as a channel dim (few large kernels — what makes
+        # graph-replayed subgame solves fast); the big blueprint tree keeps
+        # the per-card loop to bound memory.
+        channel_bytes = showdowns * batch * (NUM_COMBOS + 1) * 52 * 4 * 3
+        if channel_bytes < 2_000_000_000:
+            members_all = (self.t_card_in_combo > 0).T.float()  # [C, 52]
+            members_ordered = members_all[order]  # [B, C, 52]
+            masked = ordered.unsqueeze(3) * members_ordered.unsqueeze(0)  # [S, B, C, 52]
+            channel_prefix = torch.cumsum(masked, dim=2)
+            channel_total = channel_prefix[:, :, -1:, :]
+            channel_padded = torch.cat(
+                [torch.zeros_like(channel_prefix[:, :, :1, :]), channel_prefix], dim=2
+            )
+            left_e4 = left_e.unsqueeze(3).expand(-1, -1, -1, 52)
+            right_e4 = right_e.unsqueeze(3).expand(-1, -1, -1, 52)
+            worse_by_card = torch.gather(channel_padded, 2, left_e4)
+            better_by_card = channel_total - torch.gather(channel_padded, 2, right_e4)
+            per_card_gap = worse_by_card - better_by_card  # [S, B, C, 52]
+            combo_channels = self.t_combos.view(1, 1, NUM_COMBOS, 2).expand(
+                showdowns, batch, -1, -1
+            )
+            correction = torch.gather(per_card_gap, 3, combo_channels).sum(dim=3)
+        else:
+            correction = torch.zeros_like(worse)  # (worse_blocked - better_blocked)
+            for card in range(52):
+                members = card_in_combo[card]  # [C] combos containing this card
+                members_ordered = torch.gather(members.expand(batch, -1), 1, order)  # [B, C]
+                masked = ordered * members_ordered.unsqueeze(0)
+                card_prefix = torch.cumsum(masked, dim=2)
+                card_total = card_prefix[..., -1:]
+                card_padded = torch.cat([zeros, card_prefix], dim=2)
+                holders = self.card_holders[card]
+                left_h = boundaries_left[:, holders].unsqueeze(0).expand(showdowns, -1, -1)
+                right_h = boundaries_right[:, holders].unsqueeze(0).expand(showdowns, -1, -1)
+                worse_blocked = torch.gather(card_padded, 2, left_h)
+                better_blocked = card_total - torch.gather(card_padded, 2, right_h)
+                correction[:, :, holders] += worse_blocked - better_blocked
 
         values[nodes, :] = (pots * (worse - better - correction)).reshape(
             showdowns, batch * NUM_COMBOS

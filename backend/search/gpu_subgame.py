@@ -207,7 +207,18 @@ def solve_subgame(agent, game, player: int, iterations: int = SUBGAME_ITERATIONS
     device = "cuda" if torch.cuda.is_available() else "cpu"
     solver = VectorCFR(tree, sampler, device=device, seed=game.hand_number, averaging_delay=iterations // 6)
     solver.root_reach = torch.tensor(ranges, dtype=torch.float32, device=solver.device)
-    solver.run(iterations)
+    if device == "cuda":
+        # Graph capture + replay: an order of magnitude fewer kernel launches
+        # (small trees are launch-bound); numerically identical to eager.
+        from backend.solver.gpu.graph import GraphRunner
+
+        runner = GraphRunner(solver, warmup=2)
+        solver.regrets.zero_()
+        solver.strategy_sums.zero_()
+        solver.iteration = 0
+        runner.run(iterations, random.Random(game.hand_number * 31 + 5))
+    else:
+        solver.run(iterations)
 
     sums = solver.strategy_sums.cpu().numpy()
     legal = tree.legal[:, None, :]

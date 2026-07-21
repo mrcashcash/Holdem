@@ -32,7 +32,18 @@ DEFAULT_CONFIG = GpuActionConfig(
     max_raises_per_street=3,
     stack_bb=100.0,  # matches the serving game: 2000 chips at a 20-chip big blind
 )
-DEFAULT_SAMPLER = dict(flop_buckets=20, turn_buckets=20, river_buckets=20, flop_samples=8, turn_samples=8)
+# Distribution-aware buckets: 30 mean bins x 4 std (drawiness) bins = 120
+# flop/turn buckets (<=169 tensor cap), separating draws from made hands and
+# air at equal current equity. More runout samples sharpen the mean/std.
+DEFAULT_SAMPLER = dict(
+    flop_buckets=30,
+    turn_buckets=30,
+    river_buckets=30,
+    flop_samples=12,
+    turn_samples=12,
+    distributional=True,
+    std_bins=4,
+)
 
 
 def configure_stack(stack_bb: float) -> None:
@@ -55,11 +66,12 @@ def build_solver(device: str = "cuda", seed: int = 0, batch_boards: int = 1) -> 
     if device == "cuda" and not torch.cuda.is_available():
         device = "cpu"
     tree = BettingTree(DEFAULT_CONFIG)
+    sampler = DealSampler(**DEFAULT_SAMPLER)
     # averaging_delay: the earliest strategies are noise; keep them out of the
     # average (Supremus' DCFR+ delayed averaging).
     solver = VectorCFR(
         tree,
-        DealSampler(**DEFAULT_SAMPLER),
+        sampler,
         device=device,
         seed=seed,
         averaging_delay=1000,
@@ -67,6 +79,10 @@ def build_solver(device: str = "cuda", seed: int = 0, batch_boards: int = 1) -> 
     )
     if CHECKPOINT_PATH.exists():
         payload = np.load(CHECKPOINT_PATH, allow_pickle=False)
+        # Restore the exact sampler (incl. fitted std edges) so bucketing is
+        # identical across resume and at serving time.
+        if "sampler" in payload:
+            solver.sampler = DealSampler.from_state(json.loads(str(payload["sampler"])))
         stored = json.loads(str(payload["config"]))
         # JSON turns tuples into lists; normalize both sides before comparing.
         if stored != json.loads(json.dumps(asdict(DEFAULT_CONFIG))):
@@ -83,6 +99,10 @@ def build_solver(device: str = "cuda", seed: int = 0, batch_boards: int = 1) -> 
             # tensors by the same constant so past and future stay consistent.
             solver.regrets /= 1081.0
             solver.strategy_sums /= 1081.0
+    elif solver.sampler.distributional and not solver.sampler._std_edges:
+        # Fresh run: fit the drawiness (equity-std) quantile edges once; they
+        # persist in the first checkpoint so serving buckets identically.
+        solver.sampler.fit_std_edges(samples=400, seed=seed)
     return solver
 
 
@@ -95,7 +115,7 @@ def save_solver(solver: VectorCFR) -> None:
         strategy_sums=solver.strategy_sums.cpu().numpy(),
         iteration=solver.iteration,
         config=json.dumps(asdict(DEFAULT_CONFIG)),
-        sampler=json.dumps(DEFAULT_SAMPLER),
+        sampler=json.dumps(solver.sampler.state()),
         reach_normalized=True,
     )
     temporary.replace(CHECKPOINT_PATH)

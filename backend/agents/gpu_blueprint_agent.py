@@ -67,7 +67,10 @@ class GpuBlueprintAgent:
             return None
         payload = np.load(path, allow_pickle=False)
         config = GpuActionConfig(**json.loads(str(payload["config"])))
-        sampler = DealSampler(**json.loads(str(payload["sampler"])))
+        sampler_state = json.loads(str(payload["sampler"]))
+        # from_state restores fitted std edges; older checkpoints stored only
+        # constructor kwargs (no std_edges key) — from_state handles both.
+        sampler = DealSampler.from_state(sampler_state)
         tree = BettingTree(config)
         sums = payload["strategy_sums"]
         legal = tree.legal[:, None, :]
@@ -332,17 +335,22 @@ class GpuBlueprintAgent:
         if cached is None:
             combo_index = _COMBO_INDEX[hole]
             if street == 3:
+                # River: scalar equity quantile (matches training river path).
                 equity = equity_from_scores(score_all_combos(board))[combo_index]
+                if equity < 0:
+                    return None
+                counts = self.sampler.bucket_counts()
+                cached = min(int(equity * counts[3]), counts[3] - 1)
             else:
+                # Flop/turn: delegate to the sampler's shared bucketing so the
+                # served bucket is identical to the trained one (distribution-
+                # aware or scalar, whichever the checkpoint used).
                 rng = random.Random(hash((hole, board)) & 0x7FFFFFFF)
-                samples = self.sampler.turn_samples if street == 2 else self.sampler.flop_samples
-                equity = DealSampler._mean_equity(board, rng, samples)[combo_index]
-            if equity < 0:
-                return None
-            cached = float(equity)
+                cached = self.sampler.street_bucket_for_combo(board, street, combo_index, rng)
+                if cached is None:
+                    return None
             self._equity_cache[cache_key] = cached
-        counts = self.sampler.bucket_counts()
-        return min(int(cached * counts[street]), counts[street] - 1)
+        return int(cached)
 
     def _to_neural_raise(
         self, game: HeadsUpHoldem, player: int, street: int, choice: int, tree: BettingTree | None = None

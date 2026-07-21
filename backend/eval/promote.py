@@ -32,9 +32,12 @@ STYLES_SEED = 3
 # Calibrated 2026-07-19 from a 1000-hand A/B: at ~150 hands/style the
 # benchmark noise is ~±250 bb/100, dwarfing a 50 margin (coin-flip verdicts).
 # 300 hands + 120 margin keeps the gate fast with far fewer false verdicts.
-MEAN_MARGIN_BB100 = 120.0
+# 3000 hands/style shrinks the CI to ~±25 bb/100 (vs ~±250 at 150), so
+# comparison verdicts are statistical, not coin flips (user directive
+# 2026-07-21). The tighter sample lets the mean margin drop too.
+MEAN_MARGIN_BB100 = 40.0
 EXPLOIT_RATIO_LIMIT = 1.25
-DEFAULT_GATE_HANDS = 300
+DEFAULT_GATE_HANDS = 3000
 
 
 def _depth_paths(data_dir):

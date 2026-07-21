@@ -46,18 +46,23 @@ DEFAULT_SAMPLER = dict(
 )
 
 
-def configure_stack(stack_bb: float) -> None:
-    """Retarget the trainer at a different stack depth with its own artifacts.
+def configure_stack(stack_bb: float, tag: str | None = None) -> None:
+    """Retarget the trainer at a stack depth (and optional experiment tag).
 
-    100bb keeps the canonical paths (the serving default); other depths get
-    backend/data/gpu_blueprint_<N>bb/ so multi-stack blueprints coexist.
+    100bb + no tag keeps the canonical paths (the serving default). Other
+    depths get gpu_blueprint_<N>bb/; a tag adds a _<tag> suffix so an
+    experiment (e.g. a new abstraction) trains into its own directory without
+    clobbering — or silently resuming from — an incompatible checkpoint.
     """
     global DEFAULT_CONFIG, DATA_DIR, CHECKPOINT_PATH, TELEMETRY_PATH
     from dataclasses import replace
 
     DEFAULT_CONFIG = replace(DEFAULT_CONFIG, stack_bb=float(stack_bb))
-    if stack_bb != 100.0:
-        DATA_DIR = DATA_DIR.parent / f"gpu_blueprint_{int(stack_bb)}bb"
+    name = "gpu_blueprint" if stack_bb == 100.0 else f"gpu_blueprint_{int(stack_bb)}bb"
+    if tag:
+        name = f"{name}_{tag}"
+    if name != "gpu_blueprint":
+        DATA_DIR = DATA_DIR.parent / name
         CHECKPOINT_PATH = DATA_DIR / "checkpoint.npz"
         TELEMETRY_PATH = DATA_DIR / "telemetry.json"
 
@@ -184,9 +189,10 @@ def main() -> None:
     parser.add_argument("--seed", type=int, default=0)
     parser.add_argument("--batch-boards", type=int, default=1, help="boards per iteration (mini-batch)")
     parser.add_argument("--stack-bb", type=float, default=100.0, help="stack depth; non-100 gets its own artifact dir")
+    parser.add_argument("--tag", type=str, default=None, help="experiment tag; isolates artifacts (e.g. a new abstraction)")
     arguments = parser.parse_args()
-    if arguments.stack_bb != 100.0:
-        configure_stack(arguments.stack_bb)
+    if arguments.stack_bb != 100.0 or arguments.tag:
+        configure_stack(arguments.stack_bb, tag=arguments.tag)
     train(
         arguments.iterations,
         device=arguments.device,

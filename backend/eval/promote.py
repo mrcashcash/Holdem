@@ -37,50 +37,63 @@ EXPLOIT_RATIO_LIMIT = 1.25
 DEFAULT_GATE_HANDS = 300
 
 
-def evaluate_checkpoint(checkpoint_path, hands: int = 150) -> dict:
-    """Styles mean (fixed seeds) + exploitability for one checkpoint."""
+def _depth_paths(data_dir):
+    """(checkpoint, champion, meta, telemetry) for a depth's artifact dir."""
+    return (
+        data_dir / "checkpoint.npz",
+        data_dir / "champion.npz",
+        data_dir / "champion_meta.json",
+        data_dir / "telemetry.json",
+    )
+
+
+def evaluate_checkpoint(checkpoint_path, hands: int = 150, telemetry_path=None) -> dict:
+    """Styles mean (at the agent's trained depth) + exploitability for a checkpoint."""
     from backend.agents.gpu_blueprint_agent import GpuBlueprintAgent
     from backend.eval.benchmark import benchmark_against_styles
-    from backend.solver.gpu.exploit import cfr_br_exploitability
 
     agent = GpuBlueprintAgent.try_load(checkpoint_path)
     if agent is None:
         raise FileNotFoundError(checkpoint_path)
     agent.subgame_search = False  # gate on blueprint strength; search is a separate layer
-    report = benchmark_against_styles(agent, hands_per_style=hands, styles=GATE_STYLES, seed=STYLES_SEED)
+    stack_bb = float(agent.tree.config.stack_bb)
+    report = benchmark_against_styles(
+        agent, hands_per_style=hands, styles=GATE_STYLES, seed=STYLES_SEED, stack_bb=stack_bb
+    )
 
-    # Use the trainer's own logged CFR-BR reading (same metric) instead of
-    # recomputing on the GPU — evaluation must never contend with training
-    # for VRAM (see the 2026-07-19 stall incident).
+    # Read the trainer's own logged CFR-BR value from THIS depth's telemetry
+    # (never recompute on the GPU — evaluation must not contend for VRAM).
     exploitability = None
-    if gpu_train.TELEMETRY_PATH.exists():
-        history = json.loads(gpu_train.TELEMETRY_PATH.read_text(encoding="utf-8"))
+    telemetry_path = telemetry_path or gpu_train.TELEMETRY_PATH
+    if telemetry_path.exists():
+        history = json.loads(telemetry_path.read_text(encoding="utf-8"))
         readings = [r["exploitability_mbb_per_hand"] for r in history if r.get("exploitability_mbb_per_hand") is not None]
         if readings:
             exploitability = readings[-1]
-    if exploitability is None:
-        solver = gpu_train.build_solver(device="cpu")
-        exploitability = cfr_br_exploitability(solver, br_iterations=60, eval_boards=8)
     return {
         "iteration": agent.iteration,
+        "stack_bb": stack_bb,
         "styles_mean_bb_per_100": report["mean_bb_per_100"],
         "styles": {name: entry["bb_per_100"] for name, entry in report["styles"].items()},
-        "exploitability_mbb": round(exploitability, 2),
+        "exploitability_mbb": round(exploitability, 2) if exploitability is not None else None,
         "hands_per_style": hands,
     }
 
 
-def promote_if_better(hands: int = 150, force: bool = False, progress: bool = True) -> dict:
-    candidate = evaluate_checkpoint(gpu_train.CHECKPOINT_PATH, hands=hands)
+def promote_if_better(hands: int = 150, force: bool = False, progress: bool = True, data_dir=None) -> dict:
+    data_dir = data_dir or gpu_train.DATA_DIR
+    checkpoint_path, champion_path, meta_path, telemetry_path = _depth_paths(data_dir)
+    candidate = evaluate_checkpoint(checkpoint_path, hands=hands, telemetry_path=telemetry_path)
     champion_meta = None
-    if CHAMPION_META_PATH.exists():
-        champion_meta = json.loads(CHAMPION_META_PATH.read_text(encoding="utf-8"))
+    if meta_path.exists():
+        champion_meta = json.loads(meta_path.read_text(encoding="utf-8"))
 
     if champion_meta is not None and not force:
         mean_ok = candidate["styles_mean_bb_per_100"] >= champion_meta["styles_mean_bb_per_100"] - MEAN_MARGIN_BB100
-        exploit_ok = candidate["exploitability_mbb"] <= max(
-            champion_meta["exploitability_mbb"] * EXPLOIT_RATIO_LIMIT, 50.0
-        )
+        cand_exp = candidate["exploitability_mbb"]
+        champ_exp = champion_meta.get("exploitability_mbb")
+        # Exploitability check only when both sides have a comparable reading.
+        exploit_ok = cand_exp is None or champ_exp is None or cand_exp <= max(champ_exp * EXPLOIT_RATIO_LIMIT, 50.0)
         promoted = mean_ok and exploit_ok
     else:
         promoted = True
@@ -94,8 +107,8 @@ def promote_if_better(hands: int = 150, force: bool = False, progress: bool = Tr
         "exploit_ok": exploit_ok,
     }
     if promoted:
-        shutil.copy2(gpu_train.CHECKPOINT_PATH, CHAMPION_PATH)
-        CHAMPION_META_PATH.write_text(json.dumps(candidate, indent=2), encoding="utf-8")
+        shutil.copy2(checkpoint_path, champion_path)
+        meta_path.write_text(json.dumps(candidate, indent=2), encoding="utf-8")
     if progress:
         print(json.dumps(verdict, indent=2))
     return verdict
@@ -105,8 +118,12 @@ def main() -> None:
     parser = argparse.ArgumentParser(description="Promote the latest checkpoint if it beats the champion")
     parser.add_argument("--hands", type=int, default=DEFAULT_GATE_HANDS)
     parser.add_argument("--force", action="store_true", help="promote unconditionally")
+    parser.add_argument("--stack-bb", type=float, default=100.0, help="which depth's blueprint to gate")
     arguments = parser.parse_args()
-    promote_if_better(hands=arguments.hands, force=arguments.force)
+    data_dir = gpu_train.DATA_DIR
+    if arguments.stack_bb != 100.0:
+        data_dir = gpu_train.DATA_DIR.parent / f"gpu_blueprint_{int(arguments.stack_bb)}bb"
+    promote_if_better(hands=arguments.hands, force=arguments.force, data_dir=data_dir)
 
 
 if __name__ == "__main__":

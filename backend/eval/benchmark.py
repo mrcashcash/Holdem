@@ -24,9 +24,11 @@ from backend.styles import AUDIT_STYLES, BENCHMARK_STYLES, style_action
 ALL_STYLES = tuple(BENCHMARK_STYLES) + tuple(AUDIT_STYLES)
 
 
-def _play_single_hand(agent: BlueprintAgent, style: str, agent_seat: int, seed: int) -> float:
+def _play_single_hand(agent: BlueprintAgent, style: str, agent_seat: int, seed: int, stack_bb: float = 100.0) -> float:
     """Play one hand from a seeded deck; return the agent's result in big blinds."""
-    engine = HeadsUpHoldem(rng=random.Random(seed))
+    # Benchmark at the agent's trained depth — a 200bb blueprint evaluated at
+    # 100bb (or vice versa) is the depth mismatch that swung Slumbot ~107 bb/100.
+    engine = HeadsUpHoldem(initial_stack=int(round(stack_bb * 20)), small_blind=10, big_blind=20, rng=random.Random(seed))
     stacks_before = list(engine.stacks)
     contributions_start = list(engine.contributions)
     del contributions_start
@@ -51,6 +53,7 @@ def benchmark_against_styles(
     hands_per_style: int = 500,
     styles: tuple[str, ...] = ALL_STYLES,
     seed: int = 0,
+    stack_bb: float = 100.0,
 ) -> dict:
     """bb/100 per style with a 95% CI, using duplicate (seat-swapped) deals."""
     results: dict[str, dict] = {}
@@ -60,8 +63,8 @@ def benchmark_against_styles(
         for pair in range(pairs):
             deal_seed = seed * 1_000_003 + style_index * 10_007 + pair
             as_button_seat = 0  # hand 1 of a fresh engine gives seat 0 the button
-            first = _play_single_hand(agent, style, agent_seat=as_button_seat, seed=deal_seed)
-            second = _play_single_hand(agent, style, agent_seat=1 - as_button_seat, seed=deal_seed)
+            first = _play_single_hand(agent, style, agent_seat=as_button_seat, seed=deal_seed, stack_bb=stack_bb)
+            second = _play_single_hand(agent, style, agent_seat=1 - as_button_seat, seed=deal_seed, stack_bb=stack_bb)
             samples.append((first + second) / 2.0)  # duplicate pair: card luck cancels
         mean = statistics.fmean(samples)
         deviation = statistics.stdev(samples) if len(samples) > 1 else 0.0

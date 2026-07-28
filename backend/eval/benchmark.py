@@ -29,9 +29,11 @@ def _play_single_hand(agent: BlueprintAgent, style: str, agent_seat: int, seed: 
     # Benchmark at the agent's trained depth — a 200bb blueprint evaluated at
     # 100bb (or vice versa) is the depth mismatch that swung Slumbot ~107 bb/100.
     engine = HeadsUpHoldem(initial_stack=int(round(stack_bb * 20)), small_blind=10, big_blind=20, rng=random.Random(seed))
-    stacks_before = list(engine.stacks)
-    contributions_start = list(engine.contributions)
-    del contributions_start
+    # Constructor already posted blinds: engine.stacks is short by each seat's
+    # blind here, and measuring from it inflates every result by the posted
+    # blind (+75 bb/100 per duplicate pair at 10/20 — found via NULL test
+    # 2026-07-23). Baseline is the full starting stack.
+    stacks_before = [float(engine.initial_stack), float(engine.initial_stack)]
     safety = 0
     while not engine.hand_complete and safety < 200:
         player = engine.current_player

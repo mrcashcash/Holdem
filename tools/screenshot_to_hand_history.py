@@ -12,7 +12,7 @@ REPOSITORY_ROOT = Path(__file__).resolve().parents[1]
 if str(REPOSITORY_ROOT) not in sys.path:
     sys.path.insert(0, str(REPOSITORY_ROOT))
 
-from backend.screenshot_history import extract_hand_history, readable_text
+from backend.screen_history.recognition import extract_hand_history, readable_text
 
 
 def build_parser() -> argparse.ArgumentParser:
@@ -38,8 +38,17 @@ def build_parser() -> argparse.ArgumentParser:
         nargs=2,
         type=int,
         metavar=("PLAYER_1", "PLAYER_2"),
-        default=(2_000, 2_000),
-        help="Starting stacks used for rules validation (default: 2000 2000)",
+        default=None,
+        help=(
+            "Starting stacks in the recognizer's smallest unit. CoinPoker layouts "
+            "infer them automatically when omitted; other layouts default to 2000 2000."
+        ),
+    )
+    parser.add_argument(
+        "--layout",
+        choices=("auto", "default", "coinpoker"),
+        default="auto",
+        help="Recognition layout (default: auto)",
     )
     parser.add_argument(
         "--timeline-crop",
@@ -84,6 +93,7 @@ def main() -> int:
             starting_stacks=arguments.starting_stacks,
             timeline_crop=arguments.timeline_crop,
             minimum_card_score=arguments.minimum_card_score,
+            layout_hint=arguments.layout,
         )
     except (RuntimeError, ValueError, OSError) as exc:
         print(f"Extraction failed: {exc}", file=sys.stderr)

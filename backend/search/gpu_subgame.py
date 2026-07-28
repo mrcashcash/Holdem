@@ -35,7 +35,7 @@ from backend.solver.gpu.deals import (
 )
 from backend.solver.gpu.tree import DECISION, STREET_END, BettingTree, GpuActionConfig
 
-SUBGAME_FRACTIONS = (0.33, 0.75, 1.5, 2.5)
+SUBGAME_FRACTIONS = (0.33, 0.5, 0.75, 1.0, 1.4)
 SUBGAME_RAISE_CAP = 3
 SUBGAME_ITERATIONS = 120
 
@@ -69,6 +69,9 @@ class FixedBoardSampler:
             return self._full_deal
 
         if len(self.partial_board) == 4:
+            if getattr(self.base, "potential_aware", False):
+                river = self._any_river(rng)
+                return self.base.for_board(self.partial_board + (river,), rng)
             if self._prefix_buckets is None:
                 template = self.base.for_board(
                     self.partial_board + (self._any_river(rng),), rng
@@ -100,6 +103,8 @@ class FixedBoardSampler:
 def partial_board_buckets(board_ids: tuple[int, ...], sampler: DealSampler, seed: int = 11) -> np.ndarray:
     """Bucket per combo per dealt street on the actual board. [-1 = collision]"""
     rng = random.Random(seed)
+    if getattr(sampler, "potential_aware", False):
+        return sampler.bucket_rows(tuple(board_ids), rng).astype(np.int64)
     streets = sum(1 for size in _STREET_BOARD if len(board_ids) >= size)
     buckets = np.full((4, NUM_COMBOS), -1, dtype=np.int64)
     blocked = np.zeros(NUM_COMBOS, dtype=bool)
@@ -109,19 +114,22 @@ def partial_board_buckets(board_ids: tuple[int, ...], sampler: DealSampler, seed
         blocked |= CARD_IN_COMBO[card]
     valid = ~blocked
     buckets[0][valid] = _PREFLOP_CLASS[valid]
-    counts = sampler.bucket_counts()
+    # Delegate to the sampler's shared bucketing (_assign_street /_quantize) so
+    # these buckets match the trained strategy tensor exactly — including the
+    # distribution-aware (mean x equity-std) scheme. A reimplemented scalar
+    # quantile here silently indexed the wrong strategy rows for distributional
+    # checkpoints (found in review 2026-07-22).
     for street in (1, 2):
         size = _STREET_BOARD[street]
         if len(board_ids) < size:
             break
         samples = sampler.flop_samples if street == 1 else sampler.turn_samples
-        equity = DealSampler._mean_equity(tuple(board_ids[:size]), rng, samples)
-        seen = valid & (equity >= 0)
-        buckets[street][seen] = np.minimum((equity[seen] * counts[street]).astype(np.int64), counts[street] - 1)
+        mean_bins = sampler.flop_buckets if street == 1 else sampler.turn_buckets
+        sampler._assign_street(buckets, tuple(board_ids[:size]), rng, samples, mean_bins, street, valid)
     if len(board_ids) == 5:
         equity = equity_from_scores(score_all_combos(board_ids))
         seen = valid & (equity >= 0)
-        buckets[3][seen] = np.minimum((equity[seen] * counts[3]).astype(np.int64), counts[3] - 1)
+        buckets[3][seen] = sampler._quantize(equity[seen], sampler.river_buckets)
     return buckets
 
 
@@ -170,7 +178,11 @@ class SubgameSolution:
         self.street_buckets = street_buckets  # buckets on the actual board so far
 
 
-def solve_subgame(agent, game, player: int, iterations: int = SUBGAME_ITERATIONS) -> SubgameSolution:
+def build_subgame(agent, game, iterations: int) -> tuple:
+    """Shared subgame construction: (solver, tree, street_buckets, ranges).
+
+    ``ranges`` are the blueprint-tracked per-combo reach weights by abstract
+    seat; ``solver.root_reach`` is already seeded with them."""
     from backend.vectorized_engine import card_id
 
     board_ids = tuple(card_id(card) for card in game.community)
@@ -207,7 +219,20 @@ def solve_subgame(agent, game, player: int, iterations: int = SUBGAME_ITERATIONS
     device = "cuda" if torch.cuda.is_available() else "cpu"
     solver = VectorCFR(tree, sampler, device=device, seed=game.hand_number, averaging_delay=iterations // 6)
     solver.root_reach = torch.tensor(ranges, dtype=torch.float32, device=solver.device)
-    if device == "cuda":
+    return solver, tree, street_buckets, ranges
+
+
+# `average_from_sums` was removed on 2026-07-27. It assumed the pre-Phase-2
+# dense [nodes, buckets, actions] layout; `VectorCFR.strategy_sums` is now a 2-D
+# compact table, so the helper raised on every call and its only callers (the
+# safe-gadget tests) had been silently failing since compact storage landed.
+# Use `solver.average_strategy_tables()` / `average_strategy_tensor()`, which
+# understand the compact layout.
+
+
+def solve_subgame(agent, game, player: int, iterations: int = SUBGAME_ITERATIONS) -> SubgameSolution:
+    solver, tree, street_buckets, _ = build_subgame(agent, game, iterations)
+    if str(solver.device) != "cpu":
         # Graph capture + replay: an order of magnitude fewer kernel launches
         # (small trees are launch-bound); numerically identical to eager.
         from backend.solver.gpu.graph import GraphRunner
@@ -220,9 +245,12 @@ def solve_subgame(agent, game, player: int, iterations: int = SUBGAME_ITERATIONS
     else:
         solver.run(iterations)
 
-    sums = solver.strategy_sums.cpu().numpy()
-    legal = tree.legal[:, None, :]
-    totals = sums.sum(axis=2, keepdims=True)
-    uniform = legal / legal.sum(axis=2, keepdims=True).clip(min=1)
-    strategy = np.where(totals > 0, sums / np.maximum(totals, 1e-30), uniform) * legal
+    strategy = solver.average_strategy_tables()
+    if str(solver.device) != "cpu":
+        # Each solve's graph pool otherwise stays RESERVED by the caching
+        # allocator; long live-play sessions ratcheted server VRAM into
+        # datagen/trainer headroom (2026-07-23 alert). Strategy is already on
+        # the CPU — release everything.
+        del solver
+        torch.cuda.empty_cache()
     return SubgameSolution(tree, strategy.astype(np.float64), agent.sampler, street_buckets)

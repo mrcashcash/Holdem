@@ -92,6 +92,7 @@ class SessionStats:
     hands_completed: int = 0
     hand_wins: list[int] = field(default_factory=lambda: [0, 0])
     match_wins: list[int] = field(default_factory=lambda: [0, 0])
+    total_buy_in: list[int] = field(default_factory=lambda: [0, 0])
     split_pots: int = 0
     showdown_hands: int = 0
     showdown_wins: list[int] = field(default_factory=lambda: [0, 0])
@@ -111,6 +112,7 @@ class SessionStats:
             return {
                 "hand_wins": self.hand_wins[player],
                 "match_wins": self.match_wins[player],
+                "total_buy_in": self.total_buy_in[player],
                 "showdown_wins": self.showdown_wins[player],
                 "fold_wins": self.fold_wins[player],
                 "folds": self.folds[player],
@@ -177,15 +179,22 @@ class HeadsUpHoldem:
     def new_match(self) -> None:
         self.stacks = [self.initial_stack, self.initial_stack]
         self.hand_number = 0
-        self.session_stats = SessionStats()
+        self.session_stats = SessionStats(
+            total_buy_in=[self.initial_stack, self.initial_stack]
+        )
         self.new_hand()
 
     def new_hand(self) -> None:
-        if 0 in self.stacks:
-            self.stacks = [self.initial_stack, self.initial_stack]
-            self.history = [f"A new match begins: both stacks reset to {self.initial_stack:,}."]
-        else:
-            self.history = []
+        self.history = []
+        for player, stack in enumerate(self.stacks):
+            if stack != 0:
+                continue
+            self.stacks[player] = self.initial_stack
+            self.session_stats.total_buy_in[player] += self.initial_stack
+            label = "Hero" if player == 0 else "Agent"
+            self.history.append(
+                f"{label} auto-reloads {self.initial_stack:,} chips after busting."
+            )
 
         self.hand_number += 1
         self.button = (self.hand_number - 1 + self.button_offset) % 2
@@ -233,6 +242,7 @@ class HeadsUpHoldem:
         unique_players = sorted(set(players))
         for player in unique_players:
             self.stacks[player] += amount
+            self.session_stats.total_buy_in[player] += amount
         labels = " and ".join("Hero" if player == 0 else "Agent" for player in unique_players)
         verb = "reload" if len(unique_players) > 1 else "reloads"
         self.history.append(f"{labels} {verb} {amount:,} chips.")

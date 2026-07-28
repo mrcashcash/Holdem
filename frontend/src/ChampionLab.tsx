@@ -7,6 +7,9 @@ import type {
   ChampionQueryResult,
   ChampionSpotRequest,
   ChampionSpotState,
+  LiveScreenDecisionFeed,
+  LiveScreenHistoryAction,
+  LiveScreenStrategyAction,
 } from "./types";
 
 type LabDraft = {
@@ -93,8 +96,40 @@ const readSaved = (key: string): SavedSpot[] => {
   }
 };
 const cardLabel = (card: string) => {
-  const suit = SUITS.find((entry) => entry.code === card.slice(-1).toLowerCase());
+  const suffix = card.slice(-1);
+  const suit = SUITS.find(
+    (entry) => entry.code === suffix.toLowerCase() || entry.symbol === suffix,
+  );
   return { rank: card.slice(0, -1), symbol: suit?.symbol ?? card.slice(-1), tone: suit?.tone ?? "black" };
+};
+const liveAmount = (value: number | null | undefined, scale: number) => {
+  if (value === null || value === undefined) return "";
+  if (scale === 1) return value.toLocaleString();
+  const decimals = Math.max(0, Math.ceil(Math.log10(scale)));
+  return (value / scale).toFixed(decimals);
+};
+const liveActionLabel = (
+  action: Pick<LiveScreenStrategyAction, "action" | "amount">,
+  scale: number,
+) => {
+  const name = action.action.replace("_", " ");
+  const amount = liveAmount(action.amount, scale);
+  if (action.action === "raise") return `Raise to ${amount}`;
+  if (action.action === "call") return `Call ${amount}`;
+  if (action.action === "all_in" && amount) return `All-in ${amount}`;
+  return name.charAt(0).toUpperCase() + name.slice(1);
+};
+const liveHistoryActionLabel = (
+  action: LiveScreenHistoryAction,
+  players: string[],
+  scale: number,
+) => {
+  const actor = players[action.player] || (action.player === 0 ? "Hero" : "Opponent");
+  const amount = liveAmount(action.amount, scale);
+  if (action.action === "raise") return `${actor} raises to ${amount}`;
+  if (action.action === "call") return `${actor} calls${amount ? ` ${amount}` : ""}`;
+  if (action.action === "all_in") return `${actor} goes all-in${amount ? ` ${amount}` : ""}`;
+  return `${actor} ${action.action.replace("_", " ")}s`;
 };
 
 const PRESETS: Array<{ name: string; note: string; draft: LabDraft }> = [
@@ -187,6 +222,8 @@ export default function ChampionLab({
   const [recent, setRecent] = useState<SavedSpot[]>(() => readSaved(RECENT_KEY));
   const [notice, setNotice] = useState("");
   const [useInitialResult, setUseInitialResult] = useState(Boolean(initialResult || initialError || initialBusy));
+  const [liveFeed, setLiveFeed] = useState<LiveScreenDecisionFeed | null>(null);
+  const [liveFeedError, setLiveFeedError] = useState("");
   const requestRevision = useRef(0);
 
   const usedCards = useMemo(() => new Set([...draft.heroCards, ...draft.board]), [draft.heroCards, draft.board]);
@@ -201,6 +238,50 @@ export default function ChampionLab({
       setError("");
     }
   }, [initialResult]);
+
+  useEffect(() => {
+    let active = true;
+    let fallbackInterval: number | null = null;
+    const refreshLiveFeed = async () => {
+      try {
+        const next = await api.liveScreenDecision();
+        if (!active) return;
+        setLiveFeed(next);
+        setLiveFeedError("");
+      } catch {
+        if (!active) return;
+        setLiveFeed(null);
+        setLiveFeedError("Screen watcher offline");
+      }
+    };
+    const startFallback = () => {
+      if (fallbackInterval !== null) return;
+      fallbackInterval = window.setInterval(() => void refreshLiveFeed(), 700);
+    };
+    void refreshLiveFeed();
+    const unsubscribe = api.subscribeLiveScreenDecision(
+      (next) => {
+        if (!active) return;
+        setLiveFeed(next);
+        setLiveFeedError("");
+        if (fallbackInterval !== null) {
+          window.clearInterval(fallbackInterval);
+          fallbackInterval = null;
+        }
+      },
+      () => {
+        if (!active) return;
+        startFallback();
+      },
+    );
+    return () => {
+      active = false;
+      unsubscribe();
+      if (fallbackInterval !== null) {
+        window.clearInterval(fallbackInterval);
+      }
+    };
+  }, []);
 
   const commit = (next: LabDraft) => {
     setPast((entries) => [...entries.slice(-39), cloneDraft(draft)]);
@@ -369,6 +450,17 @@ export default function ChampionLab({
         return { label: `${Math.round(fraction * 100)}%`, target };
       }).filter((entry, index, entries) => entries.findIndex((candidate) => candidate.target === entry.target) === index)
     : [];
+  const liveDecision = liveFeed?.decision ?? null;
+  const liveScale = liveFeed?.amount_scale || 1;
+  const liveStatus = liveFeedError
+    ? "offline"
+    : liveFeed?.status ?? "connecting";
+  const liveRecommended = liveDecision?.strategy.find(
+    (entry) =>
+      entry.action === liveDecision.action &&
+      (liveDecision.amount === null || entry.amount === liveDecision.amount),
+  ) ?? liveDecision?.strategy[0];
+  const liveHistory = [...(liveFeed?.history ?? [])].reverse();
 
   return (
     <div className="studio-backdrop" role="presentation" onMouseDown={onClose}>
@@ -495,6 +587,215 @@ export default function ChampionLab({
           </section>
 
           <section className="studio-strategy" aria-live="polite">
+            <div className={`studio-live-screen status-${liveStatus}`}>
+              <header>
+                <div>
+                  <span>Live screen</span>
+                  <strong>CoinPoker recommendation</strong>
+                </div>
+                <em>{liveStatus}</em>
+              </header>
+              {liveDecision ? (
+                <>
+                  <div className="studio-live-cards">
+                    <div>
+                      <span>Hero</span>
+                      <div>
+                        {liveDecision.hero_cards.map((card) => (
+                          <PlayingCard key={`live-hero-${card}`} card={card} />
+                        ))}
+                      </div>
+                    </div>
+                    <div>
+                      <span>{liveDecision.street} board</span>
+                      <div>
+                        {liveDecision.board.length ? (
+                          liveDecision.board.map((card) => (
+                            <PlayingCard key={`live-board-${card}`} card={card} />
+                          ))
+                        ) : (
+                          <small>Preflop</small>
+                        )}
+                      </div>
+                    </div>
+                  </div>
+                  <div className="studio-live-recommendation">
+                    <span>
+                      {liveStatus === "stale"
+                        ? "Last validated action · expired"
+                        : "Server action"}
+                    </span>
+                    <strong>
+                      {liveActionLabel(
+                        {
+                          action: liveDecision.action,
+                          amount: liveDecision.amount,
+                        },
+                        liveScale,
+                      )}
+                    </strong>
+                    <small>
+                      {liveRecommended
+                        ? `${(liveRecommended.probability * 100).toFixed(1)}%`
+                        : "validated"}
+                    </small>
+                  </div>
+                  <div className="studio-live-meta">
+                    <span>Pot {liveAmount(liveDecision.pot, liveScale)}</span>
+                    <span>
+                      Confidence {(liveDecision.recognition_confidence * 100).toFixed(0)}%
+                    </span>
+                    {liveDecision.total_latency_ms != null && (
+                      <span>Live {liveDecision.total_latency_ms} ms</span>
+                    )}
+                    {liveFeed?.table?.recognition_ms !== null &&
+                      liveFeed?.table?.recognition_ms !== undefined && (
+                        <span>Vision {liveFeed.table.recognition_ms} ms</span>
+                      )}
+                    {liveDecision.latency_ms !== null && (
+                      <span>Server {liveDecision.latency_ms} ms</span>
+                    )}
+                    {liveDecision.iteration !== null && (
+                      <span>Iteration {liveDecision.iteration.toLocaleString()}</span>
+                    )}
+                  </div>
+                  {liveStatus === "stale" && (
+                    <p className="studio-live-stale-note">
+                      The table is transitioning. Keep this only as a record—wait
+                      for a green READY label before acting.
+                    </p>
+                  )}
+                  <div className="studio-live-mix">
+                    {liveDecision.strategy.map((action) => (
+                      <div key={`live-${action.action}-${action.amount ?? "none"}`}>
+                        <span>{liveActionLabel(action, liveScale)}</span>
+                        <strong>{(action.probability * 100).toFixed(1)}%</strong>
+                        <i>
+                          <b style={{ width: `${action.probability * 100}%` }} />
+                        </i>
+                      </div>
+                    ))}
+                  </div>
+                </>
+              ) : (
+                <div className="studio-live-empty">
+                  <strong>
+                    {liveStatus === "offline"
+                      ? "Watcher not connected"
+                      : liveStatus === "thinking"
+                        ? "Champion is thinking…"
+                        : liveStatus === "stale"
+                          ? "Previous answer expired"
+                          : "Waiting for Hero"}
+                  </strong>
+                  <span>
+                    {liveFeedError ||
+                      liveFeed?.message ||
+                      "Start the screen watcher with server decisions enabled."}
+                  </span>
+                </div>
+              )}
+            </div>
+
+            <section className="studio-live-history" aria-label="Verified live hand history">
+              <header>
+                <div>
+                  <span>Live history</span>
+                  <strong>Verified hands and steps</strong>
+                </div>
+                <small>
+                  {liveHistory.length
+                    ? `${liveHistory.length} recent hand${liveHistory.length === 1 ? "" : "s"}`
+                    : "Waiting"}
+                </small>
+              </header>
+              {liveHistory.length ? (
+                <div className="studio-live-history-list">
+                  {liveHistory.map((hand, handIndex) => (
+                    <details key={hand.id} open={handIndex === 0}>
+                      <summary>
+                        <div>
+                          <strong>Hand #{hand.hand_number ?? "?"}</strong>
+                          <span>{hand.hero_cards.length ? hand.hero_cards.join(" ") : "Cards pending"}</span>
+                        </div>
+                        <em className={`history-status status-${hand.status}`}>
+                          {hand.status.replace("_", " ")}
+                        </em>
+                      </summary>
+                      <p className="studio-history-verification">{hand.verification_message}</p>
+                      <ol>
+                        {hand.steps.map((step, stepIndex) => {
+                          const previousActionCount =
+                            stepIndex > 0 ? hand.steps[stepIndex - 1].actions.length : 0;
+                          const newActions = step.recovered
+                            ? step.actions
+                            : step.actions.slice(previousActionCount);
+                          return (
+                            <li
+                              key={step.id}
+                              className={step.verified ? "verified" : "unverified"}
+                            >
+                              <div className="studio-history-step-heading">
+                                <span>{step.street ?? "unknown"}</span>
+                                <strong>Pot {liveAmount(step.pot, liveScale) || "?"}</strong>
+                                <small>
+                                  {step.recovered
+                                    ? "recovered"
+                                    : step.verified
+                                      ? "verified"
+                                      : "check required"}
+                                </small>
+                              </div>
+                              <div className="studio-history-board">
+                                {step.board.length
+                                  ? step.board.map((card) => <i key={`${step.id}-${card}`}>{card}</i>)
+                                  : <i>preflop</i>}
+                              </div>
+                              {newActions.length > 0 && (
+                                <ul>
+                                  {newActions.map((action, actionIndex) => (
+                                    <li key={`${step.id}-action-${actionIndex}`}>
+                                      {liveHistoryActionLabel(action, hand.players, liveScale)}
+                                    </li>
+                                  ))}
+                                </ul>
+                              )}
+                              {step.decision && (
+                                <div className="studio-history-decision">
+                                  <span>Hero decision</span>
+                                  <strong>
+                                    {liveActionLabel(
+                                      {
+                                        action: step.decision.action,
+                                        amount: step.decision.amount,
+                                      },
+                                      liveScale,
+                                    )}
+                                  </strong>
+                                </div>
+                              )}
+                              {!step.verified && step.warnings.length > 0 && (
+                                <p>{step.warnings[0]}</p>
+                              )}
+                            </li>
+                          );
+                        })}
+                      </ol>
+                    </details>
+                  ))}
+                </div>
+              ) : (
+                <div className="studio-live-history-empty">
+                  Stable CoinPoker hands will appear here in capture order.
+                </div>
+              )}
+              {(liveFeed?.history_gap_count ?? 0) > 0 && (
+                <p className="studio-history-gap-count">
+                  Capture gaps detected this session: {liveFeed?.history_gap_count}
+                </p>
+              )}
+            </section>
+
             <div className="studio-section-heading"><div><span>03 · Inspect</span><h3>Champion strategy</h3></div>{activeResult && <em>iteration {activeResult.iteration.toLocaleString()}</em>}</div>
             {displayedBusy ? <div className="studio-empty">Reconstructing branch…</div> : displayedError ? <div className="studio-error" role="alert">{displayedError}</div> : activeResult ? (
               <>

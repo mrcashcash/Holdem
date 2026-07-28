@@ -77,14 +77,23 @@ class MultiStackBlueprintAgent:
         )
         return effective / game.big_blind
 
+    def selected_depth(self, game: HeadsUpHoldem, player: int) -> float:
+        """Return the depth serving THIS hand: the locked routing choice when one
+        exists (so status/logs match the agent actually acting — a fresh
+        recomputation drifts once streets consume round_bets), else the
+        nearest depth for the current effective stack."""
+        if self._active is not None and self._active_hand == (id(game), game.hand_number):
+            return float(self._active.tree.config.stack_bb)
+        target = self._effective_stack_bb(game, player)
+        return min(self.depths, key=lambda depth: abs(depth - target))
+
     def _route(self, game: HeadsUpHoldem, player: int) -> GpuBlueprintAgent:
         # Lock the choice for the whole hand so select()/execute() agree even
         # as stacks shrink through it. The key includes id(game) so a new
         # match (hand_number reset to 1) or a different game object re-routes.
         hand_key = (id(game), game.hand_number)
         if self._active is None or self._active_hand != hand_key:
-            target = self._effective_stack_bb(game, player)
-            nearest = min(self.depths, key=lambda depth: abs(depth - target))
+            nearest = self.selected_depth(game, player)
             self._active = self.agents[nearest]
             self._active_hand = hand_key
         return self._active
@@ -125,8 +134,38 @@ class MultiStackBlueprintAgent:
             agent.subgame_iterations = value
 
     @property
-    def iteration(self) -> int:
-        return max(agent.iteration for agent in self.agents.values())
+    def exact_river_search(self) -> bool:
+        return any(agent.exact_river_search for agent in self.agents.values())
 
-    def depth_summary(self) -> dict:
-        return {f"{int(d)}bb": self.agents[d].iteration for d in self.depths}
+    @exact_river_search.setter
+    def exact_river_search(self, value: bool) -> None:
+        for agent in self.agents.values():
+            agent.exact_river_search = value
+
+    @property
+    def exact_river_iterations(self) -> int:
+        return next(iter(self.agents.values())).exact_river_iterations
+
+    @exact_river_iterations.setter
+    def exact_river_iterations(self, value: int) -> None:
+        for agent in self.agents.values():
+            agent.exact_river_iterations = value
+
+    @property
+    def exact_river_budget_ms(self) -> int:
+        return next(iter(self.agents.values())).exact_river_budget_ms
+
+    @exact_river_budget_ms.setter
+    def exact_river_budget_ms(self, value: int) -> None:
+        for agent in self.agents.values():
+            agent.exact_river_budget_ms = value
+
+    @property
+    def iteration(self) -> int:
+        # min, not max: the serving gate (GPU_SERVE_MIN_ITERATIONS) must hold
+        # for EVERY depth — otherwise one trained depth smuggles an
+        # under-trained sibling into production.
+        return min(agent.iteration for agent in self.agents.values())
+
+    def depth_summary(self) -> dict[float, int]:
+        return {depth: self.agents[depth].iteration for depth in self.depths}

@@ -9,8 +9,9 @@ Numba scoring batch (~1 ms) plus a sort. Buckets:
   turn    — quantized mean river-equity over sampled rivers
   river   — quantized exact-rank equity on the full board
 
-This scalar-equity abstraction trades per-bucket quality for enormous
-throughput; the CFR core keeps lossless combo ranges within each iteration.
+Legacy modes use scalar/distributional equity buckets. Blueprint-v3 delegates
+to the recursive potential-aware abstraction in ``potential.py`` while the
+CFR core still keeps lossless combo ranges within each sampled iteration.
 """
 
 from __future__ import annotations
@@ -176,6 +177,15 @@ class DealSampler:
         turn_samples: int = 8,
         distributional: bool = False,
         std_bins: int = 4,
+        histogram: bool = False,
+        hist_bins: int = 8,
+        potential_aware: bool = False,
+        recall_bins: int = 1,
+        flop_transition_samples: int = 8,
+        turn_transition_samples: int = 16,
+        flop_landmarks: int = 24,
+        turn_landmarks: int = 16,
+        potential_seed: int = 0,
     ) -> None:
         self.flop_buckets = flop_buckets
         self.turn_buckets = turn_buckets
@@ -185,18 +195,60 @@ class DealSampler:
         # Distribution-aware flop/turn: bucket on (mean-equity bin, equity-std
         # bin) so draws separate from made hands and air. std_bins is the
         # number of drawiness bins; the mean axis keeps flop_buckets/turn_buckets
-        # granularity, so total buckets = mean_bins * std_bins (kept <= 169).
+        # granularity, so total buckets = mean_bins * std_bins.
         self.distributional = distributional
         self.std_bins = std_bins
+        # Histogram mode (supersedes distributional when set): bucket = nearest
+        # fitted centroid of the full runout-equity histogram under 1-D EMD
+        # (Ganzfried & Sandholm AAAI 2014). flop_buckets/turn_buckets are the
+        # centroid counts (no std_bins product). Compact street-sharded CFR
+        # storage permits counts above the legacy 169-row cap.
+        self.histogram = histogram
+        self.hist_bins = hist_bins
+        self.potential_aware = bool(potential_aware)
+        self.recall_bins = max(1, int(recall_bins))
+        self.flop_transition_samples = int(flop_transition_samples)
+        self.turn_transition_samples = int(turn_transition_samples)
+        self.flop_landmarks = int(flop_landmarks)
+        self.turn_landmarks = int(turn_landmarks)
+        self.potential_seed = int(potential_seed)
+        if self.potential_aware and (self.histogram or self.distributional):
+            raise ValueError(
+                "potential-aware mode supersedes histogram/distributional bucketing"
+            )
         self._std_edges: dict[int, np.ndarray] = {}  # street -> std quantile edges
+        self._hist_centroids: dict[int, np.ndarray] = {}  # street -> [K, hist_bins] centroid CDFs
+        self._potential = None
+        if self.potential_aware:
+            from backend.solver.gpu.potential import PotentialAwareBuckets
+
+            self._potential = PotentialAwareBuckets(
+                flop_clusters=self.flop_buckets,
+                turn_clusters=self.turn_buckets,
+                river_clusters=self.river_buckets,
+                flop_transition_samples=self.flop_transition_samples,
+                turn_transition_samples=self.turn_transition_samples,
+                flop_landmarks=self.flop_landmarks,
+                turn_landmarks=self.turn_landmarks,
+                seed=self.potential_seed,
+            )
 
     def bucket_counts(self) -> tuple[int, int, int, int]:
+        if self.potential_aware:
+            return (
+                self.PREFLOP_BUCKETS,
+                self.flop_buckets,
+                self.turn_buckets * self.recall_bins,
+                self.river_buckets * self.recall_bins,
+            )
+        if self.histogram:
+            return (self.PREFLOP_BUCKETS, self.flop_buckets, self.turn_buckets, self.river_buckets)
         flop = self.flop_buckets * self.std_bins if self.distributional else self.flop_buckets
         turn = self.turn_buckets * self.std_bins if self.distributional else self.turn_buckets
         return (self.PREFLOP_BUCKETS, flop, turn, self.river_buckets)
 
     def state(self) -> dict:
-        """Full serializable state incl. fitted std edges (for checkpoints)."""
+        """Full serializable state incl. fitted edges/centroids (for checkpoints)."""
         return {
             "flop_buckets": self.flop_buckets,
             "turn_buckets": self.turn_buckets,
@@ -205,15 +257,86 @@ class DealSampler:
             "turn_samples": self.turn_samples,
             "distributional": self.distributional,
             "std_bins": self.std_bins,
+            "histogram": self.histogram,
+            "hist_bins": self.hist_bins,
+            "potential_aware": self.potential_aware,
+            "recall_bins": self.recall_bins,
+            "flop_transition_samples": self.flop_transition_samples,
+            "turn_transition_samples": self.turn_transition_samples,
+            "flop_landmarks": self.flop_landmarks,
+            "turn_landmarks": self.turn_landmarks,
+            "potential_seed": self.potential_seed,
             "std_edges": {str(s): edges.tolist() for s, edges in self._std_edges.items()},
+            "hist_centroids": {str(s): c.tolist() for s, c in self._hist_centroids.items()},
+            "potential_state": self._potential.state() if self._potential is not None else None,
         }
 
     @classmethod
     def from_state(cls, state: dict) -> "DealSampler":
         edges = state.pop("std_edges", {})
-        sampler = cls(**{k: state[k] for k in state if k != "std_edges"})
+        centroids = state.pop("hist_centroids", {})
+        potential_state = state.pop("potential_state", None)
+        sampler = cls(**{k: state[k] for k in state})
         sampler._std_edges = {int(s): np.asarray(e, dtype=np.float64) for s, e in edges.items()}
+        sampler._hist_centroids = {int(s): np.asarray(c, dtype=np.float64) for s, c in centroids.items()}
+        if potential_state is not None and sampler._potential is not None:
+            sampler._potential.load_state(potential_state)
         return sampler
+
+    def fit_potential_abstraction(
+        self,
+        boards_per_street: int = 12,
+        seed: int | None = None,
+        iterations: int = 12,
+    ) -> None:
+        if self._potential is None:
+            raise RuntimeError("fit_potential_abstraction requires potential_aware=True")
+        if seed is not None and int(seed) != self._potential.seed:
+            self.potential_seed = int(seed)
+            self._potential.seed = int(seed)
+        self._potential.fit(
+            boards_per_street=boards_per_street,
+            iterations=iterations,
+        )
+
+    def fit_hist_centroids(self, boards: int = 150, seed: int = 0, iterations: int = 20) -> None:
+        """Fit per-street histogram centroids by EMD k-means (one-time).
+
+        1-D EMD between two histograms with shared bins is the L1 distance of
+        their CDFs, so we cluster in CDF space (k-means there is the standard
+        practical surrogate for EMD k-means; Ganzfried & Sandholm 2014).
+        """
+        rng = random.Random(seed)
+        for street, size, samples, k in (
+            (1, 3, self.flop_samples, self.flop_buckets),
+            (2, 4, self.turn_samples, self.turn_buckets),
+        ):
+            rows = []
+            for _ in range(boards):
+                cards = rng.sample(range(52), size)
+                hist = self._equity_histograms(tuple(cards), rng, samples, self.hist_bins)
+                valid = hist[:, 0] >= 0
+                rows.append(np.cumsum(hist[valid], axis=1))
+            data = np.concatenate(rows, axis=0)
+            # k-means++ style init: spread the seeds, then Lloyd iterations.
+            centroids = data[np.random.RandomState(seed + street).choice(len(data), size=k, replace=False)]
+            for _ in range(iterations):
+                distances = np.abs(data[:, None, :] - centroids[None, :, :]).sum(axis=2)  # EMD
+                assign = distances.argmin(axis=1)
+                for j in range(k):
+                    members = data[assign == j]
+                    if len(members):
+                        centroids[j] = members.mean(axis=0)
+            self._hist_centroids[street] = centroids
+
+    def _bucket_from_histogram(self, hist: np.ndarray, street: int) -> np.ndarray:
+        """Nearest centroid under 1-D EMD for [N, hist_bins] histograms."""
+        centroids = self._hist_centroids.get(street)
+        if centroids is None:
+            raise RuntimeError("histogram sampler used before fit_hist_centroids/from_state")
+        cdf = np.cumsum(hist, axis=1)
+        distances = np.abs(cdf[:, None, :] - centroids[None, :, :]).sum(axis=2)
+        return distances.argmin(axis=1).astype(np.int32)
 
     def fit_std_edges(self, samples: int = 400, seed: int = 0) -> None:
         """Learn equity-std quantile edges per street (one-time, cheap)."""
@@ -231,20 +354,101 @@ class DealSampler:
         board = tuple(rng.sample(range(52), 5))
         return self.for_board(board, rng)
 
+    @staticmethod
+    def _valid_for_board(board: tuple[int, ...]) -> np.ndarray:
+        valid = np.ones(NUM_COMBOS, dtype=bool)
+        for card in board:
+            valid &= ~CARD_IN_COMBO[int(card)]
+        return valid
+
+    def _recall_bucket(
+        self,
+        current: np.ndarray,
+        previous: np.ndarray,
+        previous_count: int,
+    ) -> np.ndarray:
+        if self.recall_bins <= 1:
+            return current
+        result = np.full(NUM_COMBOS, -1, dtype=np.int32)
+        seen = (current >= 0) & (previous >= 0)
+        prior_group = np.minimum(
+            previous[seen].astype(np.int64) * self.recall_bins
+            // max(previous_count, 1),
+            self.recall_bins - 1,
+        )
+        result[seen] = current[seen] * self.recall_bins + prior_group.astype(np.int32)
+        return result
+
+    def bucket_rows(
+        self,
+        partial_board: tuple[int, ...],
+        rng: random.Random,
+    ) -> np.ndarray:
+        """Buckets for every dealt street on a partial or complete board."""
+        board = tuple(int(card) for card in partial_board)
+        if len(board) not in (0, 3, 4, 5):
+            raise ValueError(f"expected 0, 3, 4, or 5 public cards, got {len(board)}")
+        valid = self._valid_for_board(board)
+        buckets = np.full((4, NUM_COMBOS), -1, dtype=np.int32)
+        buckets[0][valid] = _PREFLOP_CLASS[valid]
+
+        if self.potential_aware:
+            if self._potential is None or not self._potential.fitted:
+                raise RuntimeError("potential-aware sampler used before fitting/loading")
+            flop_raw = turn_raw = None
+            if len(board) >= 3:
+                flop_raw = self._potential.bucket_row(board[:3], 1)
+                flop_raw[~valid] = -1
+                buckets[1] = flop_raw
+            if len(board) >= 4:
+                turn_raw = self._potential.bucket_row(board[:4], 2)
+                turn_raw[~valid] = -1
+                buckets[2] = self._recall_bucket(
+                    turn_raw,
+                    flop_raw,
+                    self.flop_buckets,
+                )
+            if len(board) == 5:
+                river_raw = self._potential.bucket_row(board, 3)
+                river_raw[~valid] = -1
+                buckets[3] = self._recall_bucket(
+                    river_raw,
+                    turn_raw,
+                    self.turn_buckets,
+                )
+            return buckets
+
+        if len(board) >= 3:
+            self._assign_street(
+                buckets,
+                board[:3],
+                rng,
+                self.flop_samples,
+                self.flop_buckets,
+                1,
+                valid,
+            )
+        if len(board) >= 4:
+            self._assign_street(
+                buckets,
+                board[:4],
+                rng,
+                self.turn_samples,
+                self.turn_buckets,
+                2,
+                valid,
+            )
+        if len(board) == 5:
+            equity = equity_from_scores(score_all_combos(board))
+            seen = valid & (equity >= 0)
+            buckets[3][seen] = self._quantize(equity[seen], self.river_buckets)
+        return buckets
+
     def for_board(self, board: tuple[int, ...], rng: random.Random) -> Deal:
         board = tuple(int(card) for card in board)
         river_scores = score_all_combos(board)
-        river_equity = equity_from_scores(river_scores)
         valid = river_scores >= 0
-
-        buckets = np.full((4, NUM_COMBOS), -1, dtype=np.int32)
-        buckets[0][valid] = _PREFLOP_CLASS[valid]
-        # River has no future street, so its equity distribution is a point
-        # mass — scalar equity quantile is exact there.
-        buckets[3][valid] = self._quantize(river_equity[valid], self.river_buckets)
-
-        self._assign_street(buckets, board[:4], rng, self.turn_samples, self.turn_buckets, 2, valid)
-        self._assign_street(buckets, board[:3], rng, self.flop_samples, self.flop_buckets, 1, valid)
+        buckets = self.bucket_rows(board, rng)
         return Deal(board=board, buckets=buckets, valid=valid, river_scores=river_scores)
 
     def _mean_bins_for(self, street: int) -> int:
@@ -266,6 +470,11 @@ class DealSampler:
         return mean_bin * self.std_bins + std_bin
 
     def _assign_street(self, buckets, partial_board, rng, samples, mean_bins, street, valid):
+        if self.histogram:
+            hist = self._equity_histograms(partial_board, rng, samples, self.hist_bins)
+            seen = valid & (hist[:, 0] >= 0)
+            buckets[street][seen] = self._bucket_from_histogram(hist[seen], street)
+            return
         mean, std = self._mean_std_equity(partial_board, rng, samples)
         seen = valid & (mean >= 0)
         buckets[street][seen] = self._bucket_from_mean_std(mean[seen], std[seen], street)
@@ -273,8 +482,41 @@ class DealSampler:
     def street_bucket_for_combo(self, partial_board, street: int, combo_index: int, rng) -> int | None:
         """Bucket one combo on a partial board — serving uses this so it maps
         into the exact bucket the trainer learned (validated by test)."""
+        if self.potential_aware:
+            board = tuple(int(c) for c in partial_board)
+            if self._potential is None:
+                return None
+            current = self._potential.bucket_row(board, street)
+            bucket = int(current[combo_index])
+            if bucket < 0:
+                return None
+            if self.recall_bins > 1 and street >= 2:
+                previous_street = street - 1
+                previous_size = (0, 3, 4, 5)[previous_street]
+                previous = self._potential.bucket_row(
+                    board[:previous_size],
+                    previous_street,
+                )
+                prior = int(previous[combo_index])
+                if prior < 0:
+                    return None
+                previous_count = (
+                    self.flop_buckets if street == 2 else self.turn_buckets
+                )
+                prior_group = min(
+                    prior * self.recall_bins // max(previous_count, 1),
+                    self.recall_bins - 1,
+                )
+                bucket = bucket * self.recall_bins + prior_group
+            return bucket
         samples = self.turn_samples if street == 2 else self.flop_samples
-        mean, std = self._mean_std_equity(tuple(int(c) for c in partial_board), rng, samples)
+        board = tuple(int(c) for c in partial_board)
+        if self.histogram:
+            hist = self._equity_histograms(board, rng, samples, self.hist_bins)
+            if hist[combo_index, 0] < 0:
+                return None
+            return int(self._bucket_from_histogram(hist[combo_index : combo_index + 1], street)[0])
+        mean, std = self._mean_std_equity(board, rng, samples)
         if mean[combo_index] < 0:
             return None
         bucket = self._bucket_from_mean_std(mean[combo_index : combo_index + 1], std[combo_index : combo_index + 1], street)
@@ -289,6 +531,36 @@ class DealSampler:
         """Mean river equity per combo over sampled completions of the board."""
         mean, _ = DealSampler._mean_std_equity(partial_board, rng, samples)
         return mean
+
+    @staticmethod
+    def _equity_histograms(
+        partial_board: tuple[int, ...], rng: random.Random, samples: int, bins: int
+    ) -> np.ndarray:
+        """[NUM_COMBOS, bins] distribution of river equity over sampled runouts.
+
+        The full distribution-aware signal (Ganzfried & Sandholm AAAI 2014):
+        where mean+std collapses draw TYPE (a second-nut flush draw and a
+        dominated one can share both moments), the histogram keeps the shape —
+        bimodal draws, made-hand point masses, and dominated draws all look
+        different. Rows for combos colliding with the board are all -1.
+        """
+        used = set(partial_board)
+        remaining = [card for card in range(52) if card not in used]
+        fill = 5 - len(partial_board)
+        histogram = np.zeros((NUM_COMBOS, bins), dtype=np.float64)
+        counts = np.zeros(NUM_COMBOS, dtype=np.int64)
+        for _ in range(samples):
+            completion = rng.sample(remaining, fill)
+            scores = score_all_combos(tuple(partial_board) + tuple(completion))
+            equity = equity_from_scores(scores)
+            seen = equity >= 0
+            slots = np.minimum((equity[seen] * bins).astype(np.int64), bins - 1)
+            histogram[np.flatnonzero(seen), slots] += 1.0
+            counts[seen] += 1
+        seen_any = counts > 0
+        histogram[seen_any] /= counts[seen_any, None]
+        histogram[~seen_any] = -1.0
+        return histogram
 
     @staticmethod
     def _mean_std_equity(

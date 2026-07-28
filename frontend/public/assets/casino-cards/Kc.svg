@@ -1,19 +1,19 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 250 360"><g transform="translate(0 0) scale(1)">
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 250 360"><g transform="translate(0 0) scale(1)" shape-rendering="geometricPrecision" text-rendering="geometricPrecision">
     <defs>
-      <linearGradient id="gradient-Kc" x1="0" y1="0" x2="0.72" y2="1"><stop stop-color="#075d24"/><stop offset=".26" stop-color="#70c56d"/><stop offset=".54" stop-color="#29923c"/><stop offset="1" stop-color="#075d24"/></linearGradient>
-      <linearGradient id="shine-Kc" x1="0" y1="0" x2="0" y2="1"><stop stop-color="#fff" stop-opacity=".52"/><stop offset=".1" stop-color="#fff" stop-opacity=".16"/><stop offset=".43" stop-color="#fff" stop-opacity="0"/></linearGradient>
-      <radialGradient id="glow-Kc" cx="78%" cy="5%" r="68%"><stop stop-color="#fff" stop-opacity=".35"/><stop offset=".5" stop-color="#fff" stop-opacity="0"/></radialGradient>
-      <filter id="shadow-Kc" x="-20%" y="-20%" width="140%" height="140%"><feDropShadow dx="4" dy="6" stdDeviation="4" flood-color="#000" flood-opacity=".48"/></filter>
-      <filter id="text-shadow-Kc" x="-20%" y="-20%" width="140%" height="150%"><feDropShadow dx="2" dy="3" stdDeviation="1.5" flood-color="#000" flood-opacity=".72"/></filter>
+      <linearGradient id="gradient-Kc" x1="0" y1="0" x2=".72" y2="1"><stop stop-color="#087125"/><stop offset=".3" stop-color="#7ed679"/><stop offset=".58" stop-color="#33ad47"/><stop offset="1" stop-color="#087125"/></linearGradient>
+      <linearGradient id="shine-Kc" x1="0" y1="0" x2="0" y2="1"><stop stop-color="#fff" stop-opacity=".42"/><stop offset=".12" stop-color="#fff" stop-opacity=".12"/><stop offset=".39" stop-color="#fff" stop-opacity="0"/></linearGradient>
+      <radialGradient id="glow-Kc" cx="76%" cy="4%" r="66%"><stop stop-color="#fff" stop-opacity=".22"/><stop offset=".48" stop-color="#fff" stop-opacity="0"/></radialGradient>
+      <filter id="shadow-Kc" x="-20%" y="-20%" width="145%" height="150%"><feDropShadow dx="4" dy="6" stdDeviation="4" flood-color="#000" flood-opacity=".58"/></filter>
+      <filter id="text-shadow-Kc" x="-25%" y="-25%" width="150%" height="155%"><feDropShadow dx="1.5" dy="2.5" stdDeviation="1.2" flood-color="#000" flood-opacity=".7"/></filter>
     </defs>
-    <rect x="0" y="0" width="250" height="360" rx="19" fill="#0a0e14" filter="url(#shadow-Kc)"/>
-    <rect x="5" y="5" width="240" height="350" rx="15" fill="url(#gradient-Kc)" stroke="#05080b" stroke-width="3"/>
-    <rect x="9" y="9" width="232" height="342" rx="12" fill="none" stroke="#fff" stroke-opacity=".25" stroke-width="2"/>
-    <rect x="10" y="10" width="230" height="340" rx="11" fill="url(#glow-Kc)"/>
-    <rect x="10" y="10" width="230" height="340" rx="11" fill="url(#shine-Kc)"/>
+    <rect x="0" y="0" width="250" height="360" rx="14" fill="#0a0e14" filter="url(#shadow-Kc)"/>
+    <rect x="6" y="6" width="238" height="348" rx="10" fill="url(#gradient-Kc)" stroke="#05080b" stroke-width="3"/>
+    <rect x="9" y="9" width="232" height="342" rx="8" fill="none" stroke="#fff" stroke-opacity=".17" stroke-width="1.5"/>
+    <rect x="10" y="10" width="230" height="340" rx="7" fill="url(#glow-Kc)"/>
+    <rect x="10" y="10" width="230" height="340" rx="7" fill="url(#shine-Kc)"/>
     <g fill="#fff" filter="url(#text-shadow-Kc)">
-      <text x="24" y="70" font-family="Arial Black, Arial, sans-serif" font-size="56" font-weight="900" letter-spacing="-3">K</text>
-      <text x="27" y="119" font-family="Georgia, 'Times New Roman', serif" font-size="45">♣</text>
-      <text x="125" y="298" text-anchor="middle" font-family="Arial Black, Arial, sans-serif" font-size="200" font-weight="900" letter-spacing="-7">K</text>
+      <path d="M0.07421875,-0.7158203125L0.29541015625,-0.7158203125 0.29541015625,-0.4453125 0.527107238769531,-0.7158203125 0.8212890625,-0.7158203125 0.560073852539063,-0.445632934570313 0.8330078125,0 0.560615539550781,0 0.409690856933594,-0.294380187988281 0.29541015625,-0.174674987792969 0.29541015625,0 0.07421875,0z" transform="matrix(40 0 0 40 24 58)"/>
+      <text x="27" y="119" font-family="Georgia, 'Times New Roman', serif" font-size="30">♣</text>
+      <path d="M0.07421875,-0.7158203125L0.29541015625,-0.7158203125 0.29541015625,-0.4453125 0.527107238769531,-0.7158203125 0.8212890625,-0.7158203125 0.560073852539063,-0.445632934570313 0.8330078125,0 0.560615539550781,0 0.409690856933594,-0.294380187988281 0.29541015625,-0.174674987792969 0.29541015625,0 0.07421875,0z" transform="matrix(228 0 0 200 30.037109 286)"/>
     </g>
   </g></svg>

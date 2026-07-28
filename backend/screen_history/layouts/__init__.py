@@ -1,0 +1,2 @@
+"""Layout-specific screenshot adapters."""
+

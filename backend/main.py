@@ -21,8 +21,8 @@ from fastapi import FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel, Field
 
-from .agents import BlueprintAgent
-from .poker import Card, HeadsUpHoldem, InvalidAction, new_deck
+from .agents.serving import load_serving_agent
+from .poker import Card, HeadsUpHoldem, InvalidAction, card_text, new_deck
 from .solver import blueprint as blueprint_trainer
 from .styles import HeuristicAgent
 
@@ -48,53 +48,69 @@ def log_debug(event: str, **fields) -> None:
         pass
 
 
-# The GPU blueprint overtakes the CPU one quickly (600 GPU iterations matched
-# 12k CPU MCCFR iterations on the styles benchmark), and it is the only
-# blueprint trained at the serving game's 100 bb depth — the frozen CPU table
-# is a 50 bb model. Prefer the GPU checkpoint as soon as it has meaningful
-# training.
-GPU_SERVE_MIN_ITERATIONS = 5_000
-
-
-def load_serving_agent():
-    import os
-
-    from backend.agents.gpu_blueprint_agent import GpuBlueprintAgent
-    from backend.agents.multistack_agent import MultiStackBlueprintAgent
-
-    subgame_iterations = int(os.environ.get("HOLDEM_SUBGAME_ITERS", "120"))
-
-    def apply_search(agent):
-        if agent is None:
-            return None
-        # Turn/river re-solving ON by default: CUDA-graph replay brought
-        # solves to ~3s turn / <1s river (once per hand, cached).
-        # HOLDEM_SUBGAME_ITERS=0 disables it.
-        agent.subgame_search = subgame_iterations > 0
-        agent.subgame_iterations = subgame_iterations or agent.subgame_iterations
-        return agent
-
-    # Prefer the depth-routing library when 2+ stack blueprints exist — it
-    # picks the nearest-depth blueprint per hand (no manual switching).
-    router = MultiStackBlueprintAgent.try_load()
-    if router is not None and len(router.agents) >= 2 and router.iteration >= GPU_SERVE_MIN_ITERATIONS:
-        return apply_search(router)
-
-    gpu_agent = apply_search(GpuBlueprintAgent.try_load())
-    if gpu_agent is not None and gpu_agent.iteration >= GPU_SERVE_MIN_ITERATIONS:
-        return gpu_agent
-    cpu_agent = BlueprintAgent.try_load()
-    if cpu_agent is not None:
-        return cpu_agent
-    if gpu_agent is not None:
-        return gpu_agent
-    return HeuristicAgent()
-
-
 game = HeadsUpHoldem()
 serving_agent = load_serving_agent()
 game_lock = RLock()
 log_debug("serving_agent_selected", kind=type(serving_agent).__name__)
+
+
+def serving_model_view() -> dict:
+    """Describe the model making table decisions, separate from CPU trainer telemetry."""
+    with game_lock:
+        agent = serving_agent
+        selected_depth: float | None = None
+        selected_iteration = getattr(agent, "iteration", None)
+        available_depths: list[dict[str, float | int]] = []
+
+        if hasattr(agent, "depth_summary") and hasattr(agent, "selected_depth"):
+            depth_summary = agent.depth_summary()
+            selected_depth = float(agent.selected_depth(game, 1))
+            selected_iteration = depth_summary.get(selected_depth)
+            available_depths = [
+                {"depth_bb": float(depth), "iteration": int(iteration)}
+                for depth, iteration in sorted(depth_summary.items())
+            ]
+        elif hasattr(agent, "tree") and hasattr(agent.tree, "config"):
+            depth = getattr(agent.tree.config, "stack_bb", None)
+            if depth is not None:
+                selected_depth = float(depth)
+                available_depths = [
+                    {
+                        "depth_bb": selected_depth,
+                        "iteration": int(selected_iteration or 0),
+                    }
+                ]
+
+        legacy_search_enabled = bool(
+            getattr(agent, "subgame_search", getattr(agent, "river_search", False))
+        )
+        exact_river_enabled = bool(getattr(agent, "exact_river_search", False))
+        search_enabled = legacy_search_enabled or exact_river_enabled
+        search_iterations = getattr(
+            agent,
+            "exact_river_iterations" if exact_river_enabled else "subgame_iterations",
+            getattr(agent, "river_iterations", None),
+        )
+        return {
+            "kind": type(agent).__name__,
+            "selected_depth_bb": selected_depth,
+            "iteration": int(selected_iteration) if selected_iteration is not None else None,
+            "available_depths": available_depths,
+            "search_enabled": search_enabled,
+            "search_iterations": (
+                int(search_iterations) if search_iterations is not None else None
+            ),
+            "search_mode": (
+                "exact-card-safe-river-v1"
+                if exact_river_enabled
+                else ("legacy-bucketed" if legacy_search_enabled else "blueprint-only")
+            ),
+            "river_budget_ms": (
+                int(getattr(agent, "exact_river_budget_ms"))
+                if exact_river_enabled
+                else None
+            ),
+        }
 
 
 class TrainingState:
@@ -138,6 +154,7 @@ class TrainingState:
                     }
         except (OSError, ValueError):
             pass
+        serving_model = serving_model_view()
         with self.lock:
             progress = 0.0
             if self.requested_iterations > 0:
@@ -153,7 +170,10 @@ class TrainingState:
                 "parameters": checkpoint["infosets"],
                 "iterations_per_second": recent_rate,
                 "serving_agent": type(serving_agent).__name__,
-                "river_search": bool(getattr(serving_agent, "subgame_search", False)),
+                "serving_model": serving_model,
+                "river_search": bool(
+                    getattr(serving_agent, "exact_river_search", False)
+                ),
                 "artifacts": {
                     "abstraction": blueprint_trainer.ABSTRACTION_PATH.exists(),
                     "blueprint": blueprint_trainer.BLUEPRINT_PATH.exists(),
@@ -339,15 +359,8 @@ def load_champion_query_agent():
         return champion_query_agent, champion_path
 
 
-def play_agent_turns() -> None:
-    """Keep playing until the browser player is due to act or the hand finishes."""
-    safety = 0
-    while not game.hand_complete and game.current_player == 1 and safety < 100:
-        choice = serving_agent.select(game, 1)
-        serving_agent.execute(game, 1, choice)
-        safety += 1
-    if safety == 100:
-        raise RuntimeError("Agent action safety limit reached")
+def observe_agent_hand() -> None:
+    """Let the serving agent learn from a hand that has just completed."""
     if game.hand_complete:
         serving_agent.observe_completed_hand(game, 1)
 
@@ -367,7 +380,6 @@ def get_game() -> dict:
 def new_game() -> dict:
     with game_lock:
         game.new_match()
-        play_agent_turns()
         return game.snapshot()
 
 
@@ -391,7 +403,6 @@ def update_game_settings(request: GameSettingsRequest) -> dict:
             small_blind=request.small_blind,
             big_blind=request.big_blind,
         )
-        play_agent_turns()
         return game.snapshot()
 
 
@@ -413,7 +424,6 @@ def next_hand() -> dict:
         if not game.hand_complete:
             raise HTTPException(status_code=400, detail="Finish the current hand before dealing the next one.")
         game.new_hand()
-        play_agent_turns()
         return game.snapshot()
 
 
@@ -422,7 +432,74 @@ def player_action(request: ActionRequest) -> dict:
     try:
         with game_lock:
             game.act(0, request.action, request.amount)
-            play_agent_turns()
+            observe_agent_hand()
+            return game.snapshot()
+    except (InvalidAction, ValueError) as exc:
+        raise HTTPException(status_code=400, detail=str(exc)) from exc
+
+
+def log_agent_decision(g: HeadsUpHoldem) -> None:
+    """Best-effort record of the served agent's full reasoning for ONE decision
+    (routed depth, effective stack, node, bucket, exact_match, and the whole
+    action distribution + cards) so a fold can be explained after the fact.
+    Must be called while it is still the agent's turn (before execute), and must
+    never raise into the serving path.
+    """
+    try:
+        agent = serving_agent
+        routed = agent._route(g, 1) if hasattr(agent, "_route") else agent
+        info = routed.strategy_for_state(g, 1)
+        to_call = int(g.to_call(1))
+        log_debug(
+            "agent_decision",
+            hand=g.hand_number,
+            street=g.active_street,
+            board=[card_text(c) for c in g.community],
+            agent_cards=[card_text(c) for c in g.hole_cards[1]],
+            pot=int(g.pot),
+            to_call=to_call,
+            pot_odds_pct=round(to_call / (g.pot + to_call) * 100, 1) if to_call else 0.0,
+            eff_stack_bb=round(agent._effective_stack_bb(g, 1), 1) if hasattr(agent, "_effective_stack_bb") else None,
+            routed_depth_bb=agent.selected_depth(g, 1) if hasattr(agent, "selected_depth") else None,
+            node=info.get("node"),
+            bucket=info.get("bucket"),
+            exact_match=info.get("exact_match"),
+            # If True, the actual action may have come from a subgame re-solve,
+            # and this blueprint distribution is NOT the acting strategy.
+            search_active=bool(
+                getattr(routed, "subgame_search", False)
+                or getattr(routed, "exact_river_search", False)
+            ),
+            search_mode=(
+                "exact-card-safe-river-v1"
+                if getattr(routed, "exact_river_search", False)
+                else (
+                    "legacy-bucketed"
+                    if getattr(routed, "subgame_search", False)
+                    else "blueprint-only"
+                )
+            ),
+            river_resolve=getattr(routed, "last_river_search", None),
+            actions=[{"a": a["action"], "amt": a.get("amount"), "p": round(a["probability"], 4)} for a in info.get("actions", [])],
+            warnings=info.get("warnings", []),
+        )
+    except Exception as exc:  # diagnostics must never break serving
+        log_debug("agent_decision_error", error=str(exc))
+
+
+@app.post("/api/game/agent-action")
+def agent_action() -> dict:
+    """Apply exactly one agent action so the client can pace opponent turns."""
+    try:
+        with game_lock:
+            if game.hand_complete:
+                raise InvalidAction("The hand is already complete.")
+            if game.current_player != 1:
+                raise InvalidAction("It is not the agent's turn.")
+            choice = serving_agent.select(game, 1)
+            log_agent_decision(game)  # capture reasoning while it is still the agent's turn
+            serving_agent.execute(game, 1, choice)
+            observe_agent_hand()
             return game.snapshot()
     except (InvalidAction, ValueError) as exc:
         raise HTTPException(status_code=400, detail=str(exc)) from exc
@@ -462,6 +539,26 @@ def query_champion(request: ChampionQueryRequest) -> dict:
         }
     except (FileNotFoundError, InvalidAction, ValueError) as exc:
         raise HTTPException(status_code=400, detail=str(exc)) from exc
+
+
+@app.post("/api/champion/reload")
+def reload_champion_query_agent() -> dict:
+    """Force the promoted champion to be re-read from disk on the next query.
+
+    The champion query agent normally hot-reloads when champion.npz changes, but
+    this lets a client force it (e.g. after promoting a new champion) so the live
+    screen decision overlay serves the newest strategy without restarting the
+    server."""
+    global champion_query_agent, champion_query_mtime_ns
+    with champion_query_lock:
+        champion_query_agent = None
+        champion_query_mtime_ns = None
+    try:
+        agent, source = load_champion_query_agent()
+    except FileNotFoundError as exc:
+        raise HTTPException(status_code=404, detail=str(exc)) from exc
+    log_debug("champion_query_agent_reloaded", source=str(source))
+    return {"reloaded": True, "source": str(source), "iteration": int(agent.iteration)}
 
 
 @app.post("/api/champion/spot")
@@ -537,7 +634,12 @@ def reload_last_training_model() -> dict:
     log_debug("serving_agent_reloaded", kind=kind)
     if isinstance(serving_agent, HeuristicAgent):
         raise HTTPException(status_code=500, detail="No blueprint checkpoint exists yet — train first.")
-    if isinstance(serving_agent, GpuBlueprintAgent):
+    if hasattr(serving_agent, "depth_summary"):  # multi-stack router
+        source = "multi-stack champions: " + ", ".join(
+            f"{depth:.0f}bb@{iters}" for depth, iters in sorted(serving_agent.depth_summary().items())
+        )
+        iteration = int(serving_agent.iteration)
+    elif isinstance(serving_agent, GpuBlueprintAgent):
         source = str(gpu_trainer.CHECKPOINT_PATH)
         iteration = int(serving_agent.iteration)
     else:

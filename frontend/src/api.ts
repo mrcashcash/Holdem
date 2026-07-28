@@ -6,6 +6,7 @@ import type {
   ChampionSpotState,
   GameSettings,
   GameState,
+  LiveScreenDecisionFeed,
   TrainingStatus,
 } from './types'
 
@@ -29,6 +30,32 @@ async function request<T>(path: string, init?: RequestInit): Promise<T> {
   return response.json() as Promise<T>
 }
 
+async function requestLiveScreenDecision(): Promise<LiveScreenDecisionFeed> {
+  const response = await fetch('http://127.0.0.1:8765/latest', {
+    cache: 'no-store',
+  })
+  if (!response.ok) {
+    throw new Error('The live screen watcher is not available.')
+  }
+  return response.json() as Promise<LiveScreenDecisionFeed>
+}
+
+function subscribeLiveScreenDecision(
+  onDecision: (decision: LiveScreenDecisionFeed) => void,
+  onError: () => void,
+): () => void {
+  const events = new EventSource('http://127.0.0.1:8765/events')
+  events.onmessage = (event) => {
+    try {
+      onDecision(JSON.parse(event.data) as LiveScreenDecisionFeed)
+    } catch {
+      onError()
+    }
+  }
+  events.onerror = onError
+  return () => events.close()
+}
+
 export const api = {
   getGame: () => request<GameState>('/game'),
   newGame: () => request<GameState>('/game/new', { method: 'POST' }),
@@ -42,12 +69,15 @@ export const api = {
   action: (action: string, amount?: number) => request<GameState>('/game/action', {
     method: 'POST', body: JSON.stringify({ action, amount }),
   }),
+  agentAction: () => request<GameState>('/game/agent-action', { method: 'POST' }),
   queryChampion: (query: ChampionQueryRequest) => request<ChampionQueryResult>('/champion/query', {
     method: 'POST', body: JSON.stringify(query),
   }),
   previewChampionSpot: (spot: ChampionSpotRequest) => request<ChampionSpotState>('/champion/spot', {
     method: 'POST', body: JSON.stringify(spot),
   }),
+  liveScreenDecision: requestLiveScreenDecision,
+  subscribeLiveScreenDecision,
   trainingStatus: () => request<TrainingStatus>('/training/status'),
   train: (episodes: number) => request<TrainingStatus>('/training/start', {
     method: 'POST', body: JSON.stringify({ episodes }),

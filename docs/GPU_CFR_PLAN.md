@@ -1,6 +1,9 @@
 # GPU-CFR: Dense-Tensor Blueprint Training
 
-**Date:** 2026-07-17 · **Status:** In implementation
+**Date:** 2026-07-17 · **Status:** Implemented & verified (2026-07-21: solver convergence
+proven correct by independent best response — see `docs/STATUS.md` §2). Production
+trainer for all blueprints. Current state/ops: `docs/STATUS.md`; next steps:
+`docs/RESEARCH_ROADMAP.md`.
 **Goal:** Replace the per-node Python traversal (~40 iters/s on 4 CPU workers) with
 vectorized, chance-sampled range CFR on the RTX 3060 — targeting hundreds of
 equivalent iterations per second.

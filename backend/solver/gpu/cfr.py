@@ -11,8 +11,10 @@ Terminal values use the sort-based showdown evaluation with per-card blocker
 corrections (one batched sort per deal, prefix sums per showdown node), and
 fold values use the same inclusion-exclusion card correction.
 
-Regrets/strategy sums are dense float32 tensors [nodes, 169, actions]
-(169 = the largest street bucket count), linear-CFR weighted.
+Regrets/strategy sums use compact decision-node, per-street storage. The four
+street shards are concatenated into one float32 ``[stored rows, actions]``
+tensor so CUDA-graph in-place operations remain available while terminal
+nodes and unused per-street bucket columns consume no VRAM.
 """
 
 from __future__ import annotations
@@ -23,8 +25,11 @@ import numpy as np
 import torch
 
 from backend.solver.gpu.deals import CARD_IN_COMBO, NUM_COMBOS, Deal, DealSampler, combos
+from backend.solver.gpu.storage import CompactTableLayout
 from backend.solver.gpu.tree import DECISION, FOLD_NODE, SHOWDOWN, STREET_END, BettingTree
 
+# Legacy compatibility for modules/checkpoints that used the old global cap.
+# New storage is dynamic and does not use this value for indexing.
 MAX_BUCKETS = 169
 
 
@@ -40,7 +45,30 @@ class VectorCFR:
         discount_gamma: float = 2.0,
         averaging_delay: int = 0,
         batch_boards: int = 1,
+        fused_forward: bool = True,
+        independent_situations: bool = False,
     ) -> None:
+        # SITUATION BATCHING (P2). `batch_boards` folds B boards into the combo
+        # axis but they share one regret table — B chance samples of ONE game.
+        # With `independent_situations` the same axis instead carries B separate
+        # games: regrets/strategy sums get a batch dimension and every index
+        # gains a per-situation offset, so B equilibria are solved at once.
+        #
+        # This is the only way to use the idle GPU here. These solves are
+        # latency-bound (~530 dependent ops/iteration, 123x above the bandwidth
+        # floor), so widening each kernel is free while adding processes is not:
+        # 4 worker processes measured 0.4 rows/s against 1.20 for one, because
+        # separate CUDA contexts time-slice instead of interleaving.
+        self.independent_situations = bool(independent_situations)
+        # Forward-pass fusion (P2.1). Profiling showed these solves are
+        # latency-bound on a serial chain of ~530 dependent GPU ops per
+        # iteration at ~26.5us each — not bandwidth-bound (123x above the
+        # floor) and not occupancy-bound (batching gave only 1.47x). 192 of the
+        # 265 forward ops per traversal were the per-action x per-player reach
+        # loops; fusion collapses them into two index_add_ calls per level.
+        # Keep the flag: it is the control arm for the bit-identical
+        # equivalence test in tests/test_gpu_fused_forward.py.
+        self.fused_forward = fused_forward
         self.tree = tree
         self.sampler = sampler or DealSampler()
         self.device = torch.device(device)
@@ -59,10 +87,17 @@ class VectorCFR:
         # tracked ranges instead of uniform deals).
         self.root_reach: torch.Tensor | None = None
 
-        nodes = len(tree)
         actions = tree.config.num_actions
         self.num_actions = actions
-        self.regrets = torch.zeros((nodes, MAX_BUCKETS, actions), dtype=torch.float32, device=self.device)
+        self.layout = CompactTableLayout(tree, self.sampler.bucket_counts())
+        self.bucket_counts = self.layout.bucket_counts
+        # One table per independent situation, stacked along the row axis.
+        self.situations = self.batch_boards if self.independent_situations else 1
+        self.regrets = torch.zeros(
+            (self.layout.total_rows * self.situations, actions),
+            dtype=torch.float32,
+            device=self.device,
+        )
         self.strategy_sums = torch.zeros_like(self.regrets)
 
         self._prepare_static_tensors()
@@ -80,6 +115,19 @@ class VectorCFR:
         self.t_fold_committed = torch.tensor(tree.fold_loser_committed, dtype=torch.float32, device=device)
         self.t_card_in_combo = torch.tensor(CARD_IN_COMBO, dtype=torch.float32, device=device)
         self.t_combos = torch.tensor(combos(), dtype=torch.long, device=device)
+        self.t_node_base = torch.tensor(self.layout.node_base, dtype=torch.long, device=device)
+        # Per-column offset into the stacked tables: column c of the combo axis
+        # belongs to situation c // NUM_COMBOS, whose table starts at
+        # situation * total_rows. Zero when situations are not independent, so
+        # the shared-table path is untouched.
+        if self.independent_situations and self.situations > 1:
+            self.t_situation_offset = torch.repeat_interleave(
+                torch.arange(self.situations, dtype=torch.long, device=device)
+                * self.layout.total_rows,
+                NUM_COMBOS,
+            )
+        else:
+            self.t_situation_offset = None
 
         # Group nodes by depth for level-batched processing (parents always
         # precede children in index order, but depth grouping lets one gather/
@@ -164,6 +212,54 @@ class VectorCFR:
                         },
                     }
                 )
+
+            # Fused forward plan: one flat (parent -> child) edge list for the
+            # whole level instead of a Python loop over actions x players.
+            #
+            # Per edge the semantics are unchanged: the ACTOR's reach is scaled
+            # by their probability of the action, the opponent's passes through.
+            # Encoding both players in one flat index over a [2*nodes, width]
+            # view lets a single index_add_ do each half.
+            #
+            # Safe and deterministic because parents sit exactly one level above
+            # their children (so reads and writes never alias within a level)
+            # and every child has exactly one (parent, action) edge (so no
+            # destination index repeats, which is what would otherwise make
+            # index_add_ non-deterministic under atomics).
+            edge_src, edge_dst, edge_row, edge_action = [], [], [], []
+            for action in range(tree.config.num_actions):
+                legal_rows = np.flatnonzero(tree.legal[decisions_np, action])
+                if legal_rows.size == 0:
+                    continue
+                acting = decisions_np[legal_rows]
+                children = tree.children[acting, action]
+                if np.any(children < 0):
+                    raise ValueError("legal action with no child in the betting tree")
+                edge_src.append(acting)
+                edge_dst.append(children)
+                edge_row.append(legal_rows)
+                edge_action.append(np.full(legal_rows.size, action, dtype=np.int64))
+            if edge_src:
+                src = np.concatenate(edge_src)
+                dst = np.concatenate(edge_dst).astype(np.int64)
+                row = np.concatenate(edge_row).astype(np.int64)
+                act = np.concatenate(edge_action)
+                actor = tree.actor[src].astype(np.int64)
+                node_count = len(tree)
+                if np.unique(dst).size != dst.size:
+                    raise ValueError("a node has more than one parent edge; fusion would race")
+                plan["fused"] = {
+                    "actor_src": torch.tensor(actor * node_count + src, dtype=torch.long, device=device),
+                    "actor_dst": torch.tensor(actor * node_count + dst, dtype=torch.long, device=device),
+                    "opponent_src": torch.tensor((1 - actor) * node_count + src, dtype=torch.long, device=device),
+                    "opponent_dst": torch.tensor((1 - actor) * node_count + dst, dtype=torch.long, device=device),
+                    # Index into strategy viewed as [L * A, width].
+                    "strategy_index": torch.tensor(
+                        row * tree.config.num_actions + act, dtype=torch.long, device=device
+                    ),
+                }
+            else:
+                plan["fused"] = None
             self.level_plans.append(plan)
 
     # -- strategy --------------------------------------------------------------
@@ -175,7 +271,10 @@ class VectorCFR:
         street-resolved); invalid combos may carry bucket 0 — their reach is
         zero so their contribution vanishes.
         """
-        gathered = self.regrets[node_ids.unsqueeze(1), node_buckets]  # [L, C, A]
+        rows = self.t_node_base[node_ids].unsqueeze(1) + node_buckets
+        if self.t_situation_offset is not None:
+            rows = rows + self.t_situation_offset
+        gathered = self.regrets[rows]  # [L, C, A]
         positive = gathered.clamp_min(0.0)
         legal = self.t_legal[node_ids].unsqueeze(1)  # [L, 1, A]
         positive = positive * legal
@@ -314,28 +413,54 @@ class VectorCFR:
                 continue
             node_buckets = buckets[self.t_street[decisions]]  # [L, C]
             strategy = self._node_strategies(decisions, node_buckets)  # [L, C, A]
-            if frozen_average is not None and frozen_player is not None:
-                rows = plan["actor_rows"][frozen_player]
-                if rows.numel():
-                    strategy[rows] = frozen_average[decisions[rows].unsqueeze(1), node_buckets[rows]]
+            if frozen_average is not None:
+                if frozen_player is not None:
+                    rows = plan["actor_rows"][frozen_player]
+                    if rows.numel():
+                        strategy[rows] = frozen_average[decisions[rows].unsqueeze(1), node_buckets[rows]]
+                else:
+                    # frozen_player=None freezes BOTH players: a pure evaluation
+                    # pass of the given average strategy (used by safe
+                    # re-solving to price the opponent's opt-out alternative).
+                    strategy = frozen_average[decisions.unsqueeze(1), node_buckets]
             level_decisions[level_index] = decisions
             strategies[level_index] = strategy
-            for action_plan in plan["actions"]:
-                action = action_plan["action"]
-                for player in (0, 1):
-                    actor_nodes, actor_children, actor_rows = action_plan["actor_split"][player]
-                    if actor_nodes.numel():
-                        reach[player, actor_children, :] += (
-                            reach[player, actor_nodes, :] * strategy[actor_rows, :, action]
-                        )
-                    other_nodes, other_children, _ = action_plan["actor_split"][1 - player]
-                    if other_nodes.numel():
-                        reach[player, other_children, :] += reach[player, other_nodes, :]
+            fused = plan.get("fused") if self.fused_forward else None
+            if fused is not None:
+                # Two ops per level instead of up to 4 x |actions|. Bit-identical
+                # to the loop below: every child receives exactly one edge, so
+                # there is no summation-order freedom to change the result.
+                reach_flat = reach.view(2 * nodes, width)
+                strategy_flat = strategy.permute(0, 2, 1).reshape(-1, width)
+                reach_flat.index_add_(
+                    0,
+                    fused["actor_dst"],
+                    reach_flat[fused["actor_src"]] * strategy_flat[fused["strategy_index"]],
+                )
+                reach_flat.index_add_(
+                    0, fused["opponent_dst"], reach_flat[fused["opponent_src"]]
+                )
+            else:
+                for action_plan in plan["actions"]:
+                    action = action_plan["action"]
+                    for player in (0, 1):
+                        actor_nodes, actor_children, actor_rows = action_plan["actor_split"][player]
+                        if actor_nodes.numel():
+                            reach[player, actor_children, :] += (
+                                reach[player, actor_nodes, :] * strategy[actor_rows, :, action]
+                            )
+                        other_nodes, other_children, _ = action_plan["actor_split"][1 - player]
+                        if other_nodes.numel():
+                            reach[player, other_children, :] += reach[player, other_nodes, :]
 
         # ---- terminal values (traverser's perspective only) ----------------------
         values = torch.zeros((nodes, width), dtype=torch.float32, device=device)
         self._fold_values(values, reach, traverser)
         self._showdown_values(values, reach, scores, valid, traverser)
+        # Depth-limited trees: an external evaluator prices HORIZON terminals
+        # from the players' reach there (backend/search/depth_limited.py).
+        if getattr(self, "_horizon_hook", None) is not None:
+            self._horizon_hook(values, reach, traverser, deal, valid)
 
         # ---- backward: roll values up, accumulate traverser regrets/sums ---------
         for level_index in range(len(self.level_plans) - 1, -1, -1):
@@ -379,13 +504,33 @@ class VectorCFR:
                     child_values[acted_rows] - node_value[acted_rows].unsqueeze(2)
                 ) * legal[acted_rows] * valid.float().unsqueeze(0).unsqueeze(2)
                 sum_increment = strategy[acted_rows] * reach[traverser, own, :].unsqueeze(2)
-                flat_index = (own.unsqueeze(1) * MAX_BUCKETS + node_buckets[acted_rows]).reshape(-1)
-                self.regrets.view(-1, self.num_actions).index_add_(
-                    0, flat_index, regret_increment.reshape(-1, self.num_actions)
+                flat_index = self.t_node_base[own].unsqueeze(1) + node_buckets[acted_rows]
+                if self.t_situation_offset is not None:
+                    flat_index = flat_index + self.t_situation_offset
+                flat_index = flat_index.reshape(-1)
+                self.regrets.index_add_(
+                    0,
+                    flat_index,
+                    regret_increment.reshape(-1, self.num_actions),
                 )
-                self.strategy_sums.view(-1, self.num_actions).index_add_(
-                    0, flat_index, sum_increment.reshape(-1, self.num_actions)
+                self.strategy_sums.index_add_(
+                    0,
+                    flat_index,
+                    sum_increment.reshape(-1, self.num_actions),
                 )
+
+        # Root counterfactual values of this traversal (traverser's, per combo,
+        # opponent-reach weighted). The safe re-solving gadget reads these.
+        self._last_root_values = values[self.tree.root, :]
+        # Opt-in capture of the full per-node reach and value tensors. CFV
+        # datagen harvests one (belief, value) sample per INTERIOR node from a
+        # single evaluation pass: the reach at a node IS the belief there, and
+        # its value under the frozen average strategy is the corresponding CFV.
+        # Off by default because holding these alive would add ~12 MB per
+        # traversal to every training iteration for no benefit.
+        if getattr(self, "capture_internals", False):
+            self._last_reach = reach
+            self._last_values = values
 
     def tree_kind(self, node_ids: torch.Tensor) -> torch.Tensor:
         return torch.tensor(self.tree.kind, device=self.device)[node_ids]
@@ -425,8 +570,13 @@ class VectorCFR:
         scores: torch.Tensor,
         valid: torch.Tensor,
         player: int,
+        nodes: torch.Tensor | None = None,
+        pots: torch.Tensor | None = None,
     ) -> None:
-        nodes = self.showdown_nodes
+        # nodes/pots overrides let depth-limited horizon evaluators reuse this
+        # trusted kernel on their own node set (backend/search/depth_limited).
+        if nodes is None:
+            nodes = self.showdown_nodes
         if not nodes.numel():
             return
         # scores: [B, C]; reach/values use the flat [.., B*C] layout.
@@ -438,7 +588,7 @@ class VectorCFR:
         sorted_scores = torch.gather(scores, 1, order)
         boundaries_left = torch.searchsorted(sorted_scores, scores, side="left")  # [B, C]
         boundaries_right = torch.searchsorted(sorted_scores, scores, side="right")
-        pots = self.t_matched_pot[nodes].view(showdowns, 1, 1)
+        pots = (self.t_matched_pot[nodes] if pots is None else pots).view(showdowns, 1, 1)
         card_in_combo = self.t_card_in_combo > 0  # [52, C] bool
         combo_cards = self.t_combos  # [C, 2]
 
@@ -500,13 +650,79 @@ class VectorCFR:
 
     # -- outputs -----------------------------------------------------------------
 
-    def average_strategy_tables(self) -> np.ndarray:
-        """Normalized average strategy [nodes, MAX_BUCKETS, A] (uniform where unseen)."""
-        sums = self.strategy_sums.cpu().numpy()
-        legal = self.tree.legal[:, None, :]
-        totals = sums.sum(axis=2, keepdims=True)
-        legal_counts = legal.sum(axis=2, keepdims=True).clip(min=1)
-        uniform = legal / legal_counts
-        with np.errstate(invalid="ignore", divide="ignore"):
-            normalized = np.where(totals > 0, sums / np.maximum(totals, 1e-30), uniform)
-        return normalized * legal
+    def average_strategy_compact(self, situation: int = 0) -> torch.Tensor:
+        """Normalized average strategy in compact ``[stored rows, A]`` form.
+
+        With independent situations the tables are stacked along the row axis,
+        so ``situation`` selects which block to extract.
+        """
+        rows = self.layout.total_rows
+        sums = self.strategy_sums[situation * rows : (situation + 1) * rows]
+        # Only serving/diagnostic extraction needs a legal mask expanded per
+        # stored row. Build it transiently so training does not spend VRAM on
+        # a third table-sized persistent tensor.
+        legal = torch.tensor(self.layout.legal_rows(), device=self.device)
+        totals = sums.sum(dim=1, keepdim=True)
+        legal_counts = legal.sum(dim=1, keepdim=True).clamp_min(1).to(sums.dtype)
+        uniform = legal.to(sums.dtype) / legal_counts
+        return torch.where(totals > 0, sums / totals.clamp_min(1e-30), uniform) * legal
+
+    def average_strategy_tensor(self, situation: int = 0) -> torch.Tensor:
+        """Dense ``[nodes, max street buckets, A]`` view for small consumers.
+
+        Blueprint training and checkpoints never materialize this view. It is
+        retained for subgame solving and diagnostic code whose trees are small.
+        """
+        compact = self.average_strategy_compact(situation)
+        dense = torch.zeros(
+            (len(self.tree), self.layout.max_buckets, self.num_actions),
+            dtype=compact.dtype,
+            device=self.device,
+        )
+        for shard in self.layout.shards:
+            if not shard.decision_count:
+                continue
+            nodes = torch.tensor(shard.decision_nodes, dtype=torch.long, device=self.device)
+            dense[nodes, : shard.bucket_count] = compact[
+                shard.start : shard.stop
+            ].reshape(shard.decision_count, shard.bucket_count, self.num_actions)
+        return dense
+
+    def average_strategy_tables(self, situation: int = 0) -> np.ndarray:
+        """Dense CPU average-strategy view for serving small subgames."""
+        return self.average_strategy_tensor(situation).cpu().numpy()
+
+    def load_tables(self, regrets: np.ndarray, strategy_sums: np.ndarray) -> str:
+        """Load compact tables or migrate a legacy dense checkpoint in-place."""
+        if regrets.ndim == 3:
+            regrets = self.layout.compact_from_dense(regrets)
+            strategy_sums = self.layout.compact_from_dense(strategy_sums)
+            source = "legacy-dense"
+        else:
+            self.layout.validate_compact(regrets)
+            self.layout.validate_compact(strategy_sums)
+            source = "compact-v2"
+        self.regrets.copy_(
+            torch.as_tensor(regrets, dtype=torch.float32, device=self.device)
+        )
+        self.strategy_sums.copy_(
+            torch.as_tensor(strategy_sums, dtype=torch.float32, device=self.device)
+        )
+        return source
+
+    def storage_report(self) -> dict:
+        dense_rows = len(self.tree) * max(self.bucket_counts)
+        compact_rows = self.layout.total_rows
+        table_bytes = compact_rows * self.num_actions * 4
+        return {
+            **self.layout.state(),
+            "actions": self.num_actions,
+            "regret_bytes": table_bytes,
+            "strategy_sum_bytes": table_bytes,
+            "table_bytes_total": table_bytes * 2,
+            "legacy_dense_rows": dense_rows,
+            "row_reduction_fraction": round(
+                1.0 - compact_rows / max(dense_rows, 1),
+                6,
+            ),
+        }

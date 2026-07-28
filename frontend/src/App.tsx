@@ -27,6 +27,8 @@ import type {
 
 const MIN_EPISODES = 10;
 const MAX_EPISODES = 500_000;
+const AGENT_THINK_MIN_MS = 900;
+const AGENT_THINK_MAX_MS = 2_200;
 
 const clamp = (value: number, minimum: number, maximum: number) =>
   Math.min(Math.max(value, minimum), maximum);
@@ -282,6 +284,21 @@ const hudRateText = (rate: HudRate) =>
     ? `${Math.round((rate.successes / rate.opportunities) * 100)}%`
     : "—";
 
+const servingAgentLabel = (agent?: string) => {
+  switch (agent) {
+    case "MultiStackBlueprintAgent":
+      return "Multi-stack GPU blueprint";
+    case "GpuBlueprintAgent":
+      return "GPU blueprint";
+    case "BlueprintAgent":
+      return "CPU blueprint";
+    case "HeuristicAgent":
+      return "Heuristic fallback";
+    default:
+      return agent ?? "—";
+  }
+};
+
 const CHIP_DENOMINATIONS: { value: number; colour: ChipColour }[] = [
   { value: 500, colour: "black" },
   { value: 100, colour: "red" },
@@ -511,6 +528,7 @@ function App() {
   const [episodes, setEpisodes] = useState(50_000);
   const [message, setMessage] = useState("Connecting to the table…");
   const [busy, setBusy] = useState(false);
+  const [agentThinking, setAgentThinking] = useState(false);
   const [autoDealing, setAutoDealing] = useState(false);
   const [handSettling, setHandSettling] = useState(false);
   const [chipFlights, setChipFlights] = useState<ChipFlight[]>([]);
@@ -533,6 +551,8 @@ function App() {
   const chipFlightId = useRef(0);
   const dealerFlightId = useRef(0);
   const autoDealTimer = useRef<number | null>(null);
+  const agentDelayTimer = useRef<number | null>(null);
+  const agentTurnRunning = useRef(false);
   const betControlsRef = useRef<HTMLDivElement | null>(null);
 
   const cancelAutoDeal = useCallback(() => {
@@ -679,6 +699,40 @@ function App() {
     );
   }, []);
 
+  const playAgentTurns = useCallback(
+    async (initialGame: GameState) => {
+      if (
+        initialGame.complete ||
+        initialGame.current_player !== 1 ||
+        agentTurnRunning.current
+      )
+        return;
+
+      agentTurnRunning.current = true;
+      setAgentThinking(true);
+      try {
+        let current = initialGame;
+        while (!current.complete && current.current_player === 1) {
+          const thinkTime =
+            AGENT_THINK_MIN_MS +
+            Math.random() * (AGENT_THINK_MAX_MS - AGENT_THINK_MIN_MS);
+          await new Promise<void>((resolve) => {
+            agentDelayTimer.current = window.setTimeout(() => {
+              agentDelayTimer.current = null;
+              resolve();
+            }, thinkTime);
+          });
+          current = await api.agentAction();
+          acceptGame(current);
+        }
+      } finally {
+        agentTurnRunning.current = false;
+        setAgentThinking(false);
+      }
+    },
+    [acceptGame],
+  );
+
   const refresh = useCallback(async () => {
     try {
       const [currentGame, currentTraining] = await Promise.all([
@@ -687,6 +741,18 @@ function App() {
       ]);
       acceptGame(currentGame);
       setTraining(currentTraining);
+      if (
+        !currentGame.complete &&
+        currentGame.current_player === 1 &&
+        !agentTurnRunning.current
+      ) {
+        setBusy(true);
+        try {
+          await playAgentTurns(currentGame);
+        } finally {
+          setBusy(false);
+        }
+      }
     } catch (error) {
       setMessage(
         error instanceof Error
@@ -694,7 +760,7 @@ function App() {
           : "Cannot reach the Python server.",
       );
     }
-  }, [acceptGame]);
+  }, [acceptGame, playAgentTurns]);
 
   useEffect(() => {
     void refresh();
@@ -715,7 +781,9 @@ function App() {
           ? boundedRaise(raiseTo, game.legal_actions, raiseTo)
           : undefined;
       if (amount !== undefined) setRaiseTo(amount);
-      acceptGame(await api.action(action, amount));
+      const next = await api.action(action, amount);
+      acceptGame(next);
+      await playAgentTurns(next);
       setMessage("");
     } catch (error) {
       setMessage(error instanceof Error ? error.message : "Action failed.");
@@ -730,10 +798,9 @@ function App() {
       void sound.unlock();
       setBusy(true);
       try {
-        acceptGame(
-          kind === "new" ? await api.newGame() : await api.nextHand(),
-          kind === "new",
-        );
+        const next = kind === "new" ? await api.newGame() : await api.nextHand();
+        acceptGame(next, kind === "new");
+        await playAgentTurns(next);
         setMessage("");
       } catch (error) {
         setMessage(error instanceof Error ? error.message : "Unable to deal.");
@@ -741,7 +808,7 @@ function App() {
         setBusy(false);
       }
     },
-    [acceptGame, cancelAutoDeal],
+    [acceptGame, cancelAutoDeal, playAgentTurns],
   );
 
   const applyGameSettings = async (settings: GameSettings) => {
@@ -749,7 +816,9 @@ function App() {
     void sound.unlock();
     setBusy(true);
     try {
-      acceptGame(await api.updateGameSettings(settings), true);
+      const next = await api.updateGameSettings(settings);
+      acceptGame(next, true);
+      await playAgentTurns(next);
       setMessage(
         `New ${settings.small_blind.toLocaleString()}/${settings.big_blind.toLocaleString()} table started with ${settings.initial_stack.toLocaleString()}-chip stacks.`,
       );
@@ -866,6 +935,8 @@ function App() {
     () => () => {
       if (autoDealTimer.current !== null)
         window.clearTimeout(autoDealTimer.current);
+      if (agentDelayTimer.current !== null)
+        window.clearTimeout(agentDelayTimer.current);
     },
     [],
   );
@@ -932,8 +1003,9 @@ function App() {
   const statusLine = useMemo(() => {
     if (!game) return "Loading game state…";
     if (game.complete) return game.result ?? "Hand complete.";
+    if (agentThinking) return "Agent is thinking…";
     return game.current_player === 0 ? "Your action." : "Agent is acting.";
-  }, [game]);
+  }, [agentThinking, game]);
 
   if (!game)
     return (
@@ -947,16 +1019,41 @@ function App() {
   const canAct = game.current_player === 0 && !game.complete && !busy;
   const potDisplay = game.complete ? game.last_pot : game.pot;
   const trainingProgress = Math.round((training?.progress ?? 0) * 100);
+  const trainingRate =
+    training && training.iterations_per_second > 0
+      ? `${training.iterations_per_second.toFixed(1)}/s`
+      : "—";
+  const servingModel = training?.serving_model;
+  const selectedDepth =
+    servingModel?.selected_depth_bb === null ||
+    servingModel?.selected_depth_bb === undefined
+      ? "—"
+      : `${servingModel.selected_depth_bb.toLocaleString()} BB`;
+  const servingIteration =
+    servingModel?.iteration === null || servingModel?.iteration === undefined
+      ? "—"
+      : servingModel.iteration.toLocaleString();
+  const availableDepths = servingModel?.available_depths.length
+    ? servingModel.available_depths
+        .map((model) => model.depth_bb.toLocaleString())
+        .join(" / ") + " BB"
+    : "—";
+  const searchEnabled =
+    servingModel?.search_enabled ?? training?.river_search ?? false;
+  const searchIterations = servingModel?.search_iterations;
   const dealerSeat = displayedDealer ?? (game.button as 0 | 1);
   const preflop = game.street.toLowerCase() === "preflop";
   const bigBlind = game.settings?.big_blind ?? bigBlindFromHistory(game.history);
   const currentBet = Math.max(...game.round_bets);
+  const callAmount = legal.to_call ?? game.to_call;
   const chipLead = game.stacks[0] - game.stacks[1];
   const chipLeadLabel =
     chipLead === 0 ? "Stacks even" : chipLead > 0 ? "You ahead" : "Agent ahead";
   const sessionStats = game.session_stats;
   const heroStats = sessionStats.players[0];
   const agentStats = sessionStats.players[1];
+  const heroBuyIn = heroStats.total_buy_in ?? game.settings?.initial_stack ?? 0;
+  const agentBuyIn = agentStats.total_buy_in ?? game.settings?.initial_stack ?? 0;
   const completedHudHands = hands
     .filter((hand) => hand.result !== null)
     .slice(-sessionStats.hands_completed);
@@ -998,9 +1095,24 @@ function App() {
     legal.raise_max === undefined
       ? sizedRaisePresets
       : [
-          ...sizedRaisePresets.filter(
-            (preset) => preset.target !== legal.raise_max,
-          ),
+          ...[
+            ...sizedRaisePresets,
+            {
+              label: "Pot",
+              target: boundedRaise(
+                currentBet + game.pot + callAmount,
+                legal,
+                raiseTo,
+              ),
+            },
+          ]
+            .filter(
+              (preset, index, presets) =>
+                preset.target !== legal.raise_max &&
+                presets.findIndex(
+                  (candidate) => candidate.target === preset.target,
+                ) === index,
+            ),
           { label: "Max", target: legal.raise_max },
         ];
 
@@ -1196,6 +1308,13 @@ function App() {
                 <div className="player-stack">
                   <strong>{game.stacks[1].toLocaleString()}</strong>
                   <small>chips</small>
+                  <span
+                    className="player-buy-in"
+                    title="Total chips bought during this session"
+                  >
+                    <small>Buy-in</small>
+                    <b>{agentBuyIn.toLocaleString()}</b>
+                  </span>
                 </div>
                 <PlayerHud
                   stats={agentStats}
@@ -1411,6 +1530,13 @@ function App() {
                 <div className="player-stack">
                   <strong>{game.stacks[0].toLocaleString()}</strong>
                   <small>chips</small>
+                  <span
+                    className="player-buy-in"
+                    title="Total chips bought during this session"
+                  >
+                    <small>Buy-in</small>
+                    <b>{heroBuyIn.toLocaleString()}</b>
+                  </span>
                 </div>
                 <PlayerHud
                   stats={heroStats}
@@ -1419,12 +1545,10 @@ function App() {
                   historyHands={completedHudHands.length}
                   player="Your"
                 />
-                {game.hero_hand_strength && (
-                  <div className="hand-strength" aria-live="polite">
-                    <span>Hand strength</span>
-                    <strong>{game.hero_hand_strength}</strong>
-                  </div>
-                )}
+                <div className="hand-strength" aria-live="polite">
+                  <span>Hand strength</span>
+                  <strong>{game.hero_hand_strength ?? "—"}</strong>
+                </div>
               </div>
             </div>
           </div>
@@ -1533,6 +1657,13 @@ function App() {
                 PFR {heroStats.pfr}% · Agg {heroAggression}
               </small>
             </div>
+            <div className="match-secondary-row">
+              <span>Total buy-in</span>
+              <strong>
+                {heroBuyIn.toLocaleString()}—{agentBuyIn.toLocaleString()}
+              </strong>
+              <small>You · Agent</small>
+            </div>
           </div>
 
         </section>
@@ -1607,44 +1738,50 @@ function App() {
             <article className="panel trainer">
               <header className="trainer-header">
                 <div>
-                  <div className="panel-title">LINEAR MCCFR BLUEPRINT</div>
-                  <p className="trainer-kicker">Blueprint training control room</p>
+                  <div className="panel-title">BLUEPRINT STATUS</div>
+                  <p className="trainer-kicker">Serving model + CPU trainer</p>
                 </div>
                 <div
                   className={`trainer-state ${training?.running ? "running" : "ready"}`}
                 >
                   <i />
-                  <span>{training?.running ? "Training" : "Ready"}</span>
+                  <span>{training?.running ? "CPU training" : "CPU idle"}</span>
                 </div>
               </header>
               <p className="trainer-summary">
-                Trains a blueprint strategy with Linear MCCFR self-play
-                iterations and checkpoints the average-strategy table.
+                The table uses the serving model below. These controls train the
+                separate CPU Linear MCCFR average-strategy blueprint.
               </p>
               <div className="trainer-overview">
                 <div className="trainer-stat">
-                  <span>Serving agent</span>
-                  <strong>{training?.serving_agent ?? "—"}</strong>
+                  <span>Serving model</span>
+                  <strong>{servingAgentLabel(training?.serving_agent)}</strong>
+                  <small>model currently making table decisions</small>
+                </div>
+                <div className="trainer-stat">
+                  <span>Selected depth</span>
+                  <strong>{selectedDepth}</strong>
+                  <small>checkpoint {servingIteration}</small>
+                </div>
+                <div className="trainer-stat">
+                  <span>Available depths</span>
+                  <strong>{availableDepths}</strong>
                   <small>
-                    river search {training?.river_search ? "on" : "off"}
+                    {servingModel?.available_depths.length
+                      ? `${servingModel.available_depths.length} served checkpoint${servingModel.available_depths.length === 1 ? "" : "s"}`
+                      : "metadata available after server restart"}
                   </small>
                 </div>
                 <div className="trainer-stat">
-                  <span>Checkpoint</span>
-                  <strong>{(training?.updates ?? 0).toLocaleString()}</strong>
-                  <small>iteration</small>
-                </div>
-                <div className="trainer-stat">
-                  <span>Infosets</span>
-                  <strong>{(training?.parameters ?? 0).toLocaleString()}</strong>
-                  <small>strategy table</small>
-                </div>
-                <div className="trainer-stat">
-                  <span>Speed</span>
+                  <span>Late-street search</span>
                   <strong>
-                    {training?.iterations_per_second.toFixed(1) ?? "0.0"}
+                    {searchEnabled
+                      ? searchIterations
+                        ? `${searchIterations.toLocaleString()} iters`
+                        : "On"
+                      : "Off"}
                   </strong>
-                  <small>iterations / sec</small>
+                  <small>turn + river re-solving</small>
                 </div>
               </div>
               <div className="trainer-controls">
@@ -1705,14 +1842,24 @@ function App() {
                   </div>
                 </>
               )}
-              <div className="metrics">
-                <span>Trainer: Linear MCCFR blueprint</span>
+              <div className="metrics trainer-telemetry">
+                <span>CPU trainer: Linear MCCFR</span>
+                <span>
+                  CPU checkpoint: {(training?.updates ?? 0).toLocaleString()}
+                </span>
+                <span>
+                  CPU infosets: {(training?.parameters ?? 0).toLocaleString()}
+                </span>
+                <span>
+                  CPU rate: {trainingRate} ·{" "}
+                  {training?.running ? "latest chunk" : "last recorded"}
+                </span>
                 <span>
                   Abstraction{" "}
                   {training?.artifacts.abstraction ? "ready" : "missing"}
                 </span>
                 <span>
-                  Blueprint {training?.artifacts.blueprint ? "ready" : "missing"}
+                  CPU blueprint {training?.artifacts.blueprint ? "ready" : "missing"}
                 </span>
               </div>
               {training?.last_error && (

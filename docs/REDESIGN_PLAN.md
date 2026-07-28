@@ -3,6 +3,15 @@
 **Date:** 2026-07-17
 **Status:** Implemented 2026-07-17 (Phases 0-5 built and tested; blueprint training ongoing)
 
+> **Superseded for current state (2026-07-22):** this plan was executed and then
+> superseded by the dense GPU trainer (`docs/GPU_CFR_PLAN.md`). For the live
+> architecture, verified-correctness table, strength numbers, and operations, see
+> **`docs/STATUS.md`**; for what we build next and why, see
+> **`docs/RESEARCH_ROADMAP.md`**. Notable deltas vs this document: the CPU MCCFR
+> blueprint/serving path became the fallback (GPU blueprint serves); river-only
+> unsafe re-solving grew into CUDA-graph turn/river re-solving but is **disabled**
+> — measured net regression, safe re-solving is the planned replacement.
+
 > **Implementation notes (2026-07-17).** All phases landed in one pass:
 > - Phase 0: bf16 autocast + logit repair in `learning.py`; improvement-loop skill frozen.
 > - Phase 1: `backend/solver/` — Linear MCCFR (external sampling, iteration-scaled pruning),

@@ -62,7 +62,7 @@ class RoutingTests(unittest.TestCase):
             engine.new_hand()
 
     def test_depth_summary_and_search_toggle(self) -> None:
-        self.assertEqual(set(self.router.depth_summary()), {"50bb", "100bb", "200bb"})
+        self.assertEqual(set(self.router.depth_summary()), {50.0, 100.0, 200.0})
         self.router.subgame_search = True
         self.assertTrue(self.router.subgame_search)
         self.router.subgame_search = False

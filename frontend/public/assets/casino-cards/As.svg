@@ -1,19 +1,19 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 250 360"><g transform="translate(0 0) scale(1)">
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 250 360"><g transform="translate(0 0) scale(1)" shape-rendering="geometricPrecision" text-rendering="geometricPrecision">
     <defs>
-      <linearGradient id="gradient-As" x1="0" y1="0" x2="0.72" y2="1"><stop stop-color="#11161c"/><stop offset=".26" stop-color="#89939d"/><stop offset=".54" stop-color="#3f464d"/><stop offset="1" stop-color="#11161c"/></linearGradient>
-      <linearGradient id="shine-As" x1="0" y1="0" x2="0" y2="1"><stop stop-color="#fff" stop-opacity=".52"/><stop offset=".1" stop-color="#fff" stop-opacity=".16"/><stop offset=".43" stop-color="#fff" stop-opacity="0"/></linearGradient>
-      <radialGradient id="glow-As" cx="78%" cy="5%" r="68%"><stop stop-color="#fff" stop-opacity=".35"/><stop offset=".5" stop-color="#fff" stop-opacity="0"/></radialGradient>
-      <filter id="shadow-As" x="-20%" y="-20%" width="140%" height="140%"><feDropShadow dx="4" dy="6" stdDeviation="4" flood-color="#000" flood-opacity=".48"/></filter>
-      <filter id="text-shadow-As" x="-20%" y="-20%" width="140%" height="150%"><feDropShadow dx="2" dy="3" stdDeviation="1.5" flood-color="#000" flood-opacity=".72"/></filter>
+      <linearGradient id="gradient-As" x1="0" y1="0" x2=".72" y2="1"><stop stop-color="#10151b"/><stop offset=".3" stop-color="#9aa2a9"/><stop offset=".58" stop-color="#424950"/><stop offset="1" stop-color="#10151b"/></linearGradient>
+      <linearGradient id="shine-As" x1="0" y1="0" x2="0" y2="1"><stop stop-color="#fff" stop-opacity=".42"/><stop offset=".12" stop-color="#fff" stop-opacity=".12"/><stop offset=".39" stop-color="#fff" stop-opacity="0"/></linearGradient>
+      <radialGradient id="glow-As" cx="76%" cy="4%" r="66%"><stop stop-color="#fff" stop-opacity=".22"/><stop offset=".48" stop-color="#fff" stop-opacity="0"/></radialGradient>
+      <filter id="shadow-As" x="-20%" y="-20%" width="145%" height="150%"><feDropShadow dx="4" dy="6" stdDeviation="4" flood-color="#000" flood-opacity=".58"/></filter>
+      <filter id="text-shadow-As" x="-25%" y="-25%" width="150%" height="155%"><feDropShadow dx="1.5" dy="2.5" stdDeviation="1.2" flood-color="#000" flood-opacity=".7"/></filter>
     </defs>
-    <rect x="0" y="0" width="250" height="360" rx="19" fill="#0a0e14" filter="url(#shadow-As)"/>
-    <rect x="5" y="5" width="240" height="350" rx="15" fill="url(#gradient-As)" stroke="#05080b" stroke-width="3"/>
-    <rect x="9" y="9" width="232" height="342" rx="12" fill="none" stroke="#fff" stroke-opacity=".25" stroke-width="2"/>
-    <rect x="10" y="10" width="230" height="340" rx="11" fill="url(#glow-As)"/>
-    <rect x="10" y="10" width="230" height="340" rx="11" fill="url(#shine-As)"/>
+    <rect x="0" y="0" width="250" height="360" rx="14" fill="#0a0e14" filter="url(#shadow-As)"/>
+    <rect x="6" y="6" width="238" height="348" rx="10" fill="url(#gradient-As)" stroke="#05080b" stroke-width="3"/>
+    <rect x="9" y="9" width="232" height="342" rx="8" fill="none" stroke="#fff" stroke-opacity=".17" stroke-width="1.5"/>
+    <rect x="10" y="10" width="230" height="340" rx="7" fill="url(#glow-As)"/>
+    <rect x="10" y="10" width="230" height="340" rx="7" fill="url(#shine-As)"/>
     <g fill="#fff" filter="url(#text-shadow-As)">
-      <text x="24" y="70" font-family="Arial Black, Arial, sans-serif" font-size="56" font-weight="900" letter-spacing="-3">A</text>
-      <text x="27" y="119" font-family="Georgia, 'Times New Roman', serif" font-size="45">♠</text>
-      <text x="125" y="298" text-anchor="middle" font-family="Arial Black, Arial, sans-serif" font-size="200" font-weight="900" letter-spacing="-7">A</text>
+      <path d="M0.513320922851563,-0.1181640625L0.262199401855469,-0.1181640625 0.227310180664063,0 0.00146484375,0 0.2705078125,-0.7158203125 0.51177978515625,-0.7158203125 0.78076171875,0 0.54913330078125,0z M0.467437744140625,-0.27294921875L0.388427734375,-0.5302734375 0.31024169921875,-0.27294921875z" transform="matrix(40 0 0 40 24 58)"/>
+      <text x="27" y="119" font-family="Georgia, 'Times New Roman', serif" font-size="30">♠</text>
+      <path d="M0.513320922851563,-0.1181640625L0.262199401855469,-0.1181640625 0.227310180664063,0 0.00146484375,0 0.2705078125,-0.7158203125 0.51177978515625,-0.7158203125 0.78076171875,0 0.54913330078125,0z M0.467437744140625,-0.27294921875L0.388427734375,-0.5302734375 0.31024169921875,-0.27294921875z" transform="matrix(228 0 0 200 36.327148 286)"/>
     </g>
   </g></svg>

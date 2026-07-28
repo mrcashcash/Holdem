@@ -9,12 +9,14 @@ actions are never synthesized.
 from __future__ import annotations
 
 import re
+import threading
 from dataclasses import asdict, dataclass, field
+from functools import lru_cache
 from pathlib import Path
 from statistics import median
 from typing import Any, Sequence
 
-from .poker import Card, HeadsUpHoldem, InvalidAction, RANK_LABELS, new_deck
+from ..poker import Card, HeadsUpHoldem, InvalidAction, RANK_LABELS, new_deck
 
 
 SUIT_CODES = {"s": "\u2660", "h": "\u2665", "d": "\u2666", "c": "\u2663"}
@@ -29,6 +31,7 @@ SUIT_ALIASES = {
     "c": "\u2663",
 }
 RANK_VALUES = {label: rank for rank, label in RANK_LABELS.items()}
+_OCR_LOCK = threading.RLock()
 
 
 @dataclass(frozen=True)
@@ -115,6 +118,10 @@ class ScreenshotHandHistory:
     warnings: list[str]
     validation: ValidationResult
     ocr_lines: list[OcrLine]
+    players: list[str] = field(default_factory=lambda: ["Hero", "Opponent"])
+    current_stacks: list[int | None] = field(default_factory=lambda: [None, None])
+    amount_scale: int = 1
+    currency: str | None = None
 
     def to_dict(self, include_ocr: bool = False) -> dict[str, Any]:
         payload = asdict(self)
@@ -144,16 +151,29 @@ def load_image(path: Path):
     return image
 
 
-def run_ocr(image) -> list[OcrLine]:
-    """Run RapidOCR while supporting both current and older result shapes."""
+@lru_cache(maxsize=1)
+def _rapid_ocr_engine():
     try:
         from rapidocr import RapidOCR  # type: ignore
     except ImportError as exc:
         raise RuntimeError(
             "RapidOCR is not installed. Run `pip install -r backend/requirements.txt`."
         ) from exc
+    return RapidOCR()
 
-    result = RapidOCR()(image)
+
+def run_ocr(image) -> list[OcrLine]:
+    """Run cached RapidOCR while supporting both current and older result shapes."""
+    # Card-corner recognition temporarily switches the shared engine to
+    # recognition-only mode. RapidOCR keeps those flags for later calls, so
+    # explicitly restore full detection/classification/recognition here.
+    with _OCR_LOCK:
+        result = _rapid_ocr_engine()(
+            image,
+            use_det=True,
+            use_cls=True,
+            use_rec=True,
+        )
     rows: list[tuple[Any, str, float]] = []
     if hasattr(result, "boxes"):
         boxes = getattr(result, "boxes", None)
@@ -182,6 +202,79 @@ def run_ocr(image) -> list[OcrLine]:
             )
         )
     return sorted(lines, key=lambda line: (line.box.top, line.box.left))
+
+
+def recognize_text_strip(image) -> tuple[str, float]:
+    """Recognize one already-localized text strip without text detection.
+
+    CoinPoker's live path knows the exact row/seat rectangles after the two
+    windows are located. Skipping the detector turns a multi-second full-frame
+    OCR pass into a small recognition call that normally completes in tens of
+    milliseconds.
+    """
+
+    if image is None or getattr(image, "size", 0) == 0:
+        return "", 0.0
+    with _OCR_LOCK:
+        result = _rapid_ocr_engine()(
+            image,
+            use_det=False,
+            use_cls=False,
+            use_rec=True,
+        )
+    texts = getattr(result, "txts", ()) or ()
+    scores = getattr(result, "scores", ()) or ()
+    candidates = [
+        (str(text).strip(), float(score))
+        for text, score in zip(texts, scores)
+        if str(text).strip()
+    ]
+    return max(candidates, key=lambda item: item[1], default=("", 0.0))
+
+
+def augment_coinpoker_seat_ocr(
+    image,
+    lines: Sequence[OcrLine],
+) -> list[OcrLine]:
+    """Add focused OCR for the two CoinPoker name/stack plaques.
+
+    Full-monitor OCR can miss the small stylized stack amount even when it
+    detects the surrounding Dealer Chat. Tight seat crops preserve enough
+    character detail for reliable decimal recognition.
+    """
+
+    height, width = image.shape[:2]
+    crops = (
+        (0.60, 0.08, 0.82, 0.25),
+        (0.60, 0.57, 0.82, 0.79),
+    )
+    combined = list(lines)
+    for left_ratio, top_ratio, right_ratio, bottom_ratio in crops:
+        left = max(0, min(width - 1, int(width * left_ratio)))
+        top = max(0, min(height - 1, int(height * top_ratio)))
+        right = max(left + 1, min(width, int(width * right_ratio)))
+        bottom = max(top + 1, min(height, int(height * bottom_ratio)))
+        crop = image[top:bottom, left:right]
+        for line in run_ocr(crop):
+            offset = OcrLine(
+                text=line.text,
+                confidence=line.confidence,
+                box=Box(
+                    line.box.left + left,
+                    line.box.top + top,
+                    line.box.right + left,
+                    line.box.bottom + top,
+                ),
+            )
+            duplicate = any(
+                existing.text.casefold() == offset.text.casefold()
+                and abs(existing.box.center_x - offset.box.center_x) <= 8.0
+                and abs(existing.box.center_y - offset.box.center_y) <= 8.0
+                for existing in combined
+            )
+            if not duplicate:
+                combined.append(offset)
+    return sorted(combined, key=lambda line: (line.box.top, line.box.left))
 
 
 def _merge_ocr_lines(lines: Sequence[OcrLine]) -> list[OcrLine]:
@@ -426,26 +519,25 @@ def parse_timeline(lines: Sequence[OcrLine]) -> tuple[
     return hand_number, button, [small_blind, big_blind], actions, timeline_starts_at_hand, warnings
 
 
+@lru_cache(maxsize=4)
 def _render_card_templates(asset_dir: Path, output_size: tuple[int, int] = (125, 180)):
     cv2, np = _load_cv2()
     try:
-        import cairosvg  # type: ignore
+        import resvg_py  # type: ignore
     except ImportError as exc:
         raise RuntimeError(
-            "CairoSVG is not installed. Run `pip install -r backend/requirements.txt`."
+            "The SVG card renderer is not installed. Run "
+            "`pip install -r backend/requirements.txt`."
         ) from exc
 
     templates: dict[str, Any] = {}
     for path in sorted(asset_dir.glob("*.svg")):
         if not re.fullmatch(r"[2-9TJQKA][shdc]\.svg", path.name):
             continue
-        png = cairosvg.svg2png(
-            bytestring=path.read_bytes(),
-            output_width=output_size[0],
-            output_height=output_size[1],
-        )
+        png = resvg_py.svg_to_bytes(svg_string=path.read_text(encoding="utf-8"))
         template = cv2.imdecode(np.frombuffer(png, dtype=np.uint8), cv2.IMREAD_COLOR)
         if template is not None:
+            template = cv2.resize(template, output_size, interpolation=cv2.INTER_AREA)
             code = path.stem
             templates[f"{code[0]}{SUIT_CODES[code[1]]}"] = template
     if len(templates) != 52:
@@ -477,6 +569,25 @@ def _warp_candidate(image, contour, output_size: tuple[int, int] = (125, 180)):
     )
     matrix = cv2.getPerspectiveTransform(points, destination)
     return cv2.warpPerspective(image, matrix, output_size)
+
+
+def _card_match_score(candidate, template) -> float:
+    """Score the full face plus the two rank-heavy regions in the card artwork."""
+    cv2, _ = _load_cv2()
+    height, width = candidate.shape[:2]
+
+    def normalized_match(first, second) -> float:
+        return float(cv2.matchTemplate(first, second, cv2.TM_CCOEFF_NORMED)[0, 0])
+
+    # The complete face preserves the suit-specific background signal. The
+    # corner separates rank/suit combinations, while the large lower glyph
+    # makes same-suit ranks much harder to confuse.
+    corner = (slice(0, int(height * 0.43)), slice(0, int(width * 0.48)))
+    large_rank = (slice(int(height * 0.34), height), slice(int(width * 0.12), int(width * 0.88)))
+    full_score = normalized_match(candidate, template)
+    corner_score = normalized_match(candidate[corner], template[corner])
+    large_rank_score = normalized_match(candidate[large_rank], template[large_rank])
+    return full_score * 0.25 + corner_score * 0.30 + large_rank_score * 0.45
 
 
 def _iou(first: Box, second: Box) -> float:
@@ -535,11 +646,9 @@ def detect_cards(
         warped = _warp_candidate(image, contour)
         scores: list[tuple[float, str]] = []
         for card, template in templates.items():
-            score = float(cv2.matchTemplate(warped, template, cv2.TM_CCOEFF_NORMED)[0, 0])
+            score = _card_match_score(warped, template)
             # Some contours arrive upside-down depending on minAreaRect point order.
-            rotated_score = float(
-                cv2.matchTemplate(cv2.rotate(warped, cv2.ROTATE_180), template, cv2.TM_CCOEFF_NORMED)[0, 0]
-            )
+            rotated_score = _card_match_score(cv2.rotate(warped, cv2.ROTATE_180), template)
             scores.append((max(score, rotated_score), card))
         scores.sort(reverse=True)
         best_score, best_card = scores[0]
@@ -747,15 +856,96 @@ def validate_history(
 def extract_hand_history(
     image_path: Path,
     asset_dir: Path,
-    starting_stacks: Sequence[int] = (2_000, 2_000),
+    starting_stacks: Sequence[int] | None = None,
     timeline_crop: str | None = None,
     minimum_card_score: float = 0.58,
+    layout_hint: str = "auto",
 ) -> ScreenshotHandHistory:
-    if len(starting_stacks) != 2 or any(stack <= 0 for stack in starting_stacks):
+    if layout_hint not in {"auto", "default", "coinpoker"}:
+        raise ValueError("Layout must be auto, default, or coinpoker.")
+    if starting_stacks is not None and (
+        len(starting_stacks) != 2 or any(stack <= 0 for stack in starting_stacks)
+    ):
         raise ValueError("Starting stacks must contain two positive chip amounts.")
     image = load_image(image_path)
     height, width = image.shape[:2]
     raw_ocr = run_ocr(image)
+    from .layouts.coinpoker import detect_coinpoker_layout, extract_coinpoker_layout
+
+    use_coinpoker = layout_hint == "coinpoker" or (
+        layout_hint == "auto" and detect_coinpoker_layout(raw_ocr)
+    )
+    if use_coinpoker:
+        recognized = extract_coinpoker_layout(
+            image,
+            raw_ocr,
+            width,
+            height,
+            starting_stacks_override=starting_stacks,
+        )
+        if len(recognized.players) < 2 or any(
+            stack is None for stack in recognized.current_stacks
+        ):
+            raw_ocr = augment_coinpoker_seat_ocr(image, raw_ocr)
+            recognized = extract_coinpoker_layout(
+                image,
+                raw_ocr,
+                width,
+                height,
+                starting_stacks_override=starting_stacks,
+            )
+        actions = [ParsedAction(**action) for action in recognized.actions]
+        warnings = list(recognized.warnings)
+        validation = validate_history(
+            actions,
+            recognized.starting_stacks,
+            recognized.blinds,
+            recognized.button,
+            recognized.hero_cards,
+            recognized.opponent_cards,
+            recognized.board,
+        )
+        warnings.extend(validation.warnings)
+        if validation.error:
+            warnings.append(validation.error)
+        resulting_state = validation.resulting_state or {}
+        timeline_complete = recognized.timeline_starts_at_hand and bool(
+            resulting_state.get("complete")
+        )
+        if recognized.timeline_starts_at_hand and validation.valid and not timeline_complete:
+            warnings.append(
+                "The current CoinPoker hand is valid so far but has not finished."
+            )
+        confidence_parts = recognized.action_confidences + recognized.card_confidences
+        confidence = (
+            sum(confidence_parts) / len(confidence_parts) if confidence_parts else 0.0
+        )
+        if not validation.valid:
+            confidence *= 0.65
+        if not recognized.timeline_starts_at_hand:
+            confidence *= 0.75
+        return ScreenshotHandHistory(
+            source_image=str(image_path.resolve()),
+            layout="coinpoker-dealer-chat",
+            hand_number=recognized.hand_number,
+            button=recognized.button,
+            blinds=recognized.blinds,
+            starting_stacks=recognized.starting_stacks,
+            hero_cards=recognized.hero_cards,
+            opponent_cards=recognized.opponent_cards,
+            board=recognized.board,
+            actions=actions,
+            timeline_complete=timeline_complete,
+            confidence=round(confidence, 4),
+            warnings=list(dict.fromkeys(warnings)),
+            validation=validation,
+            ocr_lines=recognized.chat_lines,
+            players=recognized.players or ["Hero", "Opponent"],
+            current_stacks=recognized.current_stacks,
+            amount_scale=100,
+        )
+
+    effective_starting_stacks = list(starting_stacks or (2_000, 2_000))
     layout, default_crop = _default_timeline_crop(raw_ocr, width, height)
     crop = _parse_crop(timeline_crop, width, height) or default_crop
     timeline_fragments = (
@@ -783,7 +973,7 @@ def extract_hand_history(
 
     validation = validate_history(
         actions,
-        starting_stacks,
+        effective_starting_stacks,
         blinds,
         button,
         hero_cards,
@@ -815,7 +1005,7 @@ def extract_hand_history(
         hand_number=hand_number,
         button=button,
         blinds=blinds,
-        starting_stacks=list(starting_stacks),
+        starting_stacks=effective_starting_stacks,
         hero_cards=hero_cards,
         opponent_cards=opponent_cards,
         board=board,
@@ -829,6 +1019,70 @@ def extract_hand_history(
 
 
 def readable_text(history: ScreenshotHandHistory) -> str:
+    def amount(value: int) -> str:
+        if history.amount_scale == 1:
+            return str(value)
+        return f"{value / history.amount_scale:.2f}"
+
+    if history.layout == "coinpoker-dealer-chat":
+        players = history.players if len(history.players) == 2 else ["Hero", "Opponent"]
+        button_name = (
+            players[history.button]
+            if history.button is not None and history.button < len(players)
+            else "unknown"
+        )
+        lines = [
+            f"Hand #{history.hand_number if history.hand_number is not None else 'unknown'}",
+            "Game: Heads-Up No-Limit Hold'em",
+            f"Blinds: {amount(history.blinds[0])}/{amount(history.blinds[1])}",
+            f"Seat 1: {players[0]} ({amount(history.starting_stacks[0])})",
+            f"Seat 2: {players[1]} ({amount(history.starting_stacks[1])})",
+            f"Button: {button_name}",
+            f"Dealt to {players[0]} [{' '.join(history.hero_cards) if history.hero_cards else 'unknown'}]",
+            "",
+            "*** PRE-FLOP ***",
+        ]
+        if history.button is not None:
+            lines.extend(
+                [
+                    f"{players[history.button]} posts small blind {amount(history.blinds[0])}",
+                    f"{players[1 - history.button]} posts big blind {amount(history.blinds[1])}",
+                ]
+            )
+        street = "preflop"
+        for action in history.actions:
+            if action.street != street:
+                street = action.street
+                visible_board = history.board[: {"flop": 3, "turn": 4, "river": 5}[street]]
+                lines.extend(["", f"*** {street.upper()} *** [{' '.join(visible_board)}]"])
+            actor = players[action.player]
+            if action.action == "raise":
+                verb = (
+                    "bets"
+                    if action.street != "preflop" and re.search(r"\bBET", action.raw_text, re.IGNORECASE)
+                    else "raises to"
+                )
+            else:
+                verb = {
+                    "fold": "folds",
+                    "check": "checks",
+                    "call": "calls",
+                    "all_in": "is all-in",
+                }.get(action.action, action.action)
+            suffix = f" {amount(action.amount)}" if action.amount is not None else ""
+            lines.append(f"{actor} {verb}{suffix}")
+        if history.validation.resulting_state:
+            lines.extend(
+                [
+                    "",
+                    f"Pot: {amount(int(history.validation.resulting_state.get('pot', 0)))}",
+                    "Status: complete" if history.timeline_complete else "Status: hand in progress",
+                ]
+            )
+        if history.warnings:
+            lines.extend(["", "Warnings:", *(f"- {warning}" for warning in history.warnings)])
+        return "\n".join(lines).rstrip() + "\n"
+
     lines = [
         f"Hand #{history.hand_number if history.hand_number is not None else 'unknown'}",
         f"Blinds: {history.blinds[0]}/{history.blinds[1]}",

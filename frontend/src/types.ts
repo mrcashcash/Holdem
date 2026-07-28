@@ -14,6 +14,7 @@ export interface LegalActions {
 export interface PlayerSessionStats {
   hand_wins: number
   match_wins: number
+  total_buy_in?: number
   showdown_wins: number
   fold_wins: number
   folds: number
@@ -72,6 +73,20 @@ export interface TrainingArtifacts {
   blueprint: boolean
 }
 
+export interface ServingDepth {
+  depth_bb: number
+  iteration: number
+}
+
+export interface ServingModelStatus {
+  kind: 'MultiStackBlueprintAgent' | 'GpuBlueprintAgent' | 'BlueprintAgent' | 'HeuristicAgent'
+  selected_depth_bb: number | null
+  iteration: number | null
+  available_depths: ServingDepth[]
+  search_enabled: boolean
+  search_iterations: number | null
+}
+
 export interface TrainingStatus {
   running: boolean
   episodes: number
@@ -81,7 +96,8 @@ export interface TrainingStatus {
   updates: number
   parameters: number
   iterations_per_second: number
-  serving_agent: 'GpuBlueprintAgent' | 'BlueprintAgent' | 'HeuristicAgent'
+  serving_agent: 'MultiStackBlueprintAgent' | 'GpuBlueprintAgent' | 'BlueprintAgent' | 'HeuristicAgent'
+  serving_model?: ServingModelStatus
   river_search: boolean
   artifacts: TrainingArtifacts
   trainer: string
@@ -155,4 +171,127 @@ export interface ChampionQueryResult {
   recommended: ChampionQueryAction
   warnings: string[]
   spot: ChampionSpotState | null
+}
+
+export type LiveScreenDecisionStatus =
+  | 'waiting'
+  | 'thinking'
+  | 'ready'
+  | 'stale'
+  | 'error'
+
+export interface LiveScreenTableState {
+  captured_at: string
+  hand_number: number | null
+  street: string | null
+  pot: number | null
+  stacks: Array<number | null>
+  round_bets: Array<number | null>
+  hero_cards: string[]
+  board: string[]
+  button: 0 | 1 | null
+  current_player: 0 | 1 | null
+  complete: boolean
+  stable: boolean
+  history_stable: boolean
+  confidence: number
+  recognition_ms: number | null
+  warnings: string[]
+  players: string[]
+  visible_actions: LiveScreenHistoryAction[]
+  timeline_starts_at_hand: boolean
+}
+
+export interface LiveScreenHistoryAction {
+  player: 0 | 1
+  action: string
+  amount: number | null
+  street: string
+}
+
+export type LiveScreenHistoryStatus =
+  | 'in_progress'
+  | 'verified'
+  | 'verified_actions'
+  | 'partial'
+  | 'gap'
+
+export interface LiveScreenHistoryStep {
+  id: string
+  captured_at: string
+  street: string | null
+  pot: number | null
+  stacks: Array<number | null>
+  board: string[]
+  current_player: 0 | 1 | null
+  complete: boolean
+  confidence: number
+  recognition_ms: number | null
+  transition: string
+  verified: boolean
+  recovered: boolean
+  warnings: string[]
+  actions: LiveScreenHistoryAction[]
+  decision: LiveScreenDecision | null
+}
+
+export interface LiveScreenHandHistory {
+  id: string
+  hand_number: number | null
+  started_at: string
+  updated_at: string
+  status: LiveScreenHistoryStatus
+  verification_message: string
+  hero_cards: string[]
+  players: string[]
+  button: 0 | 1 | null
+  complete: boolean
+  recovered: boolean
+  steps: LiveScreenHistoryStep[]
+  decisions: LiveScreenDecision[]
+}
+
+export interface LiveScreenStrategyAction {
+  action: string
+  label?: string
+  amount: number | null
+  server_amount?: number | null
+  probability: number
+  percentage?: number
+}
+
+export interface LiveScreenDecision {
+  decision_id: string
+  hand_number: number | null
+  captured_at: string
+  decided_at: string
+  action: string
+  amount: number | null
+  all_in: boolean
+  model: string
+  iteration: number | null
+  recognition_confidence: number
+  street: string
+  pot: number
+  to_call: number
+  hero_cards: string[]
+  board: string[]
+  stacks: [number, number]
+  warnings: string[]
+  strategy: LiveScreenStrategyAction[]
+  latency_ms: number | null
+  total_latency_ms: number | null
+  source: string | null
+}
+
+export interface LiveScreenDecisionFeed {
+  connected: boolean
+  status: LiveScreenDecisionStatus
+  message: string
+  updated_at: string
+  amount_scale: number
+  table: LiveScreenTableState | null
+  decision: LiveScreenDecision | null
+  history: LiveScreenHandHistory[]
+  history_gap_count: number
 }

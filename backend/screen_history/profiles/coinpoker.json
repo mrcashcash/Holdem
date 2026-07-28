@@ -1,0 +1,22 @@
+{
+  "name": "coinpoker",
+  "version": 1,
+  "content_anchor_patterns": [
+    "DEALER\\s+CHAT",
+    "COINPOKER"
+  ],
+  "fallback_content_bounds": [0.0, 0.0, 1.0, 0.96],
+  "regions": {
+    "dealer_chat": [0.0, 0.0, 0.42, 0.62],
+    "table_cards": [0.54, 0.27, 0.77, 0.70],
+    "table_pot": [0.58, 0.19, 0.79, 0.50],
+    "hero_controls": [0.64, 0.55, 1.0, 0.84],
+    "table_seats": [0.57, 0.10, 0.79, 0.78]
+  },
+  "action_controls": {
+    "button_strip": [0.55, 0.885, 1.0, 1.0],
+    "amount_field": [0.79, 0.84, 0.91, 0.905]
+  },
+  "pixel_change_threshold": 1.0,
+  "minimum_card_score": 0.58
+}

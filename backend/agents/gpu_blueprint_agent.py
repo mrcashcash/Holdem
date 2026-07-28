@@ -10,7 +10,9 @@ the current board (cached per board+street).
 from __future__ import annotations
 
 import json
+import os
 import random
+import time
 from pathlib import Path
 
 import numpy as np
@@ -20,6 +22,7 @@ from backend.abstraction.cards import preflop_class
 from backend.poker import HeadsUpHoldem
 from backend.rl_env import execute_action
 from backend.solver.gpu.deals import DealSampler, NUM_COMBOS, combos, equity_from_scores, score_all_combos
+from backend.solver.gpu.storage import CompactStrategy, CompactTableLayout
 from backend.solver.gpu.tree import ALL_IN, CHECK_CALL, DECISION, FOLD, STREET_END, BettingTree, GpuActionConfig
 from backend.vectorized_engine import card_id
 
@@ -41,17 +44,55 @@ class GpuBlueprintAgent:
         subgame_iterations: int = 120,
     ) -> None:
         self.tree = tree
-        self.strategy = strategy  # [nodes, MAX_BUCKETS, actions], normalized
+        # Legacy checkpoints use a dense ndarray; compact-v2 checkpoints use
+        # CompactStrategy with the same [node, bucket] lookup contract.
+        self.strategy = strategy
         self.sampler = sampler
         self.iteration = iteration
         self.ready = True
         self.subgame_search = subgame_search
         self.subgame_iterations = subgame_iterations
+        # Safe (max-margin gadget) re-solving is the default: plain re-solving
+        # trusts blueprint ranges for the opponent and measured as exploitable
+        # by off-blueprint opponents. HOLDEM_SAFE_SEARCH=0 selects the plain
+        # solver (A/B only).
+        self.safe_search = os.environ.get("HOLDEM_SAFE_SEARCH", "1") != "0"
+        # Flop search via the v0 169-bucket CFV net was deleted on 2026-07-28
+        # with the rest of that pipeline (it measured -65 bb/100). Flop
+        # depth-limited solving returns with the P3 net stack.
+        # Phase 4 exact-card river resolving is independent of the retired
+        # bucketed turn/river search. It is deliberately opt-in until its
+        # on/off duel clears the promotion gate.
+        self.exact_river_search = os.environ.get("HOLDEM_PHASE4_RIVER", "0") == "1"
+        self.exact_river_iterations = max(
+            12,
+            int(os.environ.get("HOLDEM_PHASE4_ITERS", "80")),
+        )
+        self.exact_river_budget_ms = max(
+            1,
+            int(os.environ.get("HOLDEM_PHASE4_BUDGET_MS", "6000")),
+        )
+        # P1 continual resolving: exact-card turn AND river, one session per hand
+        # carrying ranges across the street boundary. Supersedes the river-only
+        # Phase 4 path when enabled. Off by default until its gate clears.
+        self.continual_search = os.environ.get("HOLDEM_CONTINUAL", "0") == "1"
+        self.continual_iterations = max(
+            12,
+            int(os.environ.get("HOLDEM_CONTINUAL_ITERS", "80")),
+        )
+        self.continual_budget_ms = max(
+            1,
+            int(os.environ.get("HOLDEM_CONTINUAL_BUDGET_MS", "8000")),
+        )
+        self._continual_sessions: dict[tuple[int, int], object] = {}
+        self.last_continual_search: dict | None = None
         self._raise_fraction: float | None = None
         self._raise_target: int | None = None
         self._rng = random.Random(97)
         self._equity_cache: dict[tuple, float] = {}
         self._subgame_cache: dict[tuple, object] = {}
+        self._river_sessions: dict[tuple[int, int], object] = {}
+        self.last_river_search: dict | None = None
 
     @classmethod
     def try_load(cls, checkpoint_path: Path | None = None) -> "GpuBlueprintAgent | None":
@@ -73,18 +114,34 @@ class GpuBlueprintAgent:
         sampler = DealSampler.from_state(sampler_state)
         tree = BettingTree(config)
         sums = payload["strategy_sums"]
-        legal = tree.legal[:, None, :]
-        totals = sums.sum(axis=2, keepdims=True)
-        uniform = legal / legal.sum(axis=2, keepdims=True).clip(min=1)
-        strategy = np.where(totals > 0, sums / np.maximum(totals, 1e-30), uniform) * legal
-        return cls(tree, strategy.astype(np.float64), sampler, iteration=int(payload["iteration"]))
+        if sums.ndim == 2:
+            layout = CompactTableLayout(tree, sampler.bucket_counts())
+            strategy = CompactStrategy.from_sums(layout, sums)
+        else:
+            legal = tree.legal[:, None, :]
+            totals = sums.sum(axis=2, keepdims=True)
+            uniform = legal / legal.sum(axis=2, keepdims=True).clip(min=1)
+            strategy = (
+                np.where(totals > 0, sums / np.maximum(totals, 1e-30), uniform)
+                * legal
+            ).astype(np.float64)
+        return cls(tree, strategy, sampler, iteration=int(payload["iteration"]))
 
     # -- serving contract ------------------------------------------------------
 
     def select(self, game: HeadsUpHoldem, player: int) -> int:
         self._raise_fraction = None
         self._raise_target = None
-        if self.subgame_search and game.street >= 2:
+        searchable = game.street >= 2
+        if self.continual_search and game.street in (1, 2, 3):
+            continual_choice = self._continual_decision(game, player)
+            if continual_choice is not None:
+                return continual_choice
+        elif self.exact_river_search and game.street == 3:
+            river_choice = self._exact_river_decision(game, player)
+            if river_choice is not None:
+                return river_choice
+        elif self.subgame_search and searchable:
             subgame_choice = self._subgame_decision(game, player)
             if subgame_choice is not None:
                 return subgame_choice
@@ -176,6 +233,13 @@ class GpuBlueprintAgent:
             amount = max(int(legal["raise_min"]), min(int(legal["raise_max"]), self._raise_target))
             game.act(player, "raise", amount)
             return
+        if choice == NEURAL_FOLD and game.to_call(player) <= 0:
+            # Abstraction/reality mismatch guard: off-tree opponent actions
+            # (e.g. a limp mapped to a raise for a no_limp tree) can leave the
+            # agent's node believing it faces a bet when the real game does
+            # not. Folding when checking is free burns the hand — check.
+            game.act(player, "check")
+            return
         execute_action(game, player, choice, self._raise_fraction)
 
     def observe_completed_hand(self, game: HeadsUpHoldem, player: int) -> None:
@@ -218,20 +282,236 @@ class GpuBlueprintAgent:
 
     # -- subgame re-solving ------------------------------------------------------
 
+    @staticmethod
+    def _search_uid_for(game: HeadsUpHoldem) -> int:
+        """Monotonic live-hand id immune to CPython object-id recycling."""
+
+        uid = getattr(game, "_search_uid", None)
+        if uid is None:
+            uid = GpuBlueprintAgent._SEARCH_UID = (
+                getattr(GpuBlueprintAgent, "_SEARCH_UID", 0) + 1
+            )
+            try:
+                game._search_uid = uid
+            except Exception:
+                uid = id(game)
+        return int(uid)
+
+    def _continual_decision(
+        self,
+        game: HeadsUpHoldem,
+        player: int,
+    ) -> int | None:
+        """Exact-card turn/river decision from the hand's continual session.
+
+        Returns None to fall back to the frozen blueprint. Failure is sticky for
+        the rest of the hand (the session marks itself failed), because resuming
+        with a half-advanced belief would condition every later solve on a range
+        that never existed.
+        """
+        started = time.monotonic()
+        try:
+            from backend.search.continual import (
+                FLOP_STREET,
+                TURN_STREET,
+                register_selected_action,
+                resolve_decision,
+            )
+            from backend.search.exact_flop import exact_flop_is_affordable
+
+            # Enter at the FLOP when the exact flop-to-river tree fits, which on
+            # this card means shallow stacks (20bb: 5,303 nodes; 100bb: 132,107,
+            # ~10.5 GiB). Deep stacks enter at the turn and rely on the value
+            # nets for the streets below. A flop decision at a depth where the
+            # tree does not fit has no exact path at all, so it falls through to
+            # the blueprint rather than attempting an unaffordable solve.
+            big_blind = max(float(game.big_blind), 1.0)
+            effective_bb = (
+                min(game.stacks[seat] + game.round_bets[seat] for seat in (0, 1))
+                + min(game.contributions)
+            ) / big_blind
+            pot_bb = float(game.pot) / big_blind
+            flop_ok = exact_flop_is_affordable(effective_bb, pot_bb)
+            if game.street == FLOP_STREET and not flop_ok:
+                return None
+            entry_street = FLOP_STREET if flop_ok else TURN_STREET
+
+            uid = self._search_uid_for(game)
+            key = (uid, int(game.hand_number))
+            solution = resolve_decision(
+                self,
+                game,
+                player,
+                key=key,
+                sessions=self._continual_sessions,
+                iterations=self.continual_iterations,
+                budget_ms=self.continual_budget_ms,
+                entry_street=entry_street,
+            )
+            tree = solution.tree
+            node = int(tree.root)
+            abstract_seat = self._abstract_seat(game, player)
+            if tree.kind[node] != DECISION or int(tree.actor[node]) != abstract_seat:
+                raise RuntimeError("continual resolve root actor does not match the live player")
+
+            hole = tuple(sorted(card_id(card) for card in game.hole_cards[player]))
+            combo_index = _COMBO_INDEX[hole]
+            probabilities = solution.strategy[node, combo_index]
+            actions = [
+                action
+                for action in range(tree.config.num_actions)
+                if tree.legal[node][action]
+            ]
+            weights = [max(float(probabilities[action]), 0.0) for action in actions]
+            if sum(weights) <= 0:
+                raise RuntimeError("continual strategy has no legal probability mass")
+            choice = self._rng.choices(actions, weights=weights)[0]
+            # Record the exact per-combo likelihood so our own range advances
+            # from the policy actually played, not from the blueprint.
+            register_selected_action(
+                solution,
+                event_index=len(game.public_actions),
+                actor_seat=abstract_seat,
+                action=choice,
+            )
+            self.last_continual_search = {
+                **solution.diagnostics,
+                "status": "resolved",
+                "node": node,
+                "combo": int(combo_index),
+                "choice": int(choice),
+                "decision_elapsed_ms": round((time.monotonic() - started) * 1000.0, 1),
+            }
+
+            if choice == FOLD:
+                return NEURAL_FOLD
+            if choice == CHECK_CALL:
+                return NEURAL_CHECK_CALL
+            if choice == ALL_IN:
+                return NEURAL_ALL_IN
+            return self._to_neural_raise(game, player, int(game.street), choice, tree=tree)
+        except Exception as error:
+            self.last_continual_search = {
+                "mode": "continual-exact-v1",
+                "status": "blueprint-fallback",
+                "error": str(error),
+                "decision_elapsed_ms": round((time.monotonic() - started) * 1000.0, 1),
+            }
+            return None
+
+    def _exact_river_decision(
+        self,
+        game: HeadsUpHoldem,
+        player: int,
+    ) -> int | None:
+        """Fresh exact-card safe resolve at the current real river state."""
+
+        started = time.monotonic()
+        try:
+            from backend.search.exact_river import (
+                register_selected_action,
+                solve_exact_river,
+            )
+
+            uid = self._search_uid_for(game)
+            key = (uid, int(game.hand_number))
+            solution = solve_exact_river(
+                self,
+                game,
+                player,
+                key=key,
+                sessions=self._river_sessions,
+                iterations=self.exact_river_iterations,
+                budget_ms=self.exact_river_budget_ms,
+            )
+            tree = solution.tree
+            node = int(tree.root)
+            abstract_seat = self._abstract_seat(game, player)
+            if (
+                tree.kind[node] != DECISION
+                or int(tree.actor[node]) != abstract_seat
+            ):
+                raise RuntimeError("exact river root actor does not match the live player")
+
+            hole = tuple(sorted(card_id(card) for card in game.hole_cards[player]))
+            combo_index = _COMBO_INDEX[hole]
+            probabilities = solution.strategy[node, combo_index]
+            actions = [
+                action
+                for action in range(tree.config.num_actions)
+                if tree.legal[node][action]
+            ]
+            weights = [
+                max(float(probabilities[action]), 0.0)
+                for action in actions
+            ]
+            if sum(weights) <= 0:
+                raise RuntimeError("exact river strategy has no legal probability mass")
+            choice = self._rng.choices(actions, weights=weights)[0]
+            register_selected_action(
+                solution,
+                event_index=len(game.public_actions),
+                actor_seat=abstract_seat,
+                action=choice,
+            )
+            self.last_river_search = {
+                **solution.diagnostics,
+                "status": "resolved",
+                "node": node,
+                "combo": int(combo_index),
+                "choice": int(choice),
+                "decision_elapsed_ms": round(
+                    (time.monotonic() - started) * 1000.0,
+                    1,
+                ),
+            }
+
+            if choice == FOLD:
+                return NEURAL_FOLD
+            if choice == CHECK_CALL:
+                return NEURAL_CHECK_CALL
+            if choice == ALL_IN:
+                return NEURAL_ALL_IN
+            return self._to_neural_raise(game, player, 3, choice, tree=tree)
+        except Exception as error:
+            # Fail closed: never expose a partial/late solution. The belief
+            # session marks itself failed, so the whole remaining hand stays
+            # on the frozen blueprint instead of resuming with a false range.
+            self.last_river_search = {
+                "mode": "exact-card-safe-river-v1",
+                "status": "blueprint-fallback",
+                "error": str(error),
+                "decision_elapsed_ms": round(
+                    (time.monotonic() - started) * 1000.0,
+                    1,
+                ),
+            }
+            return None
+
     def _subgame_decision(self, game: HeadsUpHoldem, player: int) -> int | None:
         """Solve (once per street entry) and play from the turn/river subgame."""
         try:
             from backend.search.gpu_subgame import solve_subgame
 
             abstract_seat = self._abstract_seat(game, player)
-            key = (game.hand_number, len(game.community))
+            # A per-engine UID keys the cache: eval harnesses build a fresh
+            # engine per hand (hand_number always 1), and raw id(game) is NOT
+            # safe either — CPython recycles freed addresses, so later hands
+            # hit stale solutions from dead engines (found via a 6-minute
+            # "search" A/B that never actually searched, 2026-07-24).
+            uid = self._search_uid_for(game)
+            key = (uid, game.hand_number, len(game.community))
             solution = self._subgame_cache.get(key)
             if solution is None:
                 # Reuse a turn solution for river decisions when it exists.
-                turn_key = (game.hand_number, 4)
+                turn_key = (uid, game.hand_number, 4)
                 solution = self._subgame_cache.get(turn_key)
                 if solution is None or game.street < 3:
-                    solution = solve_subgame(self, game, player, iterations=self.subgame_iterations)
+                    if self.safe_search:
+                        from backend.search.safe_subgame import solve_subgame_safe as _solve
+                    else:
+                        _solve = solve_subgame
+                    solution = _solve(self, game, player, iterations=self.subgame_iterations)
                     self._subgame_cache[key] = solution
                     if len(self._subgame_cache) > 8:
                         oldest = min(self._subgame_cache)
@@ -258,9 +538,13 @@ class GpuBlueprintAgent:
                 return None
 
             street = int(tree.street[node])
-            if street == 2:
+            if street in (1, 2):
+                # Flop/turn decision inside a re-solved subgame: buckets come
+                # from the solution's own board bucketing (a street-1 node
+                # previously fell into the river branch below, silently
+                # discarding every flop solve).
                 hole = tuple(sorted(card_id(card) for card in game.hole_cards[player]))
-                bucket = int(solution.street_buckets[2][_COMBO_INDEX[hole]])
+                bucket = int(solution.street_buckets[street][_COMBO_INDEX[hole]])
                 if bucket < 0:
                     return None
             else:
@@ -293,7 +577,17 @@ class GpuBlueprintAgent:
         if kind == "fold":
             return FOLD if legal[FOLD] else CHECK_CALL
         if kind in ("check", "call"):
-            return CHECK_CALL
+            if legal[CHECK_CALL]:
+                return CHECK_CALL
+            # no_limp trees have no open-limp branch; map an opponent's limp
+            # to the smallest raise so node tracking survives (off-tree
+            # action mapping, same spirit as pseudo-harmonic sizing).
+            street = int(tree.street[node])
+            fractions = tree.config.fractions(street)
+            for index, _ in sorted(enumerate(fractions), key=lambda pair: pair[1]):
+                if legal[3 + index]:
+                    return 3 + index
+            return ALL_IN if legal[ALL_IN] else FOLD
         if kind == "all_in" or event.get("action_index") == 3:
             return ALL_IN if legal[ALL_IN] else CHECK_CALL
 
@@ -335,12 +629,22 @@ class GpuBlueprintAgent:
         if cached is None:
             combo_index = _COMBO_INDEX[hole]
             if street == 3:
-                # River: scalar equity quantile (matches training river path).
-                equity = equity_from_scores(score_all_combos(board))[combo_index]
-                if equity < 0:
-                    return None
-                counts = self.sampler.bucket_counts()
-                cached = min(int(equity * counts[3]), counts[3] - 1)
+                if getattr(self.sampler, "potential_aware", False):
+                    cached = self.sampler.street_bucket_for_combo(
+                        board,
+                        street,
+                        combo_index,
+                        random.Random(hash((hole, board)) & 0x7FFFFFFF),
+                    )
+                    if cached is None:
+                        return None
+                else:
+                    # Legacy river: scalar equity quantile.
+                    equity = equity_from_scores(score_all_combos(board))[combo_index]
+                    if equity < 0:
+                        return None
+                    counts = self.sampler.bucket_counts()
+                    cached = min(int(equity * counts[3]), counts[3] - 1)
             else:
                 # Flop/turn: delegate to the sampler's shared bucketing so the
                 # served bucket is identical to the trained one (distribution-

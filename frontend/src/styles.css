@@ -4400,7 +4400,7 @@ body {
 }
 
 .poker-table .hero-seat {
-  bottom: 2.8%;
+  bottom: -0.2%;
 }
 
 .poker-table .cards {
@@ -4674,6 +4674,20 @@ body {
   padding: 0.38rem 0.46rem;
   border-radius: 4px;
   background: #0c1e14;
+}
+
+.workspace-sidebar .trainer .trainer-telemetry {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 0.34rem;
+}
+
+.trainer .trainer-telemetry span {
+  min-width: 0;
+  overflow: hidden;
+  font-size: 0.56rem;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 @media (min-width: 1460px) and (min-height: 760px) {
@@ -5314,6 +5328,35 @@ body {
   margin-left: 0;
 }
 
+.player-buy-in {
+  display: inline-flex;
+  align-items: baseline;
+  gap: 0.2rem;
+  min-width: 0;
+  margin-left: auto;
+  padding-left: 0.45rem;
+  border-left: 1px solid #78927645;
+}
+
+.player-plaque .player-buy-in small {
+  margin-left: 0;
+  color: #8fb397;
+  font-size: 0.43rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.player-buy-in b {
+  overflow: hidden;
+  color: #b9d8b8;
+  font-family: "Space Grotesk", sans-serif;
+  font-size: 0.63rem;
+  line-height: 1;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
 .player-hud {
   display: grid;
   grid-template-columns: repeat(6, minmax(0, 1fr));
@@ -5385,6 +5428,7 @@ body {
   justify-content: space-between;
   gap: 0.45rem;
   min-width: 0;
+  min-height: 1.2rem;
   margin: 0.15rem 0 0;
   padding: 0.28rem 0 0;
   border-top: 1px solid #9cbd9061;
@@ -5573,6 +5617,7 @@ body {
 }
 
 .top-action-bar {
+  flex: 0 0 auto;
   min-height: 2.7rem;
   padding: 0.32rem 0.4rem 0.32rem 0.68rem;
   border-color: #75907969;
@@ -5583,12 +5628,20 @@ body {
 }
 
 .top-action-status {
+  flex: 0 0 auto;
+  max-width: 14rem;
+  overflow: hidden;
   color: #fbfced;
+  text-overflow: ellipsis;
 }
 
 .top-action-status .signal {
   width: 0.48rem;
   height: 0.48rem;
+}
+
+.top-action-bets {
+  flex: 0 0 auto;
 }
 
 .table-identity {
@@ -5833,7 +5886,7 @@ body {
 
 .match-secondary-stats {
   display: grid;
-  grid-template-rows: auto repeat(3, minmax(0, 1fr));
+  grid-template-rows: auto repeat(4, minmax(0, 1fr));
   min-height: 0;
   overflow: hidden;
   border: 1px solid #4e6b5670;
@@ -5891,8 +5944,24 @@ body {
 
 @media (min-width: 1100px) and (max-width: 1459px),
   (min-width: 1100px) and (max-height: 759px) {
+  .masthead {
+    grid-template-columns: auto minmax(12rem, 1fr) auto;
+  }
+
   .masthead-controls {
     flex-wrap: nowrap;
+  }
+
+  .top-action-bar {
+    gap: 0.45rem;
+  }
+
+  .top-action-status {
+    max-width: 9rem;
+  }
+
+  .sound-controls label {
+    display: none;
   }
 
   .table-identity {

@@ -2,6 +2,12 @@
 __pycache__/
 *.py[cod]
 backend/data/*
+!backend/data/gpu_blueprint/
+backend/data/gpu_blueprint/*
+!backend/data/gpu_blueprint/champion.npz
+!backend/data/gpu_blueprint_200bb/
+backend/data/gpu_blueprint_200bb/*
+!backend/data/gpu_blueprint_200bb/champion.npz
 frontend/node_modules/
 frontend/dist/
 artifacts/

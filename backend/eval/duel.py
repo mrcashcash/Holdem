@@ -38,6 +38,7 @@ import statistics
 import time
 from pathlib import Path
 
+from backend.api_auth import api_authorization_headers
 from backend.poker import HeadsUpHoldem
 
 
@@ -386,7 +387,11 @@ def promote(data_dir: Path, result: dict, challenger_iteration: int, champion_it
     try:
         import urllib.request
 
-        request = urllib.request.Request("http://127.0.0.1:8000/api/training/reload-last", method="POST")
+        request = urllib.request.Request(
+            "http://127.0.0.1:8000/api/training/reload-last",
+            headers=api_authorization_headers(),
+            method="POST",
+        )
         urllib.request.urlopen(request, timeout=30).read()
         print("server reloaded with new champion")
     except Exception as exc:

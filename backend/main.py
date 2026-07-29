@@ -17,16 +17,21 @@ from pathlib import Path
 from threading import RLock, Thread, current_thread
 from typing import Literal
 
-from fastapi import FastAPI, HTTPException
+from fastapi import Depends, FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel, Field
 
 from .agents.serving import load_serving_agent
+from .api_auth import require_api_token
 from .poker import Card, HeadsUpHoldem, InvalidAction, card_text, new_deck
 from .solver import blueprint as blueprint_trainer
 from .styles import HeuristicAgent
 
-app = FastAPI(title="Text Hold'em API", version="0.2.0")
+app = FastAPI(
+    title="Text Hold'em API",
+    version="0.2.0",
+    dependencies=[Depends(require_api_token)],
+)
 app.add_middleware(
     CORSMiddleware,
     allow_origins=["http://localhost:5173", "http://127.0.0.1:5173"],

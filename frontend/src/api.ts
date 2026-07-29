@@ -18,10 +18,20 @@ export interface ModelLoadResult {
   status: TrainingStatus
 }
 
+const API_TOKEN = import.meta.env.VITE_HOLDEM_API_TOKEN
+
+if (!API_TOKEN) {
+  throw new Error('VITE_HOLDEM_API_TOKEN is not configured.')
+}
+
 async function request<T>(path: string, init?: RequestInit): Promise<T> {
   const response = await fetch(`/api${path}`, {
-    headers: { 'Content-Type': 'application/json', ...(init?.headers ?? {}) },
     ...init,
+    headers: {
+      'Authorization': `Bearer ${API_TOKEN}`,
+      'Content-Type': 'application/json',
+      ...(init?.headers ?? {}),
+    },
   })
   if (!response.ok) {
     const body = await response.json().catch(() => ({ detail: response.statusText }))

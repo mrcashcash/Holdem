@@ -13,6 +13,7 @@ from datetime import datetime, timezone
 from typing import Any
 
 from backend.agents.serving import load_serving_agent
+from backend.api_auth import api_authorization_headers
 from backend.poker import HeadsUpHoldem, InvalidAction, card_text
 
 
@@ -233,7 +234,11 @@ class ServerBrainDecisionEngine:
         http_request = urllib.request.Request(
             f"{self.server_url}/api/champion/query",
             data=request_body,
-            headers={"Accept": "application/json", "Content-Type": "application/json"},
+            headers={
+                "Accept": "application/json",
+                "Content-Type": "application/json",
+                **api_authorization_headers(),
+            },
             method="POST",
         )
         started = time.monotonic()

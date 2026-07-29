@@ -9,7 +9,15 @@
 That script sets the resolve menus before launching uvicorn. Starting uvicorn bare
 serves the module defaults instead, which are not the measured configuration.
 
-Then `GET /api/health` reports exactly what is deciding hands:
+All `/api` routes require the bearer token in the repository-root `.env`. Bundled
+browser and Python clients load it automatically. Other clients must send:
+
+```text
+Authorization: Bearer <HOLDEM_API_TOKEN>
+```
+
+The server refuses to start if `HOLDEM_API_TOKEN` is missing. An authenticated
+`GET /api/health` reports exactly what is deciding hands:
 
 ```json
 {

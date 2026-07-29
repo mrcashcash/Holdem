@@ -20,6 +20,8 @@ from pathlib import Path
 from tkinter import filedialog, messagebox, simpledialog, ttk
 from typing import Any
 
+from backend.api_auth import api_authorization_headers
+
 from .autoplay import AutoPlaySettings
 from .capture import CaptureRect, list_windows, parse_region
 from .runtime import RuntimeEvent, RuntimeSettings, WatchRuntime, capture_preview
@@ -959,7 +961,10 @@ class ScreenHistoryGui:
                 http_request = urllib.request.Request(
                     url,
                     data=b"",
-                    headers={"Accept": "application/json"},
+                    headers={
+                        "Accept": "application/json",
+                        **api_authorization_headers(),
+                    },
                     method="POST",
                 )
                 with urllib.request.urlopen(http_request, timeout=15.0) as response:

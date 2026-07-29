@@ -14,8 +14,9 @@ turn and river exactly to showdown. That matters because 20bb is the worst-serve
 depth today — LBR beats the 100bb-trained blueprint there by +130.31 bb/100
 [+95.22, +165.40], a margin whose confidence interval clears zero decisively.
 
-Deep stacks still need the river/turn nets (P3), which is why this module is a
-shallow-depth path rather than a replacement for them.
+Deep stacks first try a smaller exact action menu under explicit node and VRAM
+limits. They fall back to the promoted blueprint when no tier is safe; a failed
+value network is never required for admission.
 
 Unlike the turn (48 runouts, all cacheable) a flop has 1,081 turn+river
 completions, so runouts are SAMPLED per iteration in the usual public-chance
@@ -25,19 +26,63 @@ warm set rather than re-scoring boards.
 
 from __future__ import annotations
 
+import os
 import random
 
 import numpy as np
+import torch
 
 from backend.solver.gpu.deals import CARD_IN_COMBO, NUM_COMBOS, Deal, score_all_combos
 
 # Same standard postflop menu as the turn/river resolvers.
-FLOP_FRACTIONS = (0.33, 0.5, 0.75, 1.0, 1.4)
-FLOP_RAISE_CAP = 2
+# Flop resolve menu. Capped by default for serving: an exact flop-to-river tree
+# is 3,203 nodes at 3 sizes/cap2 but 132,107 at 5 sizes/cap2, and the leak this
+# fixes (a 19-out draw folded 99.1% by the 150-bucket blueprint vs 17.9% exact) is
+# far larger than the cost of two fewer own-bet sizes. Observed opponent sizes are
+# inserted into the tree regardless, so responses stay exact.
+# Env-overridable so serving can cap the RESOLVE menu while the blueprint keeps
+# its own trained sizes, and study profiles can widen it back.
+FLOP_FRACTIONS = tuple(
+    float(x) for x in os.environ.get(
+        "HOLDEM_FLOP_SIZES", "0.33,0.5,0.75,1.0,1.4"
+    ).split(",") if x.strip()
+)
+FLOP_RAISE_CAP = int(os.environ.get("HOLDEM_FLOP_CAP", "2"))
 
-#: Depth ceiling for exact flop resolving. Above this the flop tree exceeds the
-#: card's memory (100bb needs 10.5 GiB) and the turn/river nets take over.
-MAX_EXACT_FLOP_STACK_BB = 60.0
+#: There is deliberately no stack-only cutoff. Affordability depends on live
+#: pot/stack geometry, selected menu, node count, process allocation, and free
+#: VRAM headroom.
+
+
+def flop_fraction_tiers(
+    fractions: tuple[float, ...] = FLOP_FRACTIONS,
+) -> tuple[tuple[float, ...], ...]:
+    """Rich-to-compact exact-card menus used by the serving admission ladder."""
+
+    clean = tuple(dict.fromkeys(float(value) for value in fractions))
+    tiers = [clean]
+    if len(clean) >= 3:
+        tiers.append((clean[0], clean[-1]))
+    if len(clean) >= 2:
+        middle = min(clean, key=lambda value: abs(value - 0.75))
+        tiers.append((middle,))
+    return tuple(dict.fromkeys(tiers))
+
+
+def flop_fraction_tiers_for_spr(
+    fractions: tuple[float, ...],
+    spr: float,
+) -> tuple[tuple[float, ...], ...]:
+    """Skip a predictably explosive rich tier at deep stack-to-pot ratios."""
+
+    tiers = flop_fraction_tiers(fractions)
+    rich_max_spr = max(
+        0.5,
+        float(os.environ.get("HOLDEM_FLOP_RICH_MAX_SPR", "4.0")),
+    )
+    if spr > rich_max_spr and len(tiers) > 1:
+        return tiers[1:]
+    return tiers
 
 
 class ExactFlopSampler:
@@ -94,24 +139,60 @@ class ExactFlopSampler:
         return self.deal_for_runout(turn, river)
 
 
-def exact_flop_is_affordable(stack_bb: float, pot_bb: float, node_budget: int = 60_000) -> bool:
-    """Would an exact flop-to-river tree fit for this geometry?
-
-    Builds the tree to answer honestly rather than extrapolating; callers use it
-    to choose between exact flop resolving and the (net-based) deep path.
-    """
-    if stack_bb > MAX_EXACT_FLOP_STACK_BB:
-        return False
+def exact_flop_resource_decision(
+    stack_bb: float,
+    pot_bb: float,
+    node_budget: int | None = None,
+):
+    """Estimate the worst street-entry flop tree before opening a session."""
+    from backend.search.resources import (
+        ResolverResourceLimits,
+        decide_exact_solver,
+    )
     from backend.solver.gpu.tree import BettingRootState, BettingTree, GpuActionConfig
 
+    limits = ResolverResourceLimits.from_env()
+    if node_budget is not None:
+        limits = ResolverResourceLimits(
+            physical_budget_bytes=limits.physical_budget_bytes,
+            required_free_headroom_bytes=limits.required_free_headroom_bytes,
+            flop_node_budget=max(1, int(node_budget)),
+        )
+
     behind = max(stack_bb - pot_bb / 2.0, 1.0)
-    config = GpuActionConfig(
-        preflop_fractions=(1.0,), postflop_fractions=FLOP_FRACTIONS,
-        max_raises_per_street=FLOP_RAISE_CAP, stack_bb=stack_bb,
-    )
     root = BettingRootState(
         street=1, to_act=1, committed=(pot_bb / 2.0, pot_bb / 2.0),
         street_commit=(0.0, 0.0), stacks=(behind, behind),
         acted=(False, False), raises=0, last_increment=1.0,
     )
-    return len(BettingTree(config, root_state=root)) <= node_budget
+    last = None
+    spr = behind / max(pot_bb, 1e-6)
+    for fractions in flop_fraction_tiers_for_spr(FLOP_FRACTIONS, spr):
+        config = GpuActionConfig(
+            preflop_fractions=(1.0,), postflop_fractions=fractions,
+            max_raises_per_street=FLOP_RAISE_CAP, stack_bb=stack_bb,
+        )
+        tree = BettingTree(config, root_state=root)
+        last = decide_exact_solver(
+            tree,
+            (1, NUM_COMBOS, NUM_COMBOS, NUM_COMBOS),
+            street=1,
+            device="cuda" if torch.cuda.is_available() else "cpu",
+            limits=limits,
+        )
+        if last.allowed:
+            return last
+    return last
+
+
+def exact_flop_is_affordable(
+    stack_bb: float,
+    pot_bb: float,
+    node_budget: int | None = None,
+) -> bool:
+    """Would an exact flop-to-river tree fit for this geometry?
+
+    Builds the tree to answer honestly rather than extrapolating; callers use it
+    to choose between exact flop resolving and the (net-based) deep path.
+    """
+    return exact_flop_resource_decision(stack_bb, pot_bb, node_budget).allowed

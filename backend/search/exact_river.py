@@ -17,17 +17,24 @@ the hand and lets the caller use the frozen blueprint.
 
 from __future__ import annotations
 
+import gc
+import os
+import queue
 import random
+import threading
 import time
 from dataclasses import dataclass, field
+from typing import Callable
 
 import numpy as np
 import torch
 
 from backend.search.gpu_subgame import partial_board_buckets
 from backend.search.safe_subgame import GadgetCFR
+from backend.search.resources import ResolverResourceError, decide_exact_solver
 from backend.solver.gpu.cfr import VectorCFR
 from backend.solver.gpu.deals import NUM_COMBOS, Deal, combos, score_all_combos
+from backend.solver.gpu.storage import CompactStrategy, CompactTableLayout
 from backend.solver.gpu.tree import (
     ALL_IN,
     CHECK_CALL,
@@ -45,6 +52,8 @@ from backend.vectorized_engine import card_id
 RIVER_FRACTIONS = (0.33, 0.5, 0.75, 1.0, 1.4)
 RIVER_RAISE_CAP = 2
 MIN_RESOLVE_ITERATIONS = 12
+_RUNTIME_WARMED = False
+_RUNTIME_WARMUP_LOCK = threading.Lock()
 
 
 class RiverResolveError(RuntimeError):
@@ -53,6 +62,158 @@ class RiverResolveError(RuntimeError):
 
 class RiverResolveTimeout(RiverResolveError):
     """The configured river latency budget expired."""
+
+
+def resolver_optimization_status() -> dict:
+    """Execution-only optimizations enabled for exact-card serving."""
+
+    return {
+        "safety_price_cuda_graph": (
+            os.environ.get("HOLDEM_SAFETY_PRICE_GRAPH", "1") != "0"
+        ),
+        "deal_prefetch": os.environ.get("HOLDEM_RESOLVER_PREFETCH", "1") != "0",
+        "session_runout_cache": (
+            os.environ.get("HOLDEM_SESSION_RUNOUT_CACHE", "1") != "0"
+        ),
+        "startup_warmup": os.environ.get("HOLDEM_RESOLVER_WARMUP", "1") != "0",
+        "runtime_warmed": bool(_RUNTIME_WARMED),
+    }
+
+
+def warm_exact_resolver_runtime() -> dict:
+    """Pay one-time scoring/CUDA initialization during server startup.
+
+    This does not solve a hand or alter any strategy state. It only loads the
+    cached Numba scorer and creates the CUDA context before the first live flop.
+    """
+
+    global _RUNTIME_WARMED
+    if os.environ.get("HOLDEM_RESOLVER_WARMUP", "1") == "0":
+        return resolver_optimization_status()
+    with _RUNTIME_WARMUP_LOCK:
+        if _RUNTIME_WARMED:
+            return resolver_optimization_status()
+        score_all_combos((0, 5, 10, 15, 20))
+        if torch.cuda.is_available():
+            probe = torch.ones(1, dtype=torch.float32, device="cuda")
+            probe.add_(1.0)
+            torch.cuda.synchronize()
+            del probe
+            torch.cuda.empty_cache()
+        _RUNTIME_WARMED = True
+    return resolver_optimization_status()
+
+
+class _PreparedDealStream:
+    """Sample deals in exact RNG order while the GPU consumes earlier ones."""
+
+    def __init__(
+        self,
+        sampler,
+        rng: random.Random,
+        count: int,
+        prepare: Callable[[Deal], object] | None = None,
+    ) -> None:
+        self._queue: queue.Queue = queue.Queue(maxsize=4)
+        self._stop = threading.Event()
+        self._count = max(0, int(count))
+
+        def produce() -> None:
+            try:
+                for _ in range(self._count):
+                    if self._stop.is_set():
+                        return
+                    deal = sampler.sample(rng)
+                    item = (deal, prepare(deal) if prepare is not None else None)
+                    while not self._stop.is_set():
+                        try:
+                            self._queue.put(item, timeout=0.1)
+                            break
+                        except queue.Full:
+                            continue
+            except BaseException as error:
+                while not self._stop.is_set():
+                    try:
+                        self._queue.put(error, timeout=0.1)
+                        break
+                    except queue.Full:
+                        continue
+
+        self._worker = threading.Thread(
+            target=produce,
+            name="exact-resolver-deal-prefetch",
+            daemon=True,
+        )
+        self._worker.start()
+
+    def next(self, deadline: float) -> tuple[Deal, object | None]:
+        remaining = max(deadline - time.monotonic(), 0.001)
+        try:
+            item = self._queue.get(timeout=remaining)
+        except queue.Empty as exc:
+            raise RiverResolveTimeout(
+                "exact resolver deal preparation exceeded its latency budget"
+            ) from exc
+        if isinstance(item, BaseException):
+            raise item
+        return item
+
+    def close(self) -> None:
+        self._stop.set()
+        self._worker.join(timeout=1.0)
+
+
+class _CudaDealBuffers:
+    """Fixed graph inputs fed through reusable pinned host-memory slots."""
+
+    def __init__(self, deal: Deal, device: torch.device, slots: int = 4) -> None:
+        self.device = device
+        self.valid = torch.empty(NUM_COMBOS, dtype=torch.bool, device=device)
+        self.buckets = torch.empty(
+            (4, NUM_COMBOS), dtype=torch.long, device=device
+        )
+        self.scores = torch.empty(
+            (1, NUM_COMBOS), dtype=torch.long, device=device
+        )
+        self._slot = 0
+        self._hosts = [
+            (
+                torch.empty(NUM_COMBOS, dtype=torch.bool, pin_memory=True),
+                torch.empty((4, NUM_COMBOS), dtype=torch.long, pin_memory=True),
+                torch.empty((1, NUM_COMBOS), dtype=torch.long, pin_memory=True),
+            )
+            for _ in range(max(2, int(slots)))
+        ]
+        self._events: list[torch.cuda.Event | None] = [
+            None for _ in self._hosts
+        ]
+        self.fill(deal)
+
+    def fill(self, deal: Deal) -> None:
+        slot = self._slot
+        self._slot = (self._slot + 1) % len(self._hosts)
+        event = self._events[slot]
+        if event is not None:
+            event.synchronize()
+        host_valid, host_buckets, host_scores = self._hosts[slot]
+        host_valid.copy_(torch.from_numpy(np.asarray(deal.valid)))
+        host_buckets.copy_(
+            torch.from_numpy(np.asarray(deal.buckets, dtype=np.int64))
+        )
+        host_buckets.clamp_min_(0)
+        host_scores.copy_(
+            torch.from_numpy(
+                np.asarray(deal.river_scores, dtype=np.int64).reshape(
+                    1, NUM_COMBOS
+                )
+            )
+        )
+        self.valid.copy_(host_valid, non_blocking=True)
+        self.buckets.copy_(host_buckets, non_blocking=True)
+        self.scores.copy_(host_scores, non_blocking=True)
+        ready = torch.cuda.Event()
+        ready.record(torch.cuda.current_stream(self.device))
+        self._events[slot] = ready
 
 
 class ExactRiverSampler:
@@ -113,9 +274,54 @@ class RiverBeliefSession:
 @dataclass
 class ExactRiverSolution:
     tree: BettingTree
-    strategy: np.ndarray
+    strategy: "NodeStrategy"
     session: RiverBeliefSession
     diagnostics: dict
+
+
+class NodeStrategy:
+    """Small CPU view containing only public nodes a live caller can consume."""
+
+    def __init__(self, rows: dict[int, np.ndarray]) -> None:
+        self.rows = {
+            int(node): np.asarray(row, dtype=np.float64)
+            for node, row in rows.items()
+        }
+
+    def __contains__(self, node: int) -> bool:
+        return int(node) in self.rows
+
+    def __getitem__(self, key):
+        if isinstance(key, tuple):
+            node, rest = int(key[0]), key[1:]
+            return self.rows[node][rest]
+        return self.rows[int(key)]
+
+
+def _root_and_frontier_strategy(
+    solver: VectorCFR,
+    tree: BettingTree,
+    node: int | None = None,
+) -> NodeStrategy:
+    """Extract one decision and its immediate same-street response frontier."""
+
+    node = int(tree.root if node is None else node)
+    nodes = {node}
+    street = int(tree.street[node])
+    for action in range(tree.config.num_actions):
+        child = int(tree.children[node][action])
+        if (
+            child >= 0
+            and tree.kind[child] == DECISION
+            and int(tree.street[child]) == street
+        ):
+            nodes.add(child)
+    return NodeStrategy(
+        {
+            selected: solver.average_strategy_for_node(selected)
+            for selected in sorted(nodes)
+        }
+    )
 
 
 def _seat(game, engine_player: int) -> int:
@@ -617,6 +823,334 @@ def _project_blueprint(
     return torch.as_tensor(projected, dtype=torch.float32), diagnostics
 
 
+class RunoutBlueprintPolicy:
+    """Deal-aware blueprint policy projected into an exact multi-street tree.
+
+    A turn/flop solve samples future public cards.  The blueprint bucket for a
+    combo therefore changes with the sampled runout; one frozen dense tensor
+    cannot represent it.  This provider keeps the blueprint compact on the GPU,
+    updates only a tiny ``[street, combo]`` bucket buffer per deal, and projects
+    actions through a structural node map on demand.
+    """
+
+    def __init__(
+        self,
+        agent,
+        exact_tree: BettingTree,
+        blueprint_root: int,
+        device: torch.device,
+        bucket_cache: dict[tuple[int, ...], np.ndarray] | None = None,
+    ) -> None:
+        self.agent = agent
+        self.exact_tree = exact_tree
+        self.device = device
+        self.exact_actions = exact_tree.config.num_actions
+        self.blueprint_actions = agent.tree.config.num_actions
+        self._bucket_cache = bucket_cache if bucket_cache is not None else {}
+        self._bucket_cache_limit = max(
+            32,
+            int(os.environ.get("HOLDEM_BLUEPRINT_BUCKET_CACHE", "384")),
+        )
+        self.bucket_cache_hits = 0
+        self.bucket_cache_misses = 0
+
+        if isinstance(agent.strategy, CompactStrategy):
+            layout = agent.strategy.layout
+            values = agent.strategy.values
+        else:
+            layout = CompactTableLayout(agent.tree, agent.sampler.bucket_counts())
+            values = layout.compact_from_dense(np.asarray(agent.strategy))
+
+        self.blueprint_values = torch.as_tensor(
+            values, dtype=torch.float32, device=device
+        )
+        self.blueprint_node_base = torch.as_tensor(
+            layout.node_base, dtype=torch.long, device=device
+        )
+
+        (
+            blueprint_nodes,
+            action_destinations,
+            safe_policies,
+            diagnostics,
+        ) = self._build_structure(int(blueprint_root))
+        self.blueprint_nodes = torch.as_tensor(
+            blueprint_nodes, dtype=torch.long, device=device
+        )
+        self.action_destinations = torch.as_tensor(
+            action_destinations, dtype=torch.long, device=device
+        )
+        self.safe_policies = torch.as_tensor(
+            safe_policies, dtype=torch.float32, device=device
+        )
+        self.exact_streets = torch.as_tensor(
+            exact_tree.street, dtype=torch.long, device=device
+        )
+        self.bucket_rows = torch.zeros(
+            (4, NUM_COMBOS), dtype=torch.long, device=device
+        )
+        self._bucket_host_slot = 0
+        self._bucket_hosts = (
+            [
+                torch.empty(
+                    (4, NUM_COMBOS),
+                    dtype=torch.long,
+                    pin_memory=True,
+                )
+                for _ in range(4)
+            ]
+            if device.type == "cuda"
+            else []
+        )
+        self._bucket_events: list[torch.cuda.Event | None] = [
+            None for _ in self._bucket_hosts
+        ]
+        self.projection_diagnostics = diagnostics
+
+    @staticmethod
+    def _advance(tree: BettingTree, node: int) -> int:
+        while node >= 0 and tree.kind[node] == STREET_END:
+            node = int(tree.children[node][0])
+        return int(node)
+
+    def _build_structure(
+        self,
+        blueprint_root: int,
+    ) -> tuple[np.ndarray, np.ndarray, np.ndarray, dict]:
+        exact_tree = self.exact_tree
+        blueprint_tree = self.agent.tree
+        blueprint_nodes = np.full(len(exact_tree), -1, dtype=np.int64)
+        action_destinations = np.full(
+            (len(exact_tree), self.blueprint_actions), -1, dtype=np.int64
+        )
+        safe_policies = np.zeros(
+            (len(exact_tree), self.exact_actions), dtype=np.float32
+        )
+        blueprint_nodes[int(exact_tree.root)] = int(blueprint_root)
+
+        detach_reasons: dict[str, int] = {}
+        detach_samples: list[dict] = []
+        decision_nodes = 0
+        detached_nodes = 0
+        detached_roots = 0
+
+        def detach(
+            node: int,
+            reason: str,
+            blueprint_node: int | None,
+        ) -> None:
+            nonlocal detached_nodes, detached_roots
+            detached_nodes += 1
+            if reason != _ORPHAN_REASON:
+                detached_roots += 1
+            detach_reasons[reason] = detach_reasons.get(reason, 0) + 1
+            if reason != _ORPHAN_REASON and len(detach_samples) < 5:
+                sample = {
+                    "reason": reason,
+                    "exact_node": int(node),
+                    "exact_actor": int(exact_tree.actor[node]),
+                    "exact_street": int(exact_tree.street[node]),
+                    "exact_pot_bb": _node_matched_pot(exact_tree, node),
+                }
+                if blueprint_node is not None and blueprint_node >= 0:
+                    sample.update(
+                        {
+                            "blueprint_node": int(blueprint_node),
+                            "blueprint_kind": int(blueprint_tree.kind[blueprint_node]),
+                            "blueprint_actor": int(blueprint_tree.actor[blueprint_node]),
+                            "blueprint_street": int(blueprint_tree.street[blueprint_node]),
+                        }
+                    )
+                detach_samples.append(sample)
+
+        for node in range(len(exact_tree)):
+            if exact_tree.kind[node] != DECISION:
+                continue
+            decision_nodes += 1
+            safe_policies[node] = _safe_default_policy(exact_tree, node)
+            blueprint_node = int(blueprint_nodes[node])
+            if blueprint_node < 0:
+                detach(node, _ORPHAN_REASON, None)
+                continue
+            blueprint_node = self._advance(blueprint_tree, blueprint_node)
+            if (
+                blueprint_node < 0
+                or blueprint_tree.kind[blueprint_node] != DECISION
+            ):
+                detach(
+                    node,
+                    "blueprint terminated while the exact tree still acts",
+                    blueprint_node,
+                )
+                blueprint_nodes[node] = -1
+                continue
+            if int(blueprint_tree.actor[blueprint_node]) != int(exact_tree.actor[node]):
+                detach(node, "blueprint actor differs from the exact actor", blueprint_node)
+                blueprint_nodes[node] = -1
+                continue
+            if int(blueprint_tree.street[blueprint_node]) != int(exact_tree.street[node]):
+                detach(
+                    node,
+                    (
+                        f"blueprint node is on street "
+                        f"{int(blueprint_tree.street[blueprint_node])}, expected "
+                        f"{int(exact_tree.street[node])}"
+                    ),
+                    blueprint_node,
+                )
+                blueprint_nodes[node] = -1
+                continue
+
+            blueprint_nodes[node] = blueprint_node
+            for blueprint_action in range(self.blueprint_actions):
+                if not blueprint_tree.legal[blueprint_node][blueprint_action]:
+                    continue
+                mapped = _map_action(
+                    blueprint_tree,
+                    blueprint_node,
+                    blueprint_action,
+                    exact_tree,
+                    node,
+                )
+                if mapped is not None:
+                    action_destinations[node, blueprint_action] = int(mapped)
+
+            # Propagate the correspondence through betting actions AND street
+            # transitions.  The former code stopped whenever the immediate
+            # child was STREET_END, orphaning nearly every future-street node.
+            for exact_action in range(self.exact_actions):
+                exact_child = int(exact_tree.children[node][exact_action])
+                if exact_child < 0:
+                    continue
+                exact_child = self._advance(exact_tree, exact_child)
+                if exact_child < 0 or exact_tree.kind[exact_child] != DECISION:
+                    continue
+                blueprint_action = _map_action(
+                    exact_tree,
+                    node,
+                    exact_action,
+                    blueprint_tree,
+                    blueprint_node,
+                )
+                if blueprint_action is None:
+                    continue
+                blueprint_child = int(
+                    blueprint_tree.children[blueprint_node][blueprint_action]
+                )
+                if blueprint_child < 0:
+                    continue
+                blueprint_nodes[exact_child] = self._advance(
+                    blueprint_tree, blueprint_child
+                )
+
+        diagnostics = {
+            "projection_decision_nodes": decision_nodes,
+            "projection_detached_nodes": detached_nodes,
+            "projection_detached_roots": detached_roots,
+            "projection_detached_fraction": round(
+                detached_nodes / max(decision_nodes, 1), 6
+            ),
+            "projection_detach_reasons": detach_reasons,
+            "projection_detach_samples": detach_samples,
+            "projection_runout_aware": True,
+        }
+        return (
+            blueprint_nodes,
+            action_destinations,
+            safe_policies,
+            diagnostics,
+        )
+
+    def rows_for_deal(self, deal: Deal) -> np.ndarray:
+        """Return cached blueprint bucket rows without touching CUDA state."""
+
+        board = tuple(int(card) for card in deal.board)
+        rows = self._bucket_cache.get(board)
+        if rows is None:
+            self.bucket_cache_misses += 1
+            seed = sum((index + 1) * card for index, card in enumerate(board))
+            rows = partial_board_buckets(
+                board,
+                self.agent.sampler,
+                seed=seed,
+            ).astype(np.int64)
+            if len(self._bucket_cache) >= self._bucket_cache_limit:
+                self._bucket_cache.pop(next(iter(self._bucket_cache)))
+            self._bucket_cache[board] = rows
+        else:
+            self.bucket_cache_hits += 1
+        return rows
+
+    def prepare_rows(self, rows: np.ndarray) -> None:
+        """Copy prepared rows into the fixed tensor read by CUDA graphs."""
+
+        if not self._bucket_hosts:
+            self.bucket_rows.copy_(torch.from_numpy(rows))
+            return
+        slot = self._bucket_host_slot
+        self._bucket_host_slot = (slot + 1) % len(self._bucket_hosts)
+        event = self._bucket_events[slot]
+        if event is not None:
+            event.synchronize()
+        host = self._bucket_hosts[slot]
+        host.copy_(torch.from_numpy(np.asarray(rows, dtype=np.int64)))
+        self.bucket_rows.copy_(host, non_blocking=True)
+        ready = torch.cuda.Event()
+        ready.record(torch.cuda.current_stream(self.device))
+        self._bucket_events[slot] = ready
+
+    def prepare_deal(self, deal: Deal) -> None:
+        self.prepare_rows(self.rows_for_deal(deal))
+
+    def strategy_for_nodes(self, nodes: torch.Tensor) -> torch.Tensor:
+        nodes = nodes.to(dtype=torch.long, device=self.device)
+        count = int(nodes.shape[0])
+        result = self.safe_policies[nodes].unsqueeze(1).expand(
+            count, NUM_COMBOS, self.exact_actions
+        ).clone()
+        blueprint_nodes = self.blueprint_nodes[nodes]
+        attached = blueprint_nodes >= 0
+        # Keep the detached rows in the tensor path and select their safe policy
+        # at the end. Boolean indexing has data-dependent output shapes and a
+        # host sync, both illegal during CUDA graph capture.
+        selected_nodes = nodes
+        selected_blueprint = blueprint_nodes.clamp_min(0)
+        streets = self.exact_streets[nodes]
+        buckets = self.bucket_rows[streets].clamp_min(0)
+        rows = self.blueprint_node_base[selected_blueprint].unsqueeze(1) + buckets
+        source = self.blueprint_values[rows]
+        destinations = self.action_destinations[nodes]
+        mapped = torch.zeros(
+            (
+                count,
+                NUM_COMBOS,
+                self.exact_actions,
+            ),
+            dtype=source.dtype,
+            device=self.device,
+        )
+        for action in range(self.blueprint_actions):
+            destination = destinations[:, action]
+            valid_destination = destination >= 0
+            mapped.scatter_add_(
+                2,
+                destination.clamp_min(0)
+                .view(-1, 1, 1)
+                .expand(-1, NUM_COMBOS, 1),
+                source[:, :, action : action + 1]
+                * valid_destination.view(-1, 1, 1),
+            )
+
+        totals = mapped.sum(dim=2, keepdim=True)
+        fallback = self.safe_policies[selected_nodes].unsqueeze(1)
+        normalized = torch.where(
+            totals > 1e-30,
+            mapped / totals.clamp_min(1e-30),
+            fallback,
+        )
+        return torch.where(attached.view(-1, 1, 1), normalized, result)
+
+
 def _check_deadline(deadline: float, device: torch.device, synchronize: bool) -> None:
     if synchronize and device.type == "cuda":
         torch.cuda.synchronize(device)
@@ -626,11 +1160,12 @@ def _check_deadline(deadline: float, device: torch.device, synchronize: bool) ->
 
 def _blueprint_alt_values(
     solver: VectorCFR,
-    baseline: torch.Tensor,
+    baseline: object,
     controlled_seat: int,
     iterations: int,
     deadline: float,
     resample: bool = False,
+    timings: dict | None = None,
 ) -> torch.Tensor:
     """Opt-out prices: opponent CFVs when best-responding to the frozen baseline.
 
@@ -640,42 +1175,187 @@ def _blueprint_alt_values(
     opt-out as if the river card were already known.
     """
     opponent = 1 - controlled_seat
-
     held = solver.sampler.sample(solver.rng)
-    for iteration in range(max(MIN_RESOLVE_ITERATIONS, iterations)):
-        deal = solver.sampler.sample(solver.rng) if resample else held
-        solver._iterate(
-            deal,
-            traverser=opponent,
-            frozen_average=baseline,
-            frozen_player=controlled_seat,
-        )
-        if iteration % 4 == 3:
-            _check_deadline(deadline, solver.device, synchronize=True)
-    # A final pass whose root values are the ones returned. With resampling the
-    # single-deal estimate would be noisy, so average the last few runouts.
-    if resample:
-        total = None
-        passes = 8
-        for _ in range(passes):
+    completed = max(MIN_RESOLVE_ITERATIONS, iterations)
+    final_passes = 8 if resample else 1
+    use_graph = (
+        solver.device.type == "cuda"
+        and not getattr(solver, "disable_graph_capture", False)
+        and os.environ.get("HOLDEM_SAFETY_PRICE_GRAPH", "1") != "0"
+    )
+    use_prefetch = (
+        resample
+        and os.environ.get("HOLDEM_RESOLVER_PREFETCH", "1") != "0"
+    )
+    runner = None
+    stream = None
+    try:
+        if use_graph:
+            capture_started = time.monotonic()
+            runner = _BlueprintAltGraphRunner(
+                solver,
+                baseline,
+                opponent=opponent,
+                frozen_player=controlled_seat,
+                initial_deal=held,
+            )
+            if timings is not None:
+                timings.update(
+                    {
+                        "driver": "cuda-graph",
+                        "capture_ms": round(
+                            (time.monotonic() - capture_started) * 1000.0, 1
+                        ),
+                    }
+                )
+
+        if use_prefetch:
+            prepare = (
+                baseline.rows_for_deal
+                if hasattr(baseline, "rows_for_deal")
+                else None
+            )
+            stream = _PreparedDealStream(
+                solver.sampler,
+                solver.rng,
+                completed + final_passes,
+                prepare=prepare,
+            )
+
+        def next_deal() -> tuple[Deal, object | None]:
+            if not resample:
+                return held, None
+            if stream is not None:
+                return stream.next(deadline)
+            deal = solver.sampler.sample(solver.rng)
+            prepared = (
+                baseline.rows_for_deal(deal)
+                if hasattr(baseline, "rows_for_deal")
+                else None
+            )
+            return deal, prepared
+
+        def traverse(deal: Deal, prepared: object | None) -> None:
+            if runner is not None:
+                runner.replay(deal, prepared)
+                return
+            if prepared is not None and hasattr(baseline, "prepare_rows"):
+                baseline.prepare_rows(prepared)
+            elif hasattr(baseline, "prepare_deal"):
+                baseline.prepare_deal(deal)
             solver._iterate(
-                solver.sampler.sample(solver.rng),
+                deal,
                 traverser=opponent,
                 frozen_average=baseline,
                 frozen_player=controlled_seat,
             )
-            values = solver._last_root_values.view(-1, NUM_COMBOS).mean(dim=0)
-            total = values.clone() if total is None else total + values
-        _check_deadline(deadline, solver.device, synchronize=True)
-        return (total / float(passes)).detach().clone()
-    solver._iterate(
-        held,
-        traverser=opponent,
-        frozen_average=baseline,
-        frozen_player=controlled_seat,
-    )
-    _check_deadline(deadline, solver.device, synchronize=True)
-    return solver._last_root_values.view(-1, NUM_COMBOS).mean(dim=0).detach().clone()
+
+        replay_started = time.monotonic()
+        for iteration in range(completed):
+            deal, prepared = next_deal()
+            traverse(deal, prepared)
+            if iteration % (16 if runner is not None else 4) == (
+                15 if runner is not None else 3
+            ):
+                _check_deadline(deadline, solver.device, synchronize=True)
+
+        # A final pass whose root values are the ones returned. With resampling
+        # the single-deal estimate would be noisy, so average eight runouts.
+        if resample:
+            total = None
+            for _ in range(final_passes):
+                deal, prepared = next_deal()
+                traverse(deal, prepared)
+                values = solver._last_root_values.view(-1, NUM_COMBOS).mean(dim=0)
+                total = values.clone() if total is None else total + values
+            _check_deadline(deadline, solver.device, synchronize=True)
+            result = (total / float(final_passes)).detach().clone()
+        else:
+            traverse(held, None)
+            _check_deadline(deadline, solver.device, synchronize=True)
+            result = (
+                solver._last_root_values.view(-1, NUM_COMBOS)
+                .mean(dim=0)
+                .detach()
+                .clone()
+            )
+        if timings is not None:
+            timings.update(
+                {
+                    "iterations": int(completed),
+                    "evaluation_passes": int(final_passes),
+                    "replay_ms": round(
+                        (time.monotonic() - replay_started) * 1000.0, 1
+                    ),
+                    "prefetched": bool(stream is not None),
+                }
+            )
+        return result
+    finally:
+        if stream is not None:
+            stream.close()
+        if runner is not None:
+            solver._graph_inputs = None
+            runner = None
+            gc.collect()
+            torch.cuda.empty_cache()
+
+
+class _BlueprintAltGraphRunner:
+    """Graph-captured best response used to price the safety opt-out."""
+
+    def __init__(
+        self,
+        solver: VectorCFR,
+        baseline: object,
+        *,
+        opponent: int,
+        frozen_player: int,
+        initial_deal: Deal,
+    ) -> None:
+        self.solver = solver
+        self.baseline = baseline
+        self.opponent = int(opponent)
+        self.frozen_player = int(frozen_player)
+        self.buffers = _CudaDealBuffers(initial_deal, solver.device)
+        self.sentinel = _ExactGraphDeal()
+
+        def buffered_inputs(_deals):
+            return self.buffers.valid, self.buffers.buckets, self.buffers.scores
+
+        solver._graph_inputs = buffered_inputs
+        stream = torch.cuda.Stream()
+        stream.wait_stream(torch.cuda.current_stream())
+        with torch.cuda.stream(stream):
+            self._body()
+        torch.cuda.current_stream().wait_stream(stream)
+        torch.cuda.synchronize(solver.device)
+        torch.cuda.empty_cache()
+
+        self.graph = torch.cuda.CUDAGraph()
+        with torch.cuda.graph(self.graph):
+            self._body()
+
+        solver.regrets.zero_()
+        solver.strategy_sums.zero_()
+        solver.iteration = 0
+        torch.cuda.synchronize(solver.device)
+
+    def _body(self) -> None:
+        self.solver._iterate(
+            self.sentinel,
+            traverser=self.opponent,
+            frozen_average=self.baseline,
+            frozen_player=self.frozen_player,
+        )
+
+    def replay(self, deal: Deal, prepared: object | None = None) -> None:
+        self.buffers.fill(deal)
+        if prepared is not None and hasattr(self.baseline, "prepare_rows"):
+            self.baseline.prepare_rows(prepared)
+        elif hasattr(self.baseline, "prepare_deal"):
+            self.baseline.prepare_deal(deal)
+        self.graph.replay()
 
 
 def _run_gadget(
@@ -683,14 +1363,48 @@ def _run_gadget(
     iterations: int,
     deadline: float,
     resample: bool = False,
+    timings: dict | None = None,
 ) -> int:
     """Drive the safe gadget. ``resample`` draws a fresh chance outcome per
     iteration, which is required for any sampler with more than one deal."""
     solver = gadget.solver
-    if solver.device.type == "cuda":
-        runner = _GadgetGraphRunner(gadget, resample=resample)
-        _check_deadline(deadline, solver.device, synchronize=True)
-        return runner.run(iterations, deadline)
+    if (
+        solver.device.type == "cuda"
+        and not getattr(solver, "disable_graph_capture", False)
+    ):
+        capture_started = time.monotonic()
+        runner = _GadgetGraphRunner(
+            gadget,
+            resample=resample,
+            prefetch_count=max(MIN_RESOLVE_ITERATIONS, iterations),
+        )
+        try:
+            _check_deadline(deadline, solver.device, synchronize=True)
+            replay_started = time.monotonic()
+            completed = runner.run(iterations, deadline)
+            if timings is not None:
+                timings.update(
+                    {
+                        "driver": "cuda-graph",
+                        "capture_ms": round(
+                            (replay_started - capture_started) * 1000.0, 1
+                        ),
+                        "replay_ms": round(
+                            (time.monotonic() - replay_started) * 1000.0, 1
+                        ),
+                        "iterations": int(completed),
+                        "prefetched": bool(runner.prefetch is not None),
+                    }
+                )
+            return completed
+        finally:
+            # A CUDAGraph owns a private allocator pool.  Destroy it while the
+            # caller still has a chance to empty the cache, rather than leaving
+            # several gigabytes reserved until an unrelated later allocation.
+            solver._graph_inputs = None
+            runner = None
+            gc.collect()
+            torch.cuda.empty_cache()
 
     completed = 0
     for iteration in range(max(MIN_RESOLVE_ITERATIONS, iterations)):
@@ -725,25 +1439,21 @@ class _GadgetGraphRunner:
     thousands of eager launches per iteration into one replay.
     """
 
-    def __init__(self, gadget: GadgetCFR, resample: bool = False) -> None:
+    def __init__(
+        self,
+        gadget: GadgetCFR,
+        resample: bool = False,
+        prefetch_count: int = 0,
+    ) -> None:
         solver = gadget.solver
         self.gadget = gadget
         self.solver = solver
         self.resample = resample
         device = solver.device
         deal = solver.sampler.sample(solver.rng)
-
-        self.valid = torch.as_tensor(deal.valid, dtype=torch.bool, device=device)
-        self.buckets = torch.as_tensor(
-            deal.buckets,
-            dtype=torch.long,
-            device=device,
-        ).clamp_min(0)
-        self.scores = torch.as_tensor(
-            deal.river_scores,
-            dtype=torch.long,
-            device=device,
-        ).view(1, NUM_COMBOS)
+        self.buffers = _CudaDealBuffers(deal, device)
+        self.prefetch = None
+        self._prefetch_count = max(MIN_RESOLVE_ITERATIONS, prefetch_count)
         self.positive_factor = torch.ones((), dtype=torch.float32, device=device)
         self.negative_factor = torch.ones((), dtype=torch.float32, device=device)
         self.strategy_factor = torch.ones((), dtype=torch.float32, device=device)
@@ -751,7 +1461,11 @@ class _GadgetGraphRunner:
         solver.root_reach = self.reach
 
         def buffered_inputs(_deals):
-            return self.valid, self.buckets, self.scores
+            return (
+                self.buffers.valid,
+                self.buffers.buckets,
+                self.buffers.scores,
+            )
 
         solver._graph_inputs = buffered_inputs
         self.sentinel = _ExactGraphDeal()
@@ -761,6 +1475,8 @@ class _GadgetGraphRunner:
         with torch.cuda.stream(stream):
             self._body()
         torch.cuda.current_stream().wait_stream(stream)
+        torch.cuda.synchronize(device)
+        torch.cuda.empty_cache()
 
         self.graph = torch.cuda.CUDAGraph()
         with torch.cuda.graph(self.graph):
@@ -771,6 +1487,15 @@ class _GadgetGraphRunner:
         gadget.gadget_regrets.zero_()
         solver.iteration = 0
         torch.cuda.synchronize(device)
+        if (
+            resample
+            and os.environ.get("HOLDEM_RESOLVER_PREFETCH", "1") != "0"
+        ):
+            self.prefetch = _PreparedDealStream(
+                solver.sampler,
+                solver.rng,
+                self._prefetch_count,
+            )
 
     def _body(self) -> None:
         solver = self.solver
@@ -801,39 +1526,41 @@ class _GadgetGraphRunner:
         copied IN rather than rebound. Without this a turn solve would replay one
         frozen river card every iteration — i.e. play as if the river were known.
         """
-        self.valid.copy_(torch.as_tensor(deal.valid, dtype=torch.bool))
-        self.buckets.copy_(
-            torch.as_tensor(deal.buckets, dtype=torch.long).clamp_min(0)
-        )
-        self.scores.copy_(
-            torch.as_tensor(deal.river_scores, dtype=torch.long).view(1, NUM_COMBOS)
-        )
+        self.buffers.fill(deal)
 
     def run(self, iterations: int, deadline: float) -> int:
         solver = self.solver
         completed = 0
-        for iteration in range(max(MIN_RESOLVE_ITERATIONS, iterations)):
-            solver.iteration += 1
-            if self.resample:
-                self._fill(solver.sampler.sample(solver.rng))
-            t = float(solver.iteration)
-            self.positive_factor.fill_(
-                t**solver.discount_alpha / (t**solver.discount_alpha + 1.0)
-            )
-            self.negative_factor.fill_(
-                t**solver.discount_beta / (t**solver.discount_beta + 1.0)
-            )
-            self.strategy_factor.fill_(
-                (t / (t + 1.0)) ** solver.discount_gamma
-                if solver.iteration > solver.averaging_delay
-                else 0.0
-            )
-            self.graph.replay()
-            completed += 1
-            if iteration % 16 == 15:
-                _check_deadline(deadline, solver.device, synchronize=True)
-        _check_deadline(deadline, solver.device, synchronize=True)
-        return completed
+        try:
+            for iteration in range(max(MIN_RESOLVE_ITERATIONS, iterations)):
+                solver.iteration += 1
+                if self.resample:
+                    if self.prefetch is not None:
+                        deal, _ = self.prefetch.next(deadline)
+                    else:
+                        deal = solver.sampler.sample(solver.rng)
+                    self._fill(deal)
+                t = float(solver.iteration)
+                self.positive_factor.fill_(
+                    t**solver.discount_alpha / (t**solver.discount_alpha + 1.0)
+                )
+                self.negative_factor.fill_(
+                    t**solver.discount_beta / (t**solver.discount_beta + 1.0)
+                )
+                self.strategy_factor.fill_(
+                    (t / (t + 1.0)) ** solver.discount_gamma
+                    if solver.iteration > solver.averaging_delay
+                    else 0.0
+                )
+                self.graph.replay()
+                completed += 1
+                if iteration % 16 == 15:
+                    _check_deadline(deadline, solver.device, synchronize=True)
+            _check_deadline(deadline, solver.device, synchronize=True)
+            return completed
+        finally:
+            if self.prefetch is not None:
+                self.prefetch.close()
 
 
 class _ExactGraphDeal:
@@ -876,6 +1603,14 @@ def _resolve_at(
     )
     valid = sampler._deal.valid
     device = "cuda" if torch.cuda.is_available() else "cpu"
+    resource_decision = decide_exact_solver(
+        tree,
+        sampler.bucket_counts(),
+        street=3,
+        device=device,
+    )
+    if not resource_decision.allowed:
+        raise ResolverResourceError(resource_decision)
     solver = VectorCFR(
         tree,
         sampler,
@@ -883,6 +1618,13 @@ def _resolve_at(
         seed=game.hand_number * 1009 + stop,
         averaging_delay=max(2, iterations // 6),
     )
+    baseline = None
+    alt = None
+    gadget = None
+    diagnostics = None
+    stage_started = started
+    safety_timings: dict = {}
+    gadget_timings: dict = {}
     try:
         _check_deadline(deadline, solver.device, synchronize=False)
         solver.root_reach = torch.as_tensor(
@@ -899,6 +1641,7 @@ def _resolve_at(
         )
         baseline = baseline_cpu.to(solver.device)
         _check_deadline(deadline, solver.device, synchronize=True)
+        setup_done = time.monotonic()
         controlled_seat = _seat(game, controlled_player)
         alt = _blueprint_alt_values(
             solver,
@@ -906,7 +1649,9 @@ def _resolve_at(
             controlled_seat,
             iterations=max(MIN_RESOLVE_ITERATIONS, iterations // 3),
             deadline=deadline,
+            timings=safety_timings,
         )
+        safety_done = time.monotonic()
 
         solver.regrets.zero_()
         solver.strategy_sums.zero_()
@@ -922,8 +1667,15 @@ def _resolve_at(
             base_ranges=ranges,
             alt=alt,
         )
-        completed = _run_gadget(gadget, iterations=iterations, deadline=deadline)
-        strategy = solver.average_strategy_tables().astype(np.float64)
+        completed = _run_gadget(
+            gadget,
+            iterations=iterations,
+            deadline=deadline,
+            timings=gadget_timings,
+        )
+        gadget_done = time.monotonic()
+        strategy = _root_and_frontier_strategy(solver, tree)
+        export_done = time.monotonic()
         diagnostics = {
             "mode": "exact-card-safe-river-v1",
             "tree_nodes": int(len(tree)),
@@ -934,17 +1686,54 @@ def _resolve_at(
             if observed_event is not None
             else None,
             "elapsed_ms": round((time.monotonic() - started) * 1000.0, 1),
+            "stage_ms": {
+                "setup_projection": round(
+                    (setup_done - stage_started) * 1000.0, 1
+                ),
+                "safety_price": round(
+                    (safety_done - setup_done) * 1000.0, 1
+                ),
+                "gadget_solve": round(
+                    (gadget_done - safety_done) * 1000.0, 1
+                ),
+                "strategy_export": round(
+                    (export_done - gadget_done) * 1000.0, 1
+                ),
+                "cleanup": None,
+            },
+            "safety_price_execution": safety_timings,
+            "gadget_execution": gadget_timings,
+            "resource_admission": resource_decision.diagnostics(),
             **projection_diagnostics,
         }
         return tree, strategy, diagnostics
     finally:
-        del solver
+        cleanup_started = time.monotonic()
+        gadget = None
+        alt = None
+        baseline = None
+        solver = None
+        gc.collect()
         if torch.cuda.is_available():
             torch.cuda.empty_cache()
+        if diagnostics is not None:
+            diagnostics["stage_ms"]["cleanup"] = round(
+                (time.monotonic() - cleanup_started) * 1000.0,
+                1,
+            )
+            diagnostics["elapsed_ms"] = round(
+                (time.monotonic() - started) * 1000.0,
+                1,
+            )
 
 
-def _event_action(tree: BettingTree, event: dict) -> int:
-    legal = tree.legal[tree.root]
+def _event_action(
+    tree: BettingTree,
+    event: dict,
+    node: int | None = None,
+) -> int:
+    node = int(tree.root if node is None else node)
+    legal = tree.legal[node]
     action = str(event["action"])
     if action == "fold":
         return FOLD
@@ -967,7 +1756,7 @@ def _event_action(tree: BettingTree, event: dict) -> int:
     return min(
         sized,
         key=lambda candidate: abs(
-            tree.config.fractions(3)[candidate - 3] - observed
+            tree.config.fractions(int(tree.street[node]))[candidate - 3] - observed
         ),
     )
 

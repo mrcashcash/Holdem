@@ -1554,6 +1554,186 @@ refusing 100/200bb.
 a running datagen and correctly killed — one GPU job at a time), and the 20bb/50bb
 blueprints that would give those depths a matched preflop policy and range seed.
 
+### Live defect: the 24x-pot shove — ROOT-CAUSED; the fix is NOT a clear win (2026-07-29)
+
+Reported from live play: on `T(c) J(s) K(h) A(c)` holding `K(d) 5(s)`, the agent
+moved in for **3,980 chips into a 166-chip pot — 24x the pot**, ~199bb effective.
+The widest own-bet size anywhere in the system is 1.4x pot, so no strategy in the
+project contains that action.
+
+#### The instrument was wrong first
+
+`log_agent_decision` reported `blueprint-only` for this hand, but it only ever
+consulted `subgame_search` / `exact_river_search` — it had **no knowledge of
+`continual_search`**. So every exact-resolver decision was mislabelled as
+blueprint-only, and its `actions` field always showed the BLUEPRINT's mix rather
+than the acting one, which made "why did it do X?" unanswerable for the engine
+that was actually playing. Added `decided_by`, `resolver.acting_mix`, and renamed
+the old field to `blueprint_actions`. The log now reads e.g.
+`DECIDED BY: exact-resolver` with the resolver betting 86% on `6(d) J(c) 6(h)`
+where the blueprint checks 98.8%.
+
+#### Neither policy wanted to shove
+
+| source | mix at that spot |
+|---|---|
+| blueprint, node 104350, turn bucket 12 | check/call 72.6%, raise 0.5x 27.2%, **all-in 0.0%** |
+| exact turn solve, 3,210 nodes, 200 iters | `K(d)5(s)` checks **94.2%**, raise 0.33x 4.9%; **all-in 0.16%** across the whole range |
+
+So the shove was not a strategic choice by either engine.
+
+#### Root cause: ALL-IN was the one size-bearing action executed literally
+
+Every `raise` re-derives its chip amount from the REAL pot in
+`_raise_target_for_choice`. ALL-IN just shoved whatever was behind. And `_locate`
+maps a live hand onto an abstract node **by translated action sequence alone — it
+never compares pot/stack geometry**. A few repeated opponent min-raises exhaust
+the tree's 3-raise cap, so the real state lands on an abstract node whose pot is
+far larger, and where jamming the stack is a sane 2-3x-pot action. Translated back
+into a 166-chip pot, the same trained action becomes 24x pot.
+
+Measured with `tools/overbet_audit.py` (200bb, 200 hands, resolver OFF; jams
+counted only where a smaller raise was legal, so a forced short-stack shove never
+counts):
+
+| opponent | decisions | overbets >=3x pot | worst |
+|---|---|---|---|
+| always-call | 758 | 0 | — |
+| self-play | 460 | 0 | — |
+| always-min-raise | 640 | **8 (1.25%)** | **15.4x pot** |
+
+Only the min-raiser triggers it, because only it exhausts the raise cap. **Four of
+the eight were preflop**, which no amount of postflop resolving can ever fix.
+
+Supporting structure in the 200bb champion: **77-79% of decision nodes offer no
+raise below all-in** and carry ~30% all-in mass, but the abstract jam is <=3x pot
+at 14,492 of those 15,188 nodes. The mass is trained and reasonable; only the
+translation is wrong.
+
+#### The fix, and why it is not obviously right
+
+`GpuBlueprintAgent._all_in_size` gives ALL-IN the same action translation raises
+already get: preserve the size relative to the MATCHED POT that the abstract jam
+represented (`all_in_geometry_tolerance = 1.5`), bounded absolutely
+(`all_in_max_pot_multiple = 6.0`). Both ratios are computed identically — total
+committed after shoving, over the matched pot before — so units cancel and a
+genuine short-stack jam is untouched. Worst jam **15.4x -> 4.6x pot**; the guard
+fires 11 times in 677 decisions vs the min-raiser and **0 times** vs a calling
+station or in self-play.
+
+Then the A/B (blueprint only, CRN coupled, 3,000 hands/arm):
+
+| depth | opponent | guard ON | guard OFF | delta |
+|---|---|---|---|---|
+| 200bb | always-min-raise | +80.58 [-13.91, +175.07] | +349.40 [+195.49, +503.31] | **-268.82** |
+| 200bb | always-call | +199.17 [+152.77, +245.57] | +202.63 [+154.88, +250.39] | -3.46 |
+| 100bb | always-min-raise | +104.65 [+23.89, +185.42] | +228.65 [+128.96, +328.34] | **-124.00** |
+| 100bb | always-call | +189.52 [+135.67, +243.36] | +202.85 [+145.90, +259.80] | -13.33 |
+
+**The guard costs 124-269 bb/100 against the opponent whose lines trigger it, and
+is neutral against everything else.** That is not a defect in the fix — against a
+station that calls any jam, shoving 199bb IS correct exploitation. So the reported
+hand is a leak against a *thinking* opponent and a moneymaker against a loose one,
+and the blueprint has no opponent model to distinguish them.
+
+By this project's own standard — never serve what has been measured harmful and
+never measured helpful — the guard does not yet earn its place on. It stays
+implemented, tested, and behind per-agent flags (`all_in_geometry_guard`,
+`all_in_max_pot_multiple`, `all_in_geometry_tolerance`) so the decision rests on a
+measurement rather than on taste.
+
+**The measurement that would settle it was NOT taken:** LBR (a best responder,
+hence the right judge of whether the jam is exploitable) guard-on vs guard-off. A
+first attempt crashed on wrong result keys (`mean_bb_per_100` instead of
+`lbr_bb_per_100`) and the rerun was stopped by user instruction. Until that number
+exists, "is the huge jam a leak in absolute terms?" is unanswered.
+
+Covered by `tests/test_all_in_translation.py` — 7 tests: exact-arithmetic anchors
+(700 and 1,100 chips, derived not guessed), a matching-geometry no-op, a
+short-stack no-op, the disable switch the A/B depends on, and an end-to-end
+serving-path assertion that no jam exceeds the cap over 120 hands vs a min-raiser.
+
+Resizes are reported in the decision log as `all_in_rescaled`, so a bet that is
+neither a menu size nor the stack is explainable rather than looking like a new bug.
+
+#### What this says about the architecture
+
+The exact resolver puts **0.16%** on all-in at the reported spot because its tree
+is built on the REAL geometry — there is no translation step to distort. That is
+the structural fix, and it is already on for flop/turn/river. The guard only
+matters on paths the resolver does not cover, and the largest of those is
+**preflop**, where half the observed overbets occurred and where nothing is planned
+before P5. Raise-cap exhaustion is a translation problem, so the durable answers
+are a richer preflop menu or preflop resolving, not a sizing heuristic.
+
+### Instrument defect: CRN was silently OFF for the serving agent (2026-07-29)
+
+`backend.eval.duel.head_to_head`'s common-random-numbers coupling reseeds
+`agent._rng` before every hand so two arms draw identical variates at identical
+infosets and diverge ONLY where their policies differ. It guards with
+`hasattr(target, "_rng")` — and `MultiStackBlueprintAgent`, **the serving agent
+every real comparison uses**, never had an `_rng`. The guard silently skipped it.
+The documented "off-vs-off null reads exactly +0.00 bb/100" was measured on a
+single-depth `GpuBlueprintAgent`, so it never covered the router.
+
+Null duel of two identical routers, 600 hands, 200bb:
+
+| coupling | result |
+|---|---|
+| CRN off | **+33.15 bb/100 [-48.71, +115.01]** |
+| CRN on, after the fix | **+0.00 bb/100 [0.00, 0.00]** |
+
+Fixed with an `_rng` property on the router that fans a fresh generator (copied
+state, not a shared object) out to each depth — sharing one generator would let a
+hand routed to 100bb advance the 200bb stream, reintroducing exactly the desync
+CRN exists to remove.
+
+**Consequence for past results:** any router duel labelled "CRN on" before this
+date was uncoupled and carried that ~+/-80 bb/100 of avoidable noise. The resolver
+on/off duels in section 8 (+17.82 / +54.45 / +28.12, all spanning zero) are in
+that class, which is one more reason their intervals were uninformative.
+
+
+## 9.9 2026-07-29 implementation: bounded-memory exact resolving
+
+The live flop incident changed the resolver constraint from "tree appears small
+enough" to "the complete CUDA peak is admitted before allocation." The
+implementation now follows this order:
+
+1. Estimate compact CFR tables, frozen policy, tree/static tensors, traversal,
+   tiled showdown work, graph-private work, and returned strategy memory.
+2. Require the candidate to fit the 12,000-node latency ceiling, 9.5 GiB process
+   allocation ceiling, and 2 GiB display/OS headroom.
+3. Select the richest admitted flop menu. Above SPR 4, skip the known-explosive
+   rich tier and begin with two sizes; fall to one size only if required.
+4. Allocate the solver only after admission. If every tier fails, keep playing
+   the promoted frozen blueprint.
+
+The memory model is intentionally conservative. Representative 20-200bb generic
+flop roots admitted 987-10,429 nodes and estimated 970-1,856 MiB peaks. The
+current real passive-entry 200bb diagnostic builds 11,991 nodes at the two-size
+tier.
+
+Quality-preserving changes accompany the hard limits:
+
+- legacy dense blueprint checkpoints are compacted as they load;
+- future-street blueprint buckets are recomputed for each sampled runout;
+- structural projection crosses street-end nodes instead of orphaning all
+  descendants;
+- only the acting node and immediate response frontier leave the GPU;
+- stored response frontiers replace retrospective opponent solves where the
+  policy is already known;
+- a retrospective solve's child policy becomes the current policy when it
+  already reaches the live node;
+- 120 iterations remain the serving target and 60 is the default quality floor.
+
+The optional river CFV horizon is promotion-gated. It cannot be enabled by
+configuration alone: its report must show at least 0.90 range-weighted
+top-action agreement and at most 0.30 policy L1. The existing checkpoint
+(0.3766 / 1.1474) stays disabled, so no failed neural approximation was
+introduced to solve the memory problem.
+
+
 ## 10. References
 
 - DeepStack — https://arxiv.org/pdf/1701.01724 · supplement: https://poker.cs.ualberta.ca/publications/17science-supplementary.pdf

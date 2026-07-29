@@ -1,10 +1,60 @@
 # Agent Status & Conclusions — living document
 
-**Last updated:** 2026-07-27
+**Last updated:** 2026-07-29
 
 ## 1. What is serving right now (the best verified player)
 
-`MultiStackBlueprintAgent`, **blueprint-only** (search off — see §4):
+`MultiStackBlueprintAgent` with **exact-card continual resolving ON** for flop,
+turn and river (`tools/serve_best.ps1`; see docs/SERVING.md for the full config and
+`GET /api/health` for what is actually loaded). The §4 warning about search being
+off applied to the *retired bucketed* resolver, which stays off; exact-card
+resolving is a different mechanism and is served.
+
+### 2026-07-29 live flop VRAM repair
+
+The exact flop resolver could saturate an RTX 3060 (11.8/12.0 GiB dedicated
+VRAM plus shared-memory spill) and then time out. The failure was cumulative:
+admission did not model the whole CUDA peak, multi-street projection and final
+strategy export were dense, graph pools outlived cleanup, and some opponent
+actions caused two consecutive full solves.
+
+The implemented repair adds:
+
+- pre-allocation admission with a 12,000 flop-node ceiling, conservative peak
+  estimate, 9.5 GiB process ceiling, and 2 GiB headroom;
+- a richest-safe action-menu ladder, with deep-SPR roots starting at the
+  compact tier;
+- compact loaded blueprints (27.1 MiB at 100bb, 20.6 MiB at 200bb), root plus
+  response-frontier-only strategy export, and a 384 MiB showdown workspace cap;
+- explicit graph/gadget destruction before CUDA cache cleanup;
+- runout-aware cross-street blueprint projection (98.37% detached before,
+  7.85% in the new real 200bb passive-entry diagnostic);
+- stored response frontiers and child-policy reuse to avoid redundant solves;
+- health and decision telemetry for limits, estimates, menu choice, projection,
+  reuse, CUDA allocation, and fallback reasons.
+
+### 2026-07-29 exact-equivalent latency pass
+
+The opponent safety-price best response is now CUDA-graph captured instead of
+running 40 eager traversals before every safe solve. Runouts are prepared in
+the identical RNG order on a producer thread and copied through reusable pinned
+buffers; flop/turn samplers and runout-aware blueprint bucket rows are reused
+within a continual session. CUDA and the scorer are warmed at server startup.
+
+No quality dial changed: serving remains exact-card FP32 with the same 120
+gadget iterations, safety-price iterations, action trees, ranges, and seeds. A
+fixed-seed eager/optimized control had max root-policy difference **0.0**.
+
+Representative fresh solves on the RTX 3060 now measure **14.23 s flop
+(9,274 nodes), 6.90 s turn (3,926), and 1.70 s river (400)**. The earlier live
+sample was 22.78 / 10.64 / 2.45 s on slightly smaller trees. Per-stage timing is
+now emitted in every successful resolver diagnostic; see `docs/SERVING.md`.
+
+The river CFV horizon is connected but action-gated. The current checkpoint
+remains OFF: 0.3766 agreement / 1.1474 policy L1 fails the 0.90 / 0.30
+requirements.
+
+The two frozen blueprints below remain the depth-routed base policy:
 
 | Depth | Model | Why it holds the slot |
 |---|---|---|
@@ -119,15 +169,24 @@ Everything below survived NULL-tested, timing-sane instruments (§5).
    conditioned on a falsified own-history. Design retired; any successor needs
    (a) self-range tracked through actual past solutions and (b) a genuine
    information edge over the buckets — e.g. **exact-card river re-solving**.
-   Phase 4 now implements that successor behind an off-by-default switch.
-2. **Phase 4 exact-card river resolving has not cleared its gate yet.** The
-   3,000-pair confirmation estimated +7.62 bb/100 [−21.73,+36.97], a
-   statistical tie. It resolved 1,864 of 1,889 river attempts; all 25
-   fallbacks came from the blueprint projection reaching an incompatible
-   public state. The 1.32% fallback rate misses the ≤1% eligibility rule.
-   This is a projection/translation defect, not a timeout or retraining issue:
-   mean latency was 1.93s and maximum latency was 5.10s under the 6s budget.
-   Repair the adapter and re-screen before any further large confirmation.
+   That successor exists and is now served: `backend/search/continual.py` advances
+   the agent's own range from the policy that actually chose each action (fixing
+   (a)), and identity 1,326-combo buckets are a genuine information edge over 150
+   turn / 30 river buckets (fixing (b)). The retired bucketed path stays off.
+2. **Exact-card resolving is served on mechanism and reliability, NOT on a
+   passed gate — and that distinction matters.** Its on/off duels are
+   *inconclusive*: +17.82 / +54.45 / +28.12 bb/100 at 60/240/240 iterations, every
+   interval spanning zero — and all three were run before the CRN coupling bug
+   (§4.5) was found, so they were noisier than labelled. What IS established:
+   the projection defect is repaired (the 1.32% fallback rate that missed the ≤1%
+   rule is now **130/130 resolves with zero fallbacks** across three depths and
+   both entry streets, and 1,244/1,244 in the wider run), and it fixes a
+   documented leak class (a 19-out draw the 150-bucket blueprint folds 99.1% is
+   folded 17.9% by an exact solve, while trash still folds 0.92–0.99 — so it is
+   card-level discrimination, not looseness). Nothing has ever measured it as
+   harmful. It is served because quality is the stated priority and the mechanism
+   is sound, not because a gate passed. Re-running those duels with working CRN is
+   an open task.
 3. **CFV-net flop search (v0) does not help**: −65 [−157,+27] with verified
    real solves. The pipeline is mechanically proven (horizon plumbing
    bit-identical to trusted kernels; net val MAE 9.3bb vs 24bb zero-baseline)
@@ -139,10 +198,29 @@ Everything below survived NULL-tested, timing-sane instruments (§5).
    representation (+58% vs zero baseline on identical data).
 5. **The +511 bb/100 "search uplift" and every pre-2026-07-23 absolute eval
    number were artifacts** — see §5.
+6. **Action translation is a live leak source, and sizing heuristics do not
+   patch it** (2026-07-29). `_locate` maps a real hand onto an abstract node by
+   translated action sequence and **never compares pot/stack geometry**. ALL-IN
+   was the only size-bearing action executed literally (every `raise` re-derives
+   its amount from the real pot), so opponent min-raises that exhaust the tree's
+   3-raise cap produced a **24x-pot shove in live play** — 3,980 chips into a 166
+   pot. Structural context: **77–79% of the 200bb champion's decision nodes offer
+   no raise below all-in**, carrying ~30% all-in mass, though the abstract jam is
+   ≤3x pot at 14,492 of those 15,188 nodes — so the trained mass is reasonable and
+   only the translation is wrong. Measured rate (`tools/overbet_audit.py`, 200bb):
+   8 overbets in 640 decisions vs a min-raiser (worst 15.4x), **zero** vs a
+   calling station or in self-play; **four of the eight were preflop**, which no
+   postflop resolving can reach. A translation-matching guard cuts the worst case
+   to 4.6x but measured **−268.82 bb/100** (200bb) and **−124.00** (100bb) against
+   that opponent, because a station calls any jam and shoving into it is correct
+   exploitation. Guard implemented, tested, **shipped off**. The real fix is the
+   resolver (0.16% on all-in at that spot, since its tree uses the real geometry)
+   and, for preflop, a richer menu or preflop resolving — not a sizing heuristic.
+   The deciding measurement, LBR guard-on vs guard-off, has **not** been taken.
 
 ## 4. The great eval corrections (why numbers before 2026-07-24 are suspect)
 
-Three instrument bugs, all user-instinct-triggered ("too consistent", "are you
+Five instrument bugs, all user-instinct-triggered ("too consistent", "are you
 sure it's running?"), all fixed and regression-guarded:
 
 1. **+75 bb/100 blind inflation** (duel.py + benchmark.py measured winnings
@@ -156,9 +234,27 @@ sure it's running?"), all fixed and regression-guarded:
 3. **Silent flop-solve discard** — street-1 decisions fell into the river
    bucket branch → every flop solve paid for and thrown away. Fix + the first
    flop A/B (6-minute "search" run = blueprint speed) exposed it.
+4. **The decision log could not see the resolver** (2026-07-29) —
+   `log_agent_decision` consulted only `subgame_search` / `exact_river_search`, so
+   every exact-resolver decision was logged as `blueprint-only` and its `actions`
+   field always showed the BLUEPRINT's mix rather than the acting one. "Why did it
+   do X?" was unanswerable for the component that was actually playing, which is a
+   violation of the standing decision-level-verification rule below. Fix:
+   `decided_by`, `resolver.acting_mix`, `blueprint_actions`, `all_in_rescaled`.
+5. **Common random numbers were silently OFF for the serving agent** (2026-07-29)
+   — `head_to_head`'s CRN coupling reseeds `agent._rng` and guards with
+   `hasattr(target, "_rng")`. `MultiStackBlueprintAgent`, the agent every real
+   comparison uses, had no `_rng`, so the guard skipped it and the arms desynced.
+   A null duel of two identical routers read **+33.15 bb/100 [−48.71, +115.01]**;
+   coupled it reads **+0.00 [0.00, 0.00]**. The documented "+0.00 null" had only
+   ever been measured on a single-depth `GpuBlueprintAgent`. Any router duel
+   labelled "CRN on" before this date was uncoupled — including the resolver
+   on/off duels (+17.82 / +54.45 / +28.12, all spanning zero), which is one more
+   reason those intervals were uninformative.
 
 **Standing rules:** every new harness gets a NULL test before its numbers are
-believed; runtimes must be consistent with claimed work (a search eval that
+believed — and the null must be run through the agent that will actually be
+measured, since bug 5 was a null that passed on a different class; runtimes must be consistent with claimed work (a search eval that
 finishes at blueprint speed didn't search); decision-level verification (logs
 prove the choice came from the claimed component). Also: `CUDA_VISIBLE_DEVICES=""`
 does NOT hide GPUs on this Windows/torch — never rely on it.
@@ -166,16 +262,33 @@ does NOT hide GPUs on this Windows/torch — never rely on it.
 ## 5. Infrastructure that exists and is trusted
 
 - **Duel gate**: `python -m backend.eval.duel --data-dir D --stack-bb N --pairs 3000 [--promote]`
-  — NULL-tested head-to-head with auto-promotion; the only promotion signal.
-- **Per-decision logger**: every served move in `backend/data/server-debug.jsonl`
-  (node, bucket, exact_match, full mix, search_active) — answers "why did it do X?".
+  — NULL-tested head-to-head with auto-promotion; the only promotion signal. CRN
+  coupling now reaches the serving router (§4 bug 5), so paired A/Bs of two
+  stochastic agents read exactly 0.00 on a null instead of ±80 bb/100 of noise.
+- **Per-decision logger**: every served move in `backend/data/server-debug.jsonl`.
+  Now records `decided_by` (which engine chose), `resolver.acting_mix` (the acting
+  distribution, not the blueprint's), `blueprint_actions`, and `all_in_rescaled`.
+  Before 2026-07-29 it could not see the resolver at all — see §4.
+- **Overbet audit**: `python tools/overbet_audit.py --hands N --stack-bb D
+  --resolver on|off --opponent always-call|always-min-raise|self` — counts jams
+  larger than a legitimate menu size, but only where a smaller raise was legal, so
+  a forced short-stack shove never counts. JSONL trace per decision plus a summary
+  JSON. This is what root-caused the 24x-pot shove (§3.6).
+- **LBR exploitability probe**: `backend/eval/lbr.py`, multi-size probes, validated
+  against an analytic anchor (LBR vs always-fold = +75.0000 bb/100, zero variance).
+- **Slumbot harness**: `backend/eval/slumbot.py` — real external opponent, uses the
+  AGENT's own action mapping rather than a reimplementation, anchored by
+  always-fold-from-the-button reading exactly −50.0000 bb/100 with zero variance.
 - **Monitors**: training runs get 10k gates + stop-on-plateau + VRAM/RAM guards.
+- **Exact-card resolvers**: flop / turn / river, identity 1,326 buckets, one
+  bucket per private combo — `backend/search/exact_{flop,turn,river}.py` plus
+  `continual.py` for session-level range advancement.
 - **Depth-limited solving**: HORIZON trees + evaluators (proven plumbing) —
   ready for any future value-function work.
-- **Safe re-solve gadget (v1/v2) + AIVAT chance-variates**: built and tested;
-  value gated on search being worth anything at all.
-- **CFV pipeline**: situations→solve→bucketize→train (7,750 solved turn
-  samples in `backend/data/cfv/turn.npz`, net in `bucket_net.pt`).
+- **Safe re-solve gadget (v1/v2) + AIVAT chance-variates**: built and tested.
+- **River CFV pipeline** (single pipeline as of 2026-07-28; two dead ones deleted):
+  `backend/cfv/river_dataset.py` + `river_net.py`, 76,411 rows generated,
+  resumable. Net trained and **failed** its gate — see docs/PLAN_V2 §9.
 
 ## 6. VRAM engineering facts (RTX 3060 12GB)
 
@@ -190,19 +303,31 @@ does NOT hide GPUs on this Windows/torch — never rely on it.
 
 ## 7. Roadmap position
 
-- Done: solver, serving blueprints, histogram abstraction, honest eval stack,
-  house-rules capability, search post-mortem, clean no-limp gates through 40k,
-  the v3 + Phase 3 5k screen, and the 3,000-pair Phase 4 confirmation.
-- Next engineering task: make Phase 4 blueprint projection use the same action
-  translation semantics as normal serving and provide a complete safe-default
-  policy when coarse and exact river trees have different downstream topology.
-  Add shallow-stack, all-in, raise-cap, and off-tree regression tests.
-- Next evaluation: after the projection repair, run a small engineering screen
-  requiring zero projection failures and acceptable latency. Repeat a
-  3,000-pair confirmation only if that screen passes. Phase 4 remains disabled
-  in normal serving.
-- Stopped: further iterations on the current clean no-limp checkpoint and the
-  combined v3 + Phase 3 challenger. Neither is promotion-eligible.
-- Parked with revival criteria: CFV net (better targets), bucketed turn
-  search, AIVAT decision-variates, and Slumbot rematch (worth doing once any
-  new model or full stack clears its gates).
+- **Done:** solver; serving blueprints; histogram abstraction; the honest eval
+  stack (Slumbot + LBR + AIVAT + duel, each with a null or analytic anchor);
+  house-rules capability; the search post-mortem; Phase 4 projection repair
+  (130/130 resolves, 0 fallbacks at three depths); exact-card flop/turn/river
+  resolvers wired into serving; throughput diagnosis (latency-bound, fusion
+  +1.26x, situation batching +1.68x, multi-process 0.33x — rejected).
+- **Serving now:** depth-routed blueprints with exact-card resolving ON for
+  flop/turn/river at capped own-bet menus (0.33/0.75/1.4, cap 2). See
+  docs/SERVING.md; verify with `GET /api/health` before believing any claim.
+- **Known open leaks, in priority order:**
+  1. **20bb is the worst-served depth** (LBR +130.31 [+95.22, +165.40], interval
+     clears zero) and has no blueprint of its own. Cheapest fix in the project: an
+     exact flop-to-river tree there is only 5,303 nodes, so 20bb can be played
+     exactly on every postflop street with no value net (`exact_flop.py`). Queued.
+  2. **Preflop translation** — half the observed overbets were preflop, and
+     nothing covers it before P5 (§3.6).
+  3. **River value net still OFF** (failed gate: 38% action agreement, policy L1
+     1.15 vs ~0.21 solver noise). Representation work reached ratio 0.301 with
+     strength-ordered inputs but is not integrated into `RiverCfvNet`.
+- **Next measurements, in order:** LBR guard-on vs guard-off (settles §3.6);
+  the four-depth smoke of the flop resolve path; the agreement-vs-ratio curve for
+  the river net, since the 0.1 acceptance threshold was assumed and never measured.
+- **Data-scaling verdict:** ~14% error reduction per 3.2x rows means usable river
+  net accuracy needs ~12 **billion** rows. Representation is the limit, not data —
+  do not simply generate more.
+- **Parked with revival criteria:** CFV net (better targets/representation),
+  bucketed turn search (retired), AIVAT decision-variates, Slumbot rematch (worth
+  doing once any new model or the full resolving stack clears its gates).

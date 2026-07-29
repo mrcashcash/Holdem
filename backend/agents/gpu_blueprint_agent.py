@@ -28,6 +28,20 @@ from backend.vectorized_engine import card_id
 
 NEURAL_FOLD, NEURAL_CHECK_CALL, NEURAL_RAISE, NEURAL_ALL_IN = 0, 1, 2, 3
 
+#: How far the real shove-to-pot ratio may exceed the abstract one before a
+#: translated ALL-IN is resized (see `GpuBlueprintAgent._all_in_choice`).
+ALL_IN_GEOMETRY_TOLERANCE = 1.5
+
+#: Absolute bound on a jam, as a multiple of the matched pot, whenever a smaller
+#: raise is legal. Translation-matching alone does not cover every case: at a
+#: raise-capped node the abstraction's ONLY aggressive action is all-in, so the
+#: trained jam is itself 5-8x pot and no amount of ratio-matching shrinks it.
+#: Both the jam and any resized bet are off-tree at such a node, so the choice is
+#: between heuristics -- and risking 199bb to win 8bb is the worse one. 6.0 still
+#: allows a genuine short-stack jam (behind under 6x pot jams untouched) and the
+#: overbet-jam sizings that appear in real solver output.
+ALL_IN_MAX_POT_MULTIPLE = 6.0
+
 _COMBO_INDEX = {(int(a), int(b)): index for index, (a, b) in enumerate(combos())}
 
 
@@ -84,6 +98,11 @@ class GpuBlueprintAgent:
             1,
             int(os.environ.get("HOLDEM_CONTINUAL_BUDGET_MS", "8000")),
         )
+        # Which streets the exact resolver handles. River-only by default: a
+        # turn resolve costs 12-38 s at the standard 5-size menu while a river
+        # resolve costs 2.4-5.3 s, and the river is where the blueprint is
+        # weakest (30 buckets vs 150 on the turn). See backend/agents/serving.py.
+        self.continual_streets: tuple[int, ...] = (3,)
         self._continual_sessions: dict[tuple[int, int], object] = {}
         self.last_continual_search: dict | None = None
         self._raise_fraction: float | None = None
@@ -93,6 +112,21 @@ class GpuBlueprintAgent:
         self._subgame_cache: dict[tuple, object] = {}
         self._river_sessions: dict[tuple[int, int], object] = {}
         self.last_river_search: dict | None = None
+        self._node_pot_cache: dict[int, float] = {}
+        #: Resize translated ALL-INs (see `_all_in_size`). **OFF by default.** The
+        #: guard is not free: measured -268.82 bb/100 at 200bb and -124.00 at
+        #: 100bb against a min-raiser, whose lines are the only ones that trigger
+        #: it, and roughly neutral (-3.46 / -13.33) against everything else. A
+        #: station calls any jam, so against it a 199bb shove is correct
+        #: exploitation rather than a bug. Nothing has measured the guard as
+        #: helpful, and this project does not serve that. The measurement that
+        #: would settle it -- LBR guard-on vs guard-off -- has not been taken.
+        self.all_in_geometry_guard = False
+        self.all_in_geometry_tolerance = ALL_IN_GEOMETRY_TOLERANCE
+        self.all_in_max_pot_multiple = ALL_IN_MAX_POT_MULTIPLE
+        #: Set whenever a translated ALL-IN was resized; read by the decision log
+        #: so an unusual bet size is explainable after the fact.
+        self.last_all_in_rescale: dict | None = None
 
     @classmethod
     def try_load(cls, checkpoint_path: Path | None = None) -> "GpuBlueprintAgent | None":
@@ -114,17 +148,14 @@ class GpuBlueprintAgent:
         sampler = DealSampler.from_state(sampler_state)
         tree = BettingTree(config)
         sums = payload["strategy_sums"]
-        if sums.ndim == 2:
-            layout = CompactTableLayout(tree, sampler.bucket_counts())
-            strategy = CompactStrategy.from_sums(layout, sums)
-        else:
-            legal = tree.legal[:, None, :]
-            totals = sums.sum(axis=2, keepdims=True)
-            uniform = legal / legal.sum(axis=2, keepdims=True).clip(min=1)
-            strategy = (
-                np.where(totals > 0, sums / np.maximum(totals, 1e-30), uniform)
-                * legal
-            ).astype(np.float64)
+        layout = CompactTableLayout(tree, sampler.bucket_counts())
+        if sums.ndim == 3:
+            # Legacy checkpoints stored a dense table for terminal nodes and
+            # unused street buckets.  Serving used to normalize and retain that
+            # entire 0.5-1.0 GB array per depth.  Compact it at load time; the
+            # lookup contract remains identical through CompactStrategy.
+            sums = layout.compact_from_dense(sums)
+        strategy = CompactStrategy.from_sums(layout, sums)
         return cls(tree, strategy, sampler, iteration=int(payload["iteration"]))
 
     # -- serving contract ------------------------------------------------------
@@ -132,8 +163,15 @@ class GpuBlueprintAgent:
     def select(self, game: HeadsUpHoldem, player: int) -> int:
         self._raise_fraction = None
         self._raise_target = None
+        # Diagnostics describe this decision only.  Retaining a timeout or a
+        # successful resolve from an earlier street made preflop/late-street
+        # logs falsely report that stale result.
+        self.last_continual_search = None
+        # Stale diagnostics are worse than none: the decision log would report a
+        # resize from an earlier street as if it happened on this one.
+        self.last_all_in_rescale = None
         searchable = game.street >= 2
-        if self.continual_search and game.street in (1, 2, 3):
+        if self.continual_search and game.street in self.continual_streets:
             continual_choice = self._continual_decision(game, player)
             if continual_choice is not None:
                 return continual_choice
@@ -163,7 +201,7 @@ class GpuBlueprintAgent:
         if choice == CHECK_CALL:
             return NEURAL_CHECK_CALL
         if choice == ALL_IN:
-            return NEURAL_ALL_IN
+            return self._all_in_choice(game, player, node)
         return self._to_neural_raise(game, player, int(self.tree.street[node]), choice)
 
     def strategy_for_state(self, game: HeadsUpHoldem, player: int) -> dict:
@@ -196,7 +234,7 @@ class GpuBlueprintAgent:
             if not self.tree.legal[node][choice]:
                 continue
             probability = max(float(probabilities[choice]), 0.0)
-            action = self._query_action(game, player, choice, probability, street)
+            action = self._query_action(game, player, choice, probability, street, node=node)
             key = (action["action"], action["amount"])
             if key in combined:
                 combined[key]["probability"] += probability
@@ -317,27 +355,30 @@ class GpuBlueprintAgent:
                 register_selected_action,
                 resolve_decision,
             )
-            from backend.search.exact_flop import exact_flop_is_affordable
 
-            # Enter at the FLOP when the exact flop-to-river tree fits, which on
-            # this card means shallow stacks (20bb: 5,303 nodes; 100bb: 132,107,
-            # ~10.5 GiB). Deep stacks enter at the turn and rely on the value
-            # nets for the streets below. A flop decision at a depth where the
-            # tree does not fit has no exact path at all, so it falls through to
-            # the blueprint rather than attempting an unaffordable solve.
-            big_blind = max(float(game.big_blind), 1.0)
-            effective_bb = (
-                min(game.stacks[seat] + game.round_bets[seat] for seat in (0, 1))
-                + min(game.contributions)
-            ) / big_blind
-            pot_bb = float(game.pot) / big_blind
-            flop_ok = exact_flop_is_affordable(effective_bb, pot_bb)
-            if game.street == FLOP_STREET and not flop_ok:
-                return None
-            entry_street = FLOP_STREET if flop_ok else TURN_STREET
-
+            # Enter at the FLOP only when the first live decision is actually
+            # on the flop. The resolver's rich-to-compact ladder checks the
+            # actual mid-street tree before any solver allocation.
+            # Re-evaluating flop admission for the first time on the turn is
+            # wrong: the larger turn pot can make the old flop look cheap, then
+            # opening a new flop session retrospectively pays several catch-up
+            # solves for actions that have already happened.
+            # Enter no earlier than the shallowest street we actually resolve:
+            # entering at the turn while only serving the river would re-derive
+            # turn ranges from the blueprint for no benefit and pay a turn solve.
             uid = self._search_uid_for(game)
             key = (uid, int(game.hand_number))
+            existing = self._continual_sessions.get(key)
+            earliest = min(self.continual_streets)
+            if existing is not None:
+                entry_street = int(existing.entry_street)
+            elif game.street == FLOP_STREET:
+                entry_street = max(FLOP_STREET, earliest)
+            else:
+                # No flop session survived/was opened. Start from the current
+                # supported street instead of reconstructing an earlier one.
+                entry_street = max(TURN_STREET, earliest)
+
             solution = resolve_decision(
                 self,
                 game,
@@ -349,7 +390,7 @@ class GpuBlueprintAgent:
                 entry_street=entry_street,
             )
             tree = solution.tree
-            node = int(tree.root)
+            node = int(solution.node)
             abstract_seat = self._abstract_seat(game, player)
             if tree.kind[node] != DECISION or int(tree.actor[node]) != abstract_seat:
                 raise RuntimeError("continual resolve root actor does not match the live player")
@@ -374,12 +415,25 @@ class GpuBlueprintAgent:
                 actor_seat=abstract_seat,
                 action=choice,
             )
+            # Record the ACTING mix, not just the chosen action. Without this the
+            # decision log can only show the blueprint's distribution, which is
+            # not the strategy that played — so "why did it shove?" is
+            # unanswerable after the fact.
+            fractions = tree.config.fractions(int(game.street))
+            labels = ["fold", "check/call", "all-in"] + [f"raise {f}x" for f in fractions]
+            acting_mix = [
+                {"a": labels[action] if action < len(labels) else str(action),
+                 "p": round(float(probabilities[action]), 4)}
+                for action in actions
+                if float(probabilities[action]) > 1e-4
+            ]
             self.last_continual_search = {
                 **solution.diagnostics,
                 "status": "resolved",
                 "node": node,
                 "combo": int(combo_index),
                 "choice": int(choice),
+                "acting_mix": sorted(acting_mix, key=lambda row: -row["p"]),
                 "decision_elapsed_ms": round((time.monotonic() - started) * 1000.0, 1),
             }
 
@@ -391,10 +445,27 @@ class GpuBlueprintAgent:
                 return NEURAL_ALL_IN
             return self._to_neural_raise(game, player, int(game.street), choice, tree=tree)
         except Exception as error:
+            resource_diagnostics = getattr(error, "resource_diagnostics", None)
+            # A first-decision flop refusal happens before any belief update or
+            # CUDA allocation. Drop that untouched session so the hand can
+            # still start a clean exact session on the turn instead of losing
+            # resolving for every later street.
+            if (
+                resource_diagnostics is not None
+                and game.street == 1
+                and "key" in locals()
+            ):
+                self._continual_sessions.pop(key, None)
             self.last_continual_search = {
                 "mode": "continual-exact-v1",
-                "status": "blueprint-fallback",
+                "status": (
+                    "resource-refused"
+                    if resource_diagnostics is not None
+                    else "blueprint-fallback"
+                ),
+                "street": int(game.street),
                 "error": str(error),
+                "resource_admission": resource_diagnostics,
                 "decision_elapsed_ms": round((time.monotonic() - started) * 1000.0, 1),
             }
             return None
@@ -656,6 +727,100 @@ class GpuBlueprintAgent:
             self._equity_cache[cache_key] = cached
         return int(cached)
 
+    def _abstract_matched_pot(self, node: int) -> float:
+        """Matched pot in bb at an abstract node, memoised per node."""
+        cached = self._node_pot_cache.get(node)
+        if cached is None:
+            from backend.search.exact_river import _node_matched_pot
+
+            cached = float(_node_matched_pot(self.tree, node))
+            self._node_pot_cache[node] = cached
+        return cached
+
+    def _all_in_choice(self, game: HeadsUpHoldem, player: int, node: int) -> int:
+        """ALL-IN, resized when translation moved the goalposts.
+
+        ALL-IN is the blueprint's only size-bearing action that used to execute
+        literally. Every `raise` action re-derives its chip amount from the REAL
+        pot (`_raise_target_for_choice`), but an all-in simply shoved whatever
+        was behind. `_locate` matches nodes by translated action sequence and
+        never compares pot/stack geometry, so an off-tree opponent line -- a few
+        repeated min-raises exhaust the tree's 3-raise cap -- maps a real state
+        onto an abstract node whose pot is far larger than the real one. The
+        trained action "jam about 2x the pot" then executes as "jam 24x the pot".
+
+        Measured 2026-07-28 (`tools/overbet_audit.py`, 200bb, 200 hands, resolver
+        OFF): vs a min-raiser, 8 shoves of 3.3-15.4x pot in 640 decisions, 4 of
+        them preflop, every amount within 520 chips of the full stack. Zero
+        against a calling station and zero in self-play, because neither line
+        exhausts the raise cap. Separately, 77-79% of decision nodes offer no
+        raise below all-in and carry ~30% all-in mass, but the abstract jam is
+        <=3x pot at 14,492 of those 15,188 nodes -- so the mass is trained and
+        reasonable, and only the translation is wrong.
+
+        The repair is the action translation raises already get: preserve the
+        size RELATIVE TO THE MATCHED POT that the abstract all-in represented.
+        Both ratios are measured the same way -- total chips committed after
+        shoving, over the matched pot before it -- so the units cancel and a
+        genuinely short stack (where the two agree) still jams unchanged.
+        """
+        sized = self._all_in_size(game, player, node)
+        if sized is None:
+            return NEURAL_ALL_IN
+        target, diagnostics = sized
+        legal = game.legal_actions(player)
+        minimum, maximum = int(legal["raise_min"]), int(legal["raise_max"])
+        self._raise_target = target
+        self._raise_fraction = (
+            0.5 if maximum <= minimum
+            else min(0.995, max(0.005, (target - minimum) / (maximum - minimum)))
+        )
+        self.last_all_in_rescale = diagnostics
+        return NEURAL_RAISE
+
+    def _all_in_size(
+        self, game: HeadsUpHoldem, player: int, node: int
+    ) -> tuple[int, dict] | None:
+        """The chip target a translated ALL-IN should really bet, or None to jam.
+
+        Pure: reports the size without touching agent state, so the query and
+        decision-log paths show the amount that will actually be wagered.
+        """
+        if not self.all_in_geometry_guard:
+            return None
+        legal = game.legal_actions(player)
+        if not legal.get("all_in") or not legal.get("raise"):
+            return None
+        matched_abstract = self._abstract_matched_pot(node)
+        matched_real = 2.0 * float(min(game.contributions))
+        if matched_abstract <= 0.0 or matched_real <= 0.0:
+            return None
+
+        ratio_abstract = float(self.tree.config.stack_bb) / matched_abstract
+        ratio_real = (float(game.contributions[player]) + float(game.stacks[player])) / matched_real
+        # Commit the same multiple of the matched pot the abstract jam did, and
+        # never more than the absolute bound.
+        tolerance = float(getattr(self, "all_in_geometry_tolerance", ALL_IN_GEOMETRY_TOLERANCE))
+        cap = float(getattr(self, "all_in_max_pot_multiple", ALL_IN_MAX_POT_MULTIPLE))
+        allowed = min(ratio_abstract * tolerance, cap)
+        if ratio_real <= allowed:
+            return None  # the jam still means roughly what it was trained to mean
+
+        desired_total = min(ratio_abstract, cap) * matched_real
+        already_committed = float(game.contributions[player]) - float(game.round_bets[player])
+        minimum, maximum = int(legal["raise_min"]), int(legal["raise_max"])
+        target = max(minimum, min(maximum, int(round(desired_total - already_committed))))
+        if target >= maximum:
+            return None  # the sized bet IS the stack; nothing to trim
+        return target, {
+            "node": int(node),
+            "abstract_pot_bb": round(matched_abstract, 2),
+            "abstract_shove_x_pot": round(ratio_abstract, 2),
+            "real_shove_x_pot": round(ratio_real, 2),
+            "shove_amount": maximum,
+            "sized_to": target,
+        }
+
     def _to_neural_raise(
         self, game: HeadsUpHoldem, player: int, street: int, choice: int, tree: BettingTree | None = None
     ) -> int:
@@ -696,6 +861,7 @@ class GpuBlueprintAgent:
         choice: int,
         probability: float,
         street: int,
+        node: int | None = None,
     ) -> dict:
         legal = game.legal_actions(player)
         if choice == FOLD:
@@ -709,8 +875,14 @@ class GpuBlueprintAgent:
             amount = int(legal.get("to_call", 0)) if action == "call" else None
         elif choice == ALL_IN:
             if legal.get("all_in"):
-                action = "all_in"
-                amount = int(legal.get("raise_max", 0))
+                # Report the resized amount when translation distorted the jam,
+                # so the query shows what would actually be wagered.
+                sized = None if node is None else self._all_in_size(game, player, node)
+                if sized is not None:
+                    action, amount = "raise", int(sized[0])
+                else:
+                    action = "all_in"
+                    amount = int(legal.get("raise_max", 0))
             else:
                 action = "check" if legal.get("check") else "call"
                 amount = int(legal.get("to_call", 0)) if action == "call" else None

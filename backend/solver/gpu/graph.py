@@ -61,6 +61,11 @@ class GraphRunner:
             for _ in range(warmup):
                 self._captured_body()
         torch.cuda.current_stream().wait_stream(stream)
+        torch.cuda.synchronize(device)
+        # Warm-up temporaries live in the global caching pool; captured
+        # temporaries live in a private graph pool and cannot reuse them.  Drop
+        # the former before capture or peak memory is almost doubled.
+        torch.cuda.empty_cache()
 
         self.graph = torch.cuda.CUDAGraph()
         with torch.cuda.graph(self.graph):

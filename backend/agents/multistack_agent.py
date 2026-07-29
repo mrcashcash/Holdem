@@ -13,6 +13,7 @@ any backend/data/gpu_blueprint_<N>bb/ depth directories.
 
 from __future__ import annotations
 
+import random
 import re
 from pathlib import Path
 
@@ -132,6 +133,128 @@ class MultiStackBlueprintAgent:
     def subgame_iterations(self, value: int) -> None:
         for agent in self.agents.values():
             agent.subgame_iterations = value
+
+    # Continual exact-card resolving. Without these pass-throughs, setting
+    # `router.continual_search = True` silently creates a dead attribute on the
+    # router while the sub-agents that actually decide hands stay off — and
+    # `last_continual_search` lives on the sub-agent, so diagnostics read empty
+    # too. That combination reads as "the resolver is on and never fires".
+    @property
+    def continual_search(self) -> bool:
+        return any(agent.continual_search for agent in self.agents.values())
+
+    @continual_search.setter
+    def continual_search(self, value: bool) -> None:
+        for agent in self.agents.values():
+            agent.continual_search = value
+
+    @property
+    def continual_streets(self) -> tuple[int, ...]:
+        return next(iter(self.agents.values())).continual_streets
+
+    @continual_streets.setter
+    def continual_streets(self, value) -> None:
+        for agent in self.agents.values():
+            agent.continual_streets = tuple(value)
+
+    # Action-sampling RNG. `backend.eval.duel.head_to_head`'s common-random-numbers
+    # coupling reseeds `agent._rng` before every hand so two arms draw identical
+    # variates at identical infosets and diverge ONLY where their policies differ.
+    # The router had no `_rng`, so `hasattr(target, "_rng")` was False and CRN
+    # silently did nothing for the SERVING agent — the one every real comparison
+    # uses. The measured "off-vs-off null reads exactly +0.00 bb/100" came from a
+    # single-depth GpuBlueprintAgent, so it did not cover this.
+    @property
+    def _rng(self) -> random.Random:
+        return next(iter(self.agents.values()))._rng
+
+    @_rng.setter
+    def _rng(self, value: random.Random) -> None:
+        # Each depth needs its OWN generator: sharing one object would let a hand
+        # routed to 100bb advance the 200bb stream, which reintroduces exactly the
+        # desync CRN exists to remove.
+        state = value.getstate()
+        for agent in self.agents.values():
+            generator = random.Random()
+            generator.setstate(state)
+            agent._rng = generator
+
+    @property
+    def all_in_geometry_guard(self) -> bool:
+        return all(agent.all_in_geometry_guard for agent in self.agents.values())
+
+    @all_in_geometry_guard.setter
+    def all_in_geometry_guard(self, value: bool) -> None:
+        for agent in self.agents.values():
+            agent.all_in_geometry_guard = bool(value)
+
+    @property
+    def all_in_max_pot_multiple(self) -> float:
+        return next(iter(self.agents.values())).all_in_max_pot_multiple
+
+    @all_in_max_pot_multiple.setter
+    def all_in_max_pot_multiple(self, value: float) -> None:
+        for agent in self.agents.values():
+            agent.all_in_max_pot_multiple = float(value)
+
+    @property
+    def all_in_geometry_tolerance(self) -> float:
+        return next(iter(self.agents.values())).all_in_geometry_tolerance
+
+    @all_in_geometry_tolerance.setter
+    def all_in_geometry_tolerance(self, value: float) -> None:
+        for agent in self.agents.values():
+            agent.all_in_geometry_tolerance = float(value)
+
+    @property
+    def last_all_in_rescale(self) -> dict | None:
+        """The most recent ALL-IN resize from whichever depth just acted."""
+        active = getattr(self, "_active", None)
+        if active is not None and getattr(active, "last_all_in_rescale", None):
+            return active.last_all_in_rescale
+        for agent in self.agents.values():
+            if getattr(agent, "last_all_in_rescale", None):
+                return agent.last_all_in_rescale
+        return None
+
+    @last_all_in_rescale.setter
+    def last_all_in_rescale(self, value) -> None:
+        for agent in self.agents.values():
+            agent.last_all_in_rescale = value
+
+    @property
+    def continual_iterations(self) -> int:
+        return next(iter(self.agents.values())).continual_iterations
+
+    @continual_iterations.setter
+    def continual_iterations(self, value: int) -> None:
+        for agent in self.agents.values():
+            agent.continual_iterations = value
+
+    @property
+    def continual_budget_ms(self) -> int:
+        return next(iter(self.agents.values())).continual_budget_ms
+
+    @continual_budget_ms.setter
+    def continual_budget_ms(self, value: int) -> None:
+        for agent in self.agents.values():
+            agent.continual_budget_ms = value
+
+    @property
+    def last_continual_search(self) -> dict | None:
+        """The most recent resolve diagnostics from whichever depth just acted."""
+        active = getattr(self, "_active", None)
+        if active is not None and getattr(active, "last_continual_search", None):
+            return active.last_continual_search
+        for agent in self.agents.values():
+            if getattr(agent, "last_continual_search", None):
+                return agent.last_continual_search
+        return None
+
+    @last_continual_search.setter
+    def last_continual_search(self, value) -> None:
+        for agent in self.agents.values():
+            agent.last_continual_search = value
 
     @property
     def exact_river_search(self) -> bool:

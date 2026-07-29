@@ -19,6 +19,7 @@ nodes and unused per-street bucket columns consume no VRAM.
 
 from __future__ import annotations
 
+import os
 import random
 
 import numpy as np
@@ -357,7 +358,7 @@ class VectorCFR:
         self,
         deal: Deal | list[Deal],
         traverser: int = 0,
-        frozen_average: torch.Tensor | None = None,
+        frozen_average: object | None = None,
         frozen_player: int | None = None,
     ) -> None:
         """One traversal over one deal or a batch of deals.
@@ -414,15 +415,34 @@ class VectorCFR:
             node_buckets = buckets[self.t_street[decisions]]  # [L, C]
             strategy = self._node_strategies(decisions, node_buckets)  # [L, C, A]
             if frozen_average is not None:
+                def frozen_rows(rows: torch.Tensor) -> torch.Tensor:
+                    chosen = decisions[rows]
+                    if hasattr(frozen_average, "strategy_for_nodes"):
+                        return frozen_average.strategy_for_nodes(chosen)
+                    if not isinstance(frozen_average, torch.Tensor):
+                        raise TypeError("unsupported frozen strategy provider")
+                    if frozen_average.ndim == 2:
+                        compact_index = (
+                            self.t_node_base[chosen].unsqueeze(1)
+                            + node_buckets[rows]
+                        )
+                        return frozen_average[compact_index]
+                    return frozen_average[
+                        chosen.unsqueeze(1), node_buckets[rows]
+                    ]
+
                 if frozen_player is not None:
                     rows = plan["actor_rows"][frozen_player]
                     if rows.numel():
-                        strategy[rows] = frozen_average[decisions[rows].unsqueeze(1), node_buckets[rows]]
+                        strategy[rows] = frozen_rows(rows)
                 else:
                     # frozen_player=None freezes BOTH players: a pure evaluation
                     # pass of the given average strategy (used by safe
                     # re-solving to price the opponent's opt-out alternative).
-                    strategy = frozen_average[decisions.unsqueeze(1), node_buckets]
+                    rows = torch.arange(
+                        decisions.shape[0], dtype=torch.long, device=device
+                    )
+                    strategy = frozen_rows(rows)
             level_decisions[level_index] = decisions
             strategies[level_index] = strategy
             fused = plan.get("fused") if self.fused_forward else None
@@ -589,9 +609,6 @@ class VectorCFR:
         boundaries_left = torch.searchsorted(sorted_scores, scores, side="left")  # [B, C]
         boundaries_right = torch.searchsorted(sorted_scores, scores, side="right")
         pots = (self.t_matched_pot[nodes] if pots is None else pots).view(showdowns, 1, 1)
-        card_in_combo = self.t_card_in_combo > 0  # [52, C] bool
-        combo_cards = self.t_combos  # [C, 2]
-
         opponent = (reach[1 - player, nodes, :] * valid.float()).view(showdowns, batch, NUM_COMBOS)
         order_e = order.unsqueeze(0).expand(showdowns, -1, -1)
         ordered = torch.gather(opponent, 2, order_e)  # [S, B, C] in per-board score order
@@ -609,40 +626,39 @@ class VectorCFR:
         # pass with cards as a channel dim (few large kernels — what makes
         # graph-replayed subgame solves fast); the big blueprint tree keeps
         # the per-card loop to bound memory.
-        channel_bytes = showdowns * batch * (NUM_COMBOS + 1) * 52 * 4 * 3
-        if channel_bytes < 2_000_000_000:
-            members_all = (self.t_card_in_combo > 0).T.float()  # [C, 52]
-            members_ordered = members_all[order]  # [B, C, 52]
-            masked = ordered.unsqueeze(3) * members_ordered.unsqueeze(0)  # [S, B, C, 52]
+        correction = torch.zeros_like(worse)
+        members_all = (self.t_card_in_combo > 0).T.float()  # [C, 52]
+        workspace_mb = max(
+            32,
+            int(os.environ.get("HOLDEM_SHOWDOWN_WORKSPACE_MB", "384")),
+        )
+        per_channel_bytes = max(
+            showdowns * batch * (NUM_COMBOS + 1) * 4 * 6,
+            1,
+        )
+        channels_per_tile = max(
+            1,
+            min(52, (workspace_mb * 1024**2) // per_channel_bytes),
+        )
+        for start in range(0, 52, channels_per_tile):
+            stop = min(start + channels_per_tile, 52)
+            channels = stop - start
+            members_ordered = members_all[:, start:stop][order]
+            masked = ordered.unsqueeze(3) * members_ordered.unsqueeze(0)
             channel_prefix = torch.cumsum(masked, dim=2)
             channel_total = channel_prefix[:, :, -1:, :]
             channel_padded = torch.cat(
-                [torch.zeros_like(channel_prefix[:, :, :1, :]), channel_prefix], dim=2
+                [torch.zeros_like(channel_prefix[:, :, :1, :]), channel_prefix],
+                dim=2,
             )
-            left_e4 = left_e.unsqueeze(3).expand(-1, -1, -1, 52)
-            right_e4 = right_e.unsqueeze(3).expand(-1, -1, -1, 52)
-            worse_by_card = torch.gather(channel_padded, 2, left_e4)
-            better_by_card = channel_total - torch.gather(channel_padded, 2, right_e4)
-            per_card_gap = worse_by_card - better_by_card  # [S, B, C, 52]
-            combo_channels = self.t_combos.view(1, 1, NUM_COMBOS, 2).expand(
-                showdowns, batch, -1, -1
+            left_e4 = left_e.unsqueeze(3).expand(-1, -1, -1, channels)
+            right_e4 = right_e.unsqueeze(3).expand(-1, -1, -1, channels)
+            per_card_gap = torch.gather(channel_padded, 2, left_e4) - (
+                channel_total - torch.gather(channel_padded, 2, right_e4)
             )
-            correction = torch.gather(per_card_gap, 3, combo_channels).sum(dim=3)
-        else:
-            correction = torch.zeros_like(worse)  # (worse_blocked - better_blocked)
-            for card in range(52):
-                members = card_in_combo[card]  # [C] combos containing this card
-                members_ordered = torch.gather(members.expand(batch, -1), 1, order)  # [B, C]
-                masked = ordered * members_ordered.unsqueeze(0)
-                card_prefix = torch.cumsum(masked, dim=2)
-                card_total = card_prefix[..., -1:]
-                card_padded = torch.cat([zeros, card_prefix], dim=2)
+            for offset, card in enumerate(range(start, stop)):
                 holders = self.card_holders[card]
-                left_h = boundaries_left[:, holders].unsqueeze(0).expand(showdowns, -1, -1)
-                right_h = boundaries_right[:, holders].unsqueeze(0).expand(showdowns, -1, -1)
-                worse_blocked = torch.gather(card_padded, 2, left_h)
-                better_blocked = card_total - torch.gather(card_padded, 2, right_h)
-                correction[:, :, holders] += worse_blocked - better_blocked
+                correction[:, :, holders] += per_card_gap[:, :, holders, offset]
 
         values[nodes, :] = (pots * (worse - better - correction)).reshape(
             showdowns, batch * NUM_COMBOS
@@ -666,6 +682,38 @@ class VectorCFR:
         legal_counts = legal.sum(dim=1, keepdim=True).clamp_min(1).to(sums.dtype)
         uniform = legal.to(sums.dtype) / legal_counts
         return torch.where(totals > 0, sums / totals.clamp_min(1e-30), uniform) * legal
+
+    def average_strategy_for_node(
+        self,
+        node: int,
+        situation: int = 0,
+    ) -> np.ndarray:
+        """CPU ``[street buckets, actions]`` average for one decision node.
+
+        Real-time resolving only consumes the root (and, later, a tiny frontier)
+        of a solution.  Materialising ``[all nodes, 1326, actions]`` at the end
+        of a flop solve added gigabytes to the live peak for data the caller
+        immediately discarded.
+        """
+
+        node = int(node)
+        base = int(self.layout.node_base[node])
+        if base < 0:
+            raise ValueError(f"node {node} is not a decision node")
+        street = int(self.tree.street[node])
+        count = int(self.bucket_counts[street])
+        offset = situation * self.layout.total_rows
+        sums = self.strategy_sums[offset + base : offset + base + count]
+        legal = self.t_legal[node].to(dtype=sums.dtype).unsqueeze(0)
+        totals = sums.sum(dim=1, keepdim=True)
+        legal_count = legal.sum(dim=1, keepdim=True).clamp_min(1.0)
+        uniform = legal / legal_count
+        average = torch.where(
+            totals > 0,
+            sums / totals.clamp_min(1e-30),
+            uniform.expand_as(sums),
+        ) * legal
+        return average.detach().cpu().numpy()
 
     def average_strategy_tensor(self, situation: int = 0) -> torch.Tensor:
         """Dense ``[nodes, max street buckets, A]`` view for small consumers.

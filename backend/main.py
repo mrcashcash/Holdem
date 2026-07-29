@@ -52,6 +52,14 @@ game = HeadsUpHoldem()
 serving_agent = load_serving_agent()
 game_lock = RLock()
 log_debug("serving_agent_selected", kind=type(serving_agent).__name__)
+try:
+    from backend.search.exact_river import warm_exact_resolver_runtime
+
+    resolver_runtime_warmup = warm_exact_resolver_runtime()
+    log_debug("resolver_runtime_warmup", **resolver_runtime_warmup)
+except Exception as error:
+    resolver_runtime_warmup = {"runtime_warmed": False, "error": str(error)}
+    log_debug("resolver_runtime_warmup_failed", error=str(error))
 
 
 def serving_model_view() -> dict:
@@ -81,16 +89,20 @@ def serving_model_view() -> dict:
                     }
                 ]
 
+        continual_enabled = bool(getattr(agent, "continual_search", False))
         legacy_search_enabled = bool(
             getattr(agent, "subgame_search", getattr(agent, "river_search", False))
         )
         exact_river_enabled = bool(getattr(agent, "exact_river_search", False))
-        search_enabled = legacy_search_enabled or exact_river_enabled
-        search_iterations = getattr(
-            agent,
-            "exact_river_iterations" if exact_river_enabled else "subgame_iterations",
-            getattr(agent, "river_iterations", None),
-        )
+        search_enabled = continual_enabled or legacy_search_enabled or exact_river_enabled
+        if continual_enabled:
+            search_iterations = getattr(agent, "continual_iterations", None)
+        else:
+            search_iterations = getattr(
+                agent,
+                "exact_river_iterations" if exact_river_enabled else "subgame_iterations",
+                getattr(agent, "river_iterations", None),
+            )
         return {
             "kind": type(agent).__name__,
             "selected_depth_bb": selected_depth,
@@ -101,13 +113,30 @@ def serving_model_view() -> dict:
                 int(search_iterations) if search_iterations is not None else None
             ),
             "search_mode": (
-                "exact-card-safe-river-v1"
-                if exact_river_enabled
-                else ("legacy-bucketed" if legacy_search_enabled else "blueprint-only")
+                "continual-exact-card"
+                if continual_enabled
+                else (
+                    "exact-card-safe-river-v1"
+                    if exact_river_enabled
+                    else (
+                        "legacy-bucketed"
+                        if legacy_search_enabled
+                        else "blueprint-only"
+                    )
+                )
             ),
-            "river_budget_ms": (
-                int(getattr(agent, "exact_river_budget_ms"))
-                if exact_river_enabled
+            "search_budget_ms": (
+                int(getattr(agent, "continual_budget_ms"))
+                if continual_enabled
+                else (
+                    int(getattr(agent, "exact_river_budget_ms"))
+                    if exact_river_enabled
+                    else None
+                )
+            ),
+            "resolve_streets": (
+                list(getattr(agent, "continual_streets", ()))
+                if continual_enabled
                 else None
             ),
         }
@@ -367,7 +396,87 @@ def observe_agent_hand() -> None:
 
 @app.get("/api/health")
 def health() -> dict:
-    return {"ok": True, "serving_agent": type(serving_agent).__name__}
+    """Report exactly which brain and which search configuration is playing.
+
+    Worth surfacing rather than trusting defaults: the serving config used to
+    enable the retired bucketed subgame resolver (measured -31 to -86 bb/100)
+    while the docs described the champion as search-off. A caller should be able
+    to see what is actually deciding hands.
+    """
+    from backend.agents.serving import serving_configuration
+    from backend.search.resources import MIB
+
+    gpu = {
+        "available": False,
+        "allocated_mib": None,
+        "reserved_mib": None,
+        "cuda_free_mib": None,
+        "cuda_total_mib": None,
+    }
+    try:
+        import torch
+
+        gpu["available"] = bool(torch.cuda.is_available())
+        if gpu["available"]:
+            free, total = torch.cuda.mem_get_info()
+            gpu.update(
+                {
+                    "allocated_mib": round(torch.cuda.memory_allocated() / MIB, 1),
+                    "reserved_mib": round(torch.cuda.memory_reserved() / MIB, 1),
+                    "cuda_free_mib": round(free / MIB, 1),
+                    "cuda_total_mib": round(total / MIB, 1),
+                }
+            )
+    except Exception as exc:
+        gpu["error"] = str(exc)
+
+    agent = serving_agent
+    depths = sorted(getattr(agent, "agents", {}).keys())
+    search = serving_configuration()
+    search["resolver_optimizations"] = {
+        **search.get("resolver_optimizations", {}),
+        **resolver_runtime_warmup,
+    }
+    targets = [agent, *getattr(agent, "agents", {}).values()]
+    continual_active = any(
+        bool(getattr(target, "continual_search", False)) for target in targets
+    )
+    river_net_active = any(
+        getattr(target, "resolver_river_net", None) is not None
+        for target in targets
+    )
+    search["continual_search"] = continual_active
+    search["river_net"] = river_net_active
+    if (
+        search.get("river_net_requested")
+        and search["river_net_gate"].get("eligible")
+        and not river_net_active
+    ):
+        load_error = next(
+            (
+                getattr(target, "resolver_river_net_error", None)
+                for target in targets
+                if getattr(target, "resolver_river_net_error", None)
+            ),
+            "eligible checkpoint was not loaded by this serving agent",
+        )
+        search["river_net_gate"] = {
+            **search["river_net_gate"],
+            "reason": load_error,
+        }
+    return {
+        "ok": True,
+        "serving_agent": type(agent).__name__,
+        "iteration": getattr(agent, "iteration", None),
+        "stack_depths_bb": [float(depth) for depth in depths] or None,
+        "search": search,
+        "resolver": (
+            "exact-card continual with resource-adaptive flop + exact river"
+            if continual_active
+            else "promoted blueprint only"
+        ),
+        "gpu": gpu,
+    }
 
 
 @app.get("/api/game")
@@ -449,6 +558,8 @@ def log_agent_decision(g: HeadsUpHoldem) -> None:
         agent = serving_agent
         routed = agent._route(g, 1) if hasattr(agent, "_route") else agent
         info = routed.strategy_for_state(g, 1)
+        # Populated by select(), which runs before this call.
+        continual = getattr(routed, "last_continual_search", None)
         to_call = int(g.to_call(1))
         log_debug(
             "agent_decision",
@@ -464,23 +575,58 @@ def log_agent_decision(g: HeadsUpHoldem) -> None:
             node=info.get("node"),
             bucket=info.get("bucket"),
             exact_match=info.get("exact_match"),
-            # If True, the actual action may have come from a subgame re-solve,
-            # and this blueprint distribution is NOT the acting strategy.
-            search_active=bool(
-                getattr(routed, "subgame_search", False)
-                or getattr(routed, "exact_river_search", False)
-            ),
-            search_mode=(
-                "exact-card-safe-river-v1"
-                if getattr(routed, "exact_river_search", False)
+            # WHICH ENGINE ACTUALLY DECIDED. This used to consider only the two
+            # older search paths, so every exact-resolver decision was logged as
+            # "blueprint-only" — the log could not answer "why did it do X?" for
+            # the engine that was actually playing.
+            decided_by=(
+                "exact-resolver"
+                if (continual or {}).get("status") == "resolved"
                 else (
-                    "legacy-bucketed"
-                    if getattr(routed, "subgame_search", False)
-                    else "blueprint-only"
+                    "blueprint (resolver fell back)"
+                    if continual
+                    else (
+                        "legacy-bucketed"
+                        if getattr(routed, "subgame_search", False)
+                        else "blueprint"
+                    )
                 )
             ),
+            search_active=bool(
+                getattr(routed, "continual_search", False)
+                or getattr(routed, "subgame_search", False)
+                or getattr(routed, "exact_river_search", False)
+            ),
+            resolver=(
+                {
+                    key: continual.get(key)
+                    for key in (
+                        "mode", "status", "street", "entry_street", "iterations",
+                        "tree_nodes", "acting_mix", "decision_elapsed_ms", "error",
+                        "projection_detached_fraction", "own_policy_updates",
+                        "opponent_policy_updates", "selected_fractions",
+                        "menu_tier", "resource_admission", "continuation_reused",
+                        "fresh_current_solve", "catch_up_resolves",
+                        "river_horizon", "stage_ms",
+                        "safety_price_execution", "gadget_execution",
+                        "sampler_reused", "blueprint_bucket_cache_hits",
+                        "blueprint_bucket_cache_misses",
+                    )
+                    if key in continual
+                }
+                if continual
+                else None
+            ),
             river_resolve=getattr(routed, "last_river_search", None),
-            actions=[{"a": a["action"], "amt": a.get("amount"), "p": round(a["probability"], 4)} for a in info.get("actions", [])],
+            # Set when a translated ALL-IN was resized down (see
+            # GpuBlueprintAgent._all_in_size). Without it, a bet that is neither
+            # a menu size nor the stack looks like a new bug rather than the
+            # repair for the 24x-pot shove reported 2026-07-28.
+            all_in_rescaled=getattr(routed, "last_all_in_rescale", None),
+            # The BLUEPRINT's distribution, kept for comparison. When
+            # decided_by == "exact-resolver" this is NOT the acting strategy —
+            # `resolver.acting_mix` is.
+            blueprint_actions=[{"a": a["action"], "amt": a.get("amount"), "p": round(a["probability"], 4)} for a in info.get("actions", [])],
             warnings=info.get("warnings", []),
         )
     except Exception as exc:  # diagnostics must never break serving

@@ -21,12 +21,9 @@ the same falsified-history error one street later.
 
 Street responsibilities, and why they differ:
 
-* **Flop decisions** use a flop-rooted exact solve, but ONLY on shallow stacks.
-  A 20bb flop-to-river tree is 5,303 nodes; a 100bb one is 132,107 (~10.5 GiB of
-  exact-combo tables). `exact_flop.exact_flop_is_affordable` is the guard, and
-  deep stacks enter at the turn instead. This is what lets 20bb — the worst-served
-  depth, where LBR beats the current blueprint by +130.31 bb/100 — be played
-  exactly with no value network at all.
+* **Flop decisions** use a flop-rooted exact solve chosen by a richest-safe
+  action-menu ladder. Node and VRAM admission happens before solver allocation;
+  if no tier fits, that flop uses the promoted blueprint.
 * **Turn decisions** use a turn-rooted exact solve (turn + river betting).
 * **River decisions re-solve river-rooted with the actual river card.** A
   turn-rooted tree indexes river rows by combo only -- there is no river-card
@@ -46,6 +43,7 @@ import numpy as np
 from backend.search.exact_river import (
     MIN_RESOLVE_ITERATIONS,
     PendingLikelihood,
+    NodeStrategy,
     RiverResolveError,
     _blueprint_ranges,
     _event_action,
@@ -55,6 +53,7 @@ from backend.search.exact_river import (
 )
 from backend.search.gpu_subgame import partial_board_buckets
 from backend.solver.gpu.deals import NUM_COMBOS, combos
+from backend.solver.gpu.tree import DECISION
 from backend.vectorized_engine import card_id
 
 FLOP_STREET, TURN_STREET, RIVER_STREET = 1, 2, 3
@@ -84,19 +83,34 @@ class ContinualSession:
     ranges: np.ndarray
     next_event: int
     pending: dict[int, PendingLikelihood] = field(default_factory=dict)
+    frontiers: dict[int, "PendingFrontier"] = field(default_factory=dict)
     failed: bool = False
     failure: str | None = None
     resolves: int = 0
     own_updates: int = 0
     opponent_updates: int = 0
+    sampler_cache: dict = field(default_factory=dict)
+    blueprint_bucket_cache: dict = field(default_factory=dict)
 
 
 @dataclass
 class ContinualSolution:
     tree: object
-    strategy: np.ndarray
+    strategy: NodeStrategy
     session: ContinualSession
     diagnostics: dict
+    node: int
+
+
+@dataclass
+class PendingFrontier:
+    """Opponent policy at the child reached by our previously selected action."""
+
+    actor_seat: int
+    street: int
+    tree: object
+    node: int
+    probability: np.ndarray
 
 
 def _live_mask(board: tuple[int, ...]) -> np.ndarray:
@@ -173,6 +187,8 @@ def _resolve_street(
     deadline: float,
     street: int,
     observed_event: dict | None = None,
+    sampler_cache: dict | None = None,
+    blueprint_bucket_cache: dict | None = None,
 ):
     """Dispatch to the exact resolver for `street`."""
     if street == RIVER_STREET:
@@ -185,6 +201,8 @@ def _resolve_street(
     return resolve_postflop_at(
         agent, game, controlled_player, stop, ranges,
         iterations, deadline, street, observed_event,
+        sampler_cache=sampler_cache,
+        blueprint_bucket_cache=blueprint_bucket_cache,
     )
 
 
@@ -214,6 +232,7 @@ def resolve_decision(
 
     deadline = time.monotonic() + max(int(budget_ms), 1) / 1000.0
     catch_up: list[dict] = []
+    continuation: tuple[object, NodeStrategy, int, dict] | None = None
     try:
         while session.next_event < len(game.public_actions):
             index = session.next_event
@@ -234,17 +253,54 @@ def resolve_decision(
                 likelihood = pending.probability
                 session.own_updates += 1
             else:
-                tree, strategy, diagnostics = _resolve_street(
-                    agent, game, controlled_player, index, session.ranges,
-                    max(MIN_RESOLVE_ITERATIONS, iterations // 2), deadline,
-                    street=event_street, observed_event=event,
-                )
-                likelihood = strategy[tree.root, :, _event_action(tree, event)]
-                diagnostics["purpose"] = "observed-action-belief-update"
-                diagnostics["street"] = event_street
-                catch_up.append(diagnostics)
+                frontier = session.frontiers.pop(index, None)
+                if (
+                    frontier is not None
+                    and frontier.actor_seat == actor_seat
+                    and frontier.street == event_street
+                ):
+                    observed_action = _event_action(
+                        frontier.tree, event, node=frontier.node
+                    )
+                    likelihood = frontier.probability[:, observed_action]
+                    catch_up.append(
+                        {
+                            "purpose": "stored-frontier-belief-update",
+                            "street": event_street,
+                            "tree_nodes": int(len(frontier.tree)),
+                            "frontier_node": int(frontier.node),
+                            "gpu_solve_reused": True,
+                        }
+                    )
+                else:
+                    tree, strategy, diagnostics = _resolve_street(
+                        agent, game, controlled_player, index, session.ranges,
+                        max(MIN_RESOLVE_ITERATIONS, iterations // 2), deadline,
+                        street=event_street,
+                        observed_event=event,
+                        sampler_cache=session.sampler_cache,
+                        blueprint_bucket_cache=session.blueprint_bucket_cache,
+                    )
+                    observed_action = _event_action(tree, event)
+                    likelihood = strategy[tree.root, :, observed_action]
+                    diagnostics["purpose"] = "observed-action-belief-update"
+                    diagnostics["street"] = event_street
+                    catch_up.append(diagnostics)
+                    session.resolves += 1
+
+                    # If this is the last unprocessed action, the retrospective
+                    # nested solve already contains our current child policy.
+                    # Use it instead of discarding the solve and immediately
+                    # solving the same public subtree again.
+                    child = int(tree.children[tree.root][observed_action])
+                    if (
+                        index + 1 == len(game.public_actions)
+                        and child in strategy
+                        and tree.kind[child] == DECISION
+                        and int(tree.actor[child]) == _seat(game, controlled_player)
+                    ):
+                        continuation = (tree, strategy, child, diagnostics)
                 session.opponent_updates += 1
-                session.resolves += 1
 
             live = _live_mask(tuple(card_id(card) for card in game.community))
             session.ranges[actor_seat] = _normalize_range(
@@ -252,11 +308,26 @@ def resolve_decision(
             )
             session.next_event += 1
 
-        tree, strategy, diagnostics = _resolve_street(
-            agent, game, controlled_player, len(game.public_actions), session.ranges,
-            max(MIN_RESOLVE_ITERATIONS, iterations), deadline, street=street,
-        )
-        session.resolves += 1
+        if continuation is not None:
+            tree, strategy, decision_node, diagnostics = continuation
+            diagnostics = {
+                **diagnostics,
+                "continuation_reused": True,
+                "fresh_current_solve": False,
+            }
+        else:
+            tree, strategy, diagnostics = _resolve_street(
+                agent, game, controlled_player, len(game.public_actions), session.ranges,
+                max(MIN_RESOLVE_ITERATIONS, iterations),
+                deadline,
+                street=street,
+                sampler_cache=session.sampler_cache,
+                blueprint_bucket_cache=session.blueprint_bucket_cache,
+            )
+            decision_node = int(tree.root)
+            session.resolves += 1
+            diagnostics["continuation_reused"] = False
+            diagnostics["fresh_current_solve"] = True
         diagnostics.update(
             {
                 "mode": f"continual-exact-v1-street{street}",
@@ -270,7 +341,13 @@ def resolve_decision(
                 "budget_ms": int(budget_ms),
             }
         )
-        return ContinualSolution(tree=tree, strategy=strategy, session=session, diagnostics=diagnostics)
+        return ContinualSolution(
+            tree=tree,
+            strategy=strategy,
+            session=session,
+            diagnostics=diagnostics,
+            node=decision_node,
+        )
     except Exception as error:
         # Fail closed for the rest of the hand: resuming with a half-updated
         # belief would silently condition every later solve on a false range.
@@ -287,8 +364,23 @@ def register_selected_action(
 ) -> None:
     """Record the exact per-combo likelihood of the action we just chose."""
     probability = np.asarray(
-        solution.strategy[solution.tree.root, :, action], dtype=np.float64
+        solution.strategy[solution.node, :, action], dtype=np.float64
     ).copy()
     solution.session.pending[int(event_index)] = PendingLikelihood(
         actor_seat=int(actor_seat), probability=probability, action=int(action)
     )
+    child = int(solution.tree.children[solution.node][action])
+    if (
+        child >= 0
+        and child in solution.strategy
+        and solution.tree.kind[child] == DECISION
+    ):
+        solution.session.frontiers[int(event_index) + 1] = PendingFrontier(
+            actor_seat=int(solution.tree.actor[child]),
+            street=int(solution.tree.street[child]),
+            tree=solution.tree,
+            node=child,
+            probability=np.asarray(
+                solution.strategy[child], dtype=np.float64
+            ).copy(),
+        )

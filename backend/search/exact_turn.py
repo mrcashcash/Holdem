@@ -25,6 +25,7 @@ Two properties worth stating:
 
 from __future__ import annotations
 
+import os
 import random
 
 import numpy as np
@@ -36,8 +37,16 @@ from backend.solver.gpu.deals import CARD_IN_COMBO, NUM_COMBOS, Deal, score_all_
 # sizes cost steeply here (tools/exact_turn_probe.py measures it), but quality
 # takes priority over latency, and the river value net removes the river subtree
 # entirely (726 -> 81 nodes), which is what pays for the wider menu.
-TURN_FRACTIONS = (0.33, 0.5, 0.75, 1.0, 1.4)
-TURN_RAISE_CAP = 2
+# Turn resolve menu. Capped by default for serving: 890 nodes at 3 sizes/cap2
+# (1.6 s) versus 3,032 at 5 sizes/cap2 (5.2 s).
+# Env-overridable so serving can cap the RESOLVE menu while the blueprint keeps
+# its own trained sizes, and study profiles can widen it back.
+TURN_FRACTIONS = tuple(
+    float(x) for x in os.environ.get(
+        "HOLDEM_TURN_SIZES", "0.33,0.5,0.75,1.0,1.4"
+    ).split(",") if x.strip()
+)
+TURN_RAISE_CAP = int(os.environ.get("HOLDEM_TURN_CAP", "2"))
 
 
 class ExactTurnSampler:

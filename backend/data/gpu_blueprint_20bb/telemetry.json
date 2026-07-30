@@ -1,0 +1,3292 @@
+[
+  {
+    "iteration": 200,
+    "iterations_per_second": 3.614,
+    "device": "cuda",
+    "storage": {
+      "version": 2,
+      "kind": "decision-node-street-sharded",
+      "bucket_counts": [
+        169,
+        150,
+        150,
+        30
+      ],
+      "decision_counts": [
+        28,
+        512,
+        2925,
+        10241
+      ],
+      "row_counts": [
+        4732,
+        76800,
+        438750,
+        307230
+      ],
+      "total_rows": 827512,
+      "actions": 7,
+      "regret_bytes": 23170336,
+      "strategy_sum_bytes": 23170336,
+      "table_bytes_total": 46340672,
+      "legacy_dense_rows": 6237114,
+      "row_reduction_fraction": 0.867325
+    },
+    "action_profile": {
+      "name": "uniform-v1",
+      "profile_sha256": null,
+      "override_count": 0,
+      "sized_raise_nodes": {
+        "0": 11612,
+        "1": 1061,
+        "2": 432,
+        "3": 314,
+        "4": 287
+      }
+    },
+    "timestamp": "2026-07-29T23:11:41Z"
+  },
+  {
+    "iteration": 400,
+    "iterations_per_second": 3.63,
+    "device": "cuda",
+    "storage": {
+      "version": 2,
+      "kind": "decision-node-street-sharded",
+      "bucket_counts": [
+        169,
+        150,
+        150,
+        30
+      ],
+      "decision_counts": [
+        28,
+        512,
+        2925,
+        10241
+      ],
+      "row_counts": [
+        4732,
+        76800,
+        438750,
+        307230
+      ],
+      "total_rows": 827512,
+      "actions": 7,
+      "regret_bytes": 23170336,
+      "strategy_sum_bytes": 23170336,
+      "table_bytes_total": 46340672,
+      "legacy_dense_rows": 6237114,
+      "row_reduction_fraction": 0.867325
+    },
+    "action_profile": {
+      "name": "uniform-v1",
+      "profile_sha256": null,
+      "override_count": 0,
+      "sized_raise_nodes": {
+        "0": 11612,
+        "1": 1061,
+        "2": 432,
+        "3": 314,
+        "4": 287
+      }
+    },
+    "timestamp": "2026-07-29T23:12:36Z"
+  },
+  {
+    "iteration": 600,
+    "iterations_per_second": 3.626,
+    "device": "cuda",
+    "storage": {
+      "version": 2,
+      "kind": "decision-node-street-sharded",
+      "bucket_counts": [
+        169,
+        150,
+        150,
+        30
+      ],
+      "decision_counts": [
+        28,
+        512,
+        2925,
+        10241
+      ],
+      "row_counts": [
+        4732,
+        76800,
+        438750,
+        307230
+      ],
+      "total_rows": 827512,
+      "actions": 7,
+      "regret_bytes": 23170336,
+      "strategy_sum_bytes": 23170336,
+      "table_bytes_total": 46340672,
+      "legacy_dense_rows": 6237114,
+      "row_reduction_fraction": 0.867325
+    },
+    "action_profile": {
+      "name": "uniform-v1",
+      "profile_sha256": null,
+      "override_count": 0,
+      "sized_raise_nodes": {
+        "0": 11612,
+        "1": 1061,
+        "2": 432,
+        "3": 314,
+        "4": 287
+      }
+    },
+    "timestamp": "2026-07-29T23:13:31Z"
+  },
+  {
+    "iteration": 800,
+    "iterations_per_second": 3.623,
+    "device": "cuda",
+    "storage": {
+      "version": 2,
+      "kind": "decision-node-street-sharded",
+      "bucket_counts": [
+        169,
+        150,
+        150,
+        30
+      ],
+      "decision_counts": [
+        28,
+        512,
+        2925,
+        10241
+      ],
+      "row_counts": [
+        4732,
+        76800,
+        438750,
+        307230
+      ],
+      "total_rows": 827512,
+      "actions": 7,
+      "regret_bytes": 23170336,
+      "strategy_sum_bytes": 23170336,
+      "table_bytes_total": 46340672,
+      "legacy_dense_rows": 6237114,
+      "row_reduction_fraction": 0.867325
+    },
+    "action_profile": {
+      "name": "uniform-v1",
+      "profile_sha256": null,
+      "override_count": 0,
+      "sized_raise_nodes": {
+        "0": 11612,
+        "1": 1061,
+        "2": 432,
+        "3": 314,
+        "4": 287
+      }
+    },
+    "timestamp": "2026-07-29T23:14:26Z"
+  },
+  {
+    "iteration": 1000,
+    "iterations_per_second": 3.627,
+    "device": "cuda",
+    "storage": {
+      "version": 2,
+      "kind": "decision-node-street-sharded",
+      "bucket_counts": [
+        169,
+        150,
+        150,
+        30
+      ],
+      "decision_counts": [
+        28,
+        512,
+        2925,
+        10241
+      ],
+      "row_counts": [
+        4732,
+        76800,
+        438750,
+        307230
+      ],
+      "total_rows": 827512,
+      "actions": 7,
+      "regret_bytes": 23170336,
+      "strategy_sum_bytes": 23170336,
+      "table_bytes_total": 46340672,
+      "legacy_dense_rows": 6237114,
+      "row_reduction_fraction": 0.867325
+    },
+    "action_profile": {
+      "name": "uniform-v1",
+      "profile_sha256": null,
+      "override_count": 0,
+      "sized_raise_nodes": {
+        "0": 11612,
+        "1": 1061,
+        "2": 432,
+        "3": 314,
+        "4": 287
+      }
+    },
+    "timestamp": "2026-07-29T23:15:21Z"
+  },
+  {
+    "iteration": 1200,
+    "iterations_per_second": 3.608,
+    "device": "cuda",
+    "storage": {
+      "version": 2,
+      "kind": "decision-node-street-sharded",
+      "bucket_counts": [
+        169,
+        150,
+        150,
+        30
+      ],
+      "decision_counts": [
+        28,
+        512,
+        2925,
+        10241
+      ],
+      "row_counts": [
+        4732,
+        76800,
+        438750,
+        307230
+      ],
+      "total_rows": 827512,
+      "actions": 7,
+      "regret_bytes": 23170336,
+      "strategy_sum_bytes": 23170336,
+      "table_bytes_total": 46340672,
+      "legacy_dense_rows": 6237114,
+      "row_reduction_fraction": 0.867325
+    },
+    "action_profile": {
+      "name": "uniform-v1",
+      "profile_sha256": null,
+      "override_count": 0,
+      "sized_raise_nodes": {
+        "0": 11612,
+        "1": 1061,
+        "2": 432,
+        "3": 314,
+        "4": 287
+      }
+    },
+    "timestamp": "2026-07-29T23:16:17Z"
+  },
+  {
+    "iteration": 1400,
+    "iterations_per_second": 3.605,
+    "device": "cuda",
+    "storage": {
+      "version": 2,
+      "kind": "decision-node-street-sharded",
+      "bucket_counts": [
+        169,
+        150,
+        150,
+        30
+      ],
+      "decision_counts": [
+        28,
+        512,
+        2925,
+        10241
+      ],
+      "row_counts": [
+        4732,
+        76800,
+        438750,
+        307230
+      ],
+      "total_rows": 827512,
+      "actions": 7,
+      "regret_bytes": 23170336,
+      "strategy_sum_bytes": 23170336,
+      "table_bytes_total": 46340672,
+      "legacy_dense_rows": 6237114,
+      "row_reduction_fraction": 0.867325
+    },
+    "action_profile": {
+      "name": "uniform-v1",
+      "profile_sha256": null,
+      "override_count": 0,
+      "sized_raise_nodes": {
+        "0": 11612,
+        "1": 1061,
+        "2": 432,
+        "3": 314,
+        "4": 287
+      }
+    },
+    "timestamp": "2026-07-29T23:17:12Z"
+  },
+  {
+    "iteration": 1600,
+    "iterations_per_second": 3.608,
+    "device": "cuda",
+    "storage": {
+      "version": 2,
+      "kind": "decision-node-street-sharded",
+      "bucket_counts": [
+        169,
+        150,
+        150,
+        30
+      ],
+      "decision_counts": [
+        28,
+        512,
+        2925,
+        10241
+      ],
+      "row_counts": [
+        4732,
+        76800,
+        438750,
+        307230
+      ],
+      "total_rows": 827512,
+      "actions": 7,
+      "regret_bytes": 23170336,
+      "strategy_sum_bytes": 23170336,
+      "table_bytes_total": 46340672,
+      "legacy_dense_rows": 6237114,
+      "row_reduction_fraction": 0.867325
+    },
+    "action_profile": {
+      "name": "uniform-v1",
+      "profile_sha256": null,
+      "override_count": 0,
+      "sized_raise_nodes": {
+        "0": 11612,
+        "1": 1061,
+        "2": 432,
+        "3": 314,
+        "4": 287
+      }
+    },
+    "timestamp": "2026-07-29T23:18:08Z"
+  },
+  {
+    "iteration": 1800,
+    "iterations_per_second": 3.605,
+    "device": "cuda",
+    "storage": {
+      "version": 2,
+      "kind": "decision-node-street-sharded",
+      "bucket_counts": [
+        169,
+        150,
+        150,
+        30
+      ],
+      "decision_counts": [
+        28,
+        512,
+        2925,
+        10241
+      ],
+      "row_counts": [
+        4732,
+        76800,
+        438750,
+        307230
+      ],
+      "total_rows": 827512,
+      "actions": 7,
+      "regret_bytes": 23170336,
+      "strategy_sum_bytes": 23170336,
+      "table_bytes_total": 46340672,
+      "legacy_dense_rows": 6237114,
+      "row_reduction_fraction": 0.867325
+    },
+    "action_profile": {
+      "name": "uniform-v1",
+      "profile_sha256": null,
+      "override_count": 0,
+      "sized_raise_nodes": {
+        "0": 11612,
+        "1": 1061,
+        "2": 432,
+        "3": 314,
+        "4": 287
+      }
+    },
+    "timestamp": "2026-07-29T23:19:03Z"
+  },
+  {
+    "iteration": 2000,
+    "iterations_per_second": 3.609,
+    "device": "cuda",
+    "storage": {
+      "version": 2,
+      "kind": "decision-node-street-sharded",
+      "bucket_counts": [
+        169,
+        150,
+        150,
+        30
+      ],
+      "decision_counts": [
+        28,
+        512,
+        2925,
+        10241
+      ],
+      "row_counts": [
+        4732,
+        76800,
+        438750,
+        307230
+      ],
+      "total_rows": 827512,
+      "actions": 7,
+      "regret_bytes": 23170336,
+      "strategy_sum_bytes": 23170336,
+      "table_bytes_total": 46340672,
+      "legacy_dense_rows": 6237114,
+      "row_reduction_fraction": 0.867325
+    },
+    "action_profile": {
+      "name": "uniform-v1",
+      "profile_sha256": null,
+      "override_count": 0,
+      "sized_raise_nodes": {
+        "0": 11612,
+        "1": 1061,
+        "2": 432,
+        "3": 314,
+        "4": 287
+      }
+    },
+    "timestamp": "2026-07-29T23:19:59Z"
+  },
+  {
+    "iteration": 2200,
+    "iterations_per_second": 3.604,
+    "device": "cuda",
+    "storage": {
+      "version": 2,
+      "kind": "decision-node-street-sharded",
+      "bucket_counts": [
+        169,
+        150,
+        150,
+        30
+      ],
+      "decision_counts": [
+        28,
+        512,
+        2925,
+        10241
+      ],
+      "row_counts": [
+        4732,
+        76800,
+        438750,
+        307230
+      ],
+      "total_rows": 827512,
+      "actions": 7,
+      "regret_bytes": 23170336,
+      "strategy_sum_bytes": 23170336,
+      "table_bytes_total": 46340672,
+      "legacy_dense_rows": 6237114,
+      "row_reduction_fraction": 0.867325
+    },
+    "action_profile": {
+      "name": "uniform-v1",
+      "profile_sha256": null,
+      "override_count": 0,
+      "sized_raise_nodes": {
+        "0": 11612,
+        "1": 1061,
+        "2": 432,
+        "3": 314,
+        "4": 287
+      }
+    },
+    "timestamp": "2026-07-29T23:20:54Z"
+  },
+  {
+    "iteration": 2400,
+    "iterations_per_second": 3.605,
+    "device": "cuda",
+    "storage": {
+      "version": 2,
+      "kind": "decision-node-street-sharded",
+      "bucket_counts": [
+        169,
+        150,
+        150,
+        30
+      ],
+      "decision_counts": [
+        28,
+        512,
+        2925,
+        10241
+      ],
+      "row_counts": [
+        4732,
+        76800,
+        438750,
+        307230
+      ],
+      "total_rows": 827512,
+      "actions": 7,
+      "regret_bytes": 23170336,
+      "strategy_sum_bytes": 23170336,
+      "table_bytes_total": 46340672,
+      "legacy_dense_rows": 6237114,
+      "row_reduction_fraction": 0.867325
+    },
+    "action_profile": {
+      "name": "uniform-v1",
+      "profile_sha256": null,
+      "override_count": 0,
+      "sized_raise_nodes": {
+        "0": 11612,
+        "1": 1061,
+        "2": 432,
+        "3": 314,
+        "4": 287
+      }
+    },
+    "timestamp": "2026-07-29T23:21:50Z"
+  },
+  {
+    "iteration": 2600,
+    "iterations_per_second": 3.606,
+    "device": "cuda",
+    "storage": {
+      "version": 2,
+      "kind": "decision-node-street-sharded",
+      "bucket_counts": [
+        169,
+        150,
+        150,
+        30
+      ],
+      "decision_counts": [
+        28,
+        512,
+        2925,
+        10241
+      ],
+      "row_counts": [
+        4732,
+        76800,
+        438750,
+        307230
+      ],
+      "total_rows": 827512,
+      "actions": 7,
+      "regret_bytes": 23170336,
+      "strategy_sum_bytes": 23170336,
+      "table_bytes_total": 46340672,
+      "legacy_dense_rows": 6237114,
+      "row_reduction_fraction": 0.867325
+    },
+    "action_profile": {
+      "name": "uniform-v1",
+      "profile_sha256": null,
+      "override_count": 0,
+      "sized_raise_nodes": {
+        "0": 11612,
+        "1": 1061,
+        "2": 432,
+        "3": 314,
+        "4": 287
+      }
+    },
+    "timestamp": "2026-07-29T23:22:45Z"
+  },
+  {
+    "iteration": 2800,
+    "iterations_per_second": 3.311,
+    "device": "cuda",
+    "storage": {
+      "version": 2,
+      "kind": "decision-node-street-sharded",
+      "bucket_counts": [
+        169,
+        150,
+        150,
+        30
+      ],
+      "decision_counts": [
+        28,
+        512,
+        2925,
+        10241
+      ],
+      "row_counts": [
+        4732,
+        76800,
+        438750,
+        307230
+      ],
+      "total_rows": 827512,
+      "actions": 7,
+      "regret_bytes": 23170336,
+      "strategy_sum_bytes": 23170336,
+      "table_bytes_total": 46340672,
+      "legacy_dense_rows": 6237114,
+      "row_reduction_fraction": 0.867325
+    },
+    "action_profile": {
+      "name": "uniform-v1",
+      "profile_sha256": null,
+      "override_count": 0,
+      "sized_raise_nodes": {
+        "0": 11612,
+        "1": 1061,
+        "2": 432,
+        "3": 314,
+        "4": 287
+      }
+    },
+    "timestamp": "2026-07-29T23:23:46Z"
+  },
+  {
+    "iteration": 3000,
+    "iterations_per_second": 3.391,
+    "device": "cuda",
+    "storage": {
+      "version": 2,
+      "kind": "decision-node-street-sharded",
+      "bucket_counts": [
+        169,
+        150,
+        150,
+        30
+      ],
+      "decision_counts": [
+        28,
+        512,
+        2925,
+        10241
+      ],
+      "row_counts": [
+        4732,
+        76800,
+        438750,
+        307230
+      ],
+      "total_rows": 827512,
+      "actions": 7,
+      "regret_bytes": 23170336,
+      "strategy_sum_bytes": 23170336,
+      "table_bytes_total": 46340672,
+      "legacy_dense_rows": 6237114,
+      "row_reduction_fraction": 0.867325
+    },
+    "action_profile": {
+      "name": "uniform-v1",
+      "profile_sha256": null,
+      "override_count": 0,
+      "sized_raise_nodes": {
+        "0": 11612,
+        "1": 1061,
+        "2": 432,
+        "3": 314,
+        "4": 287
+      }
+    },
+    "timestamp": "2026-07-29T23:24:45Z"
+  },
+  {
+    "iteration": 3200,
+    "iterations_per_second": 3.604,
+    "device": "cuda",
+    "storage": {
+      "version": 2,
+      "kind": "decision-node-street-sharded",
+      "bucket_counts": [
+        169,
+        150,
+        150,
+        30
+      ],
+      "decision_counts": [
+        28,
+        512,
+        2925,
+        10241
+      ],
+      "row_counts": [
+        4732,
+        76800,
+        438750,
+        307230
+      ],
+      "total_rows": 827512,
+      "actions": 7,
+      "regret_bytes": 23170336,
+      "strategy_sum_bytes": 23170336,
+      "table_bytes_total": 46340672,
+      "legacy_dense_rows": 6237114,
+      "row_reduction_fraction": 0.867325
+    },
+    "action_profile": {
+      "name": "uniform-v1",
+      "profile_sha256": null,
+      "override_count": 0,
+      "sized_raise_nodes": {
+        "0": 11612,
+        "1": 1061,
+        "2": 432,
+        "3": 314,
+        "4": 287
+      }
+    },
+    "timestamp": "2026-07-29T23:25:40Z"
+  },
+  {
+    "iteration": 3400,
+    "iterations_per_second": 3.438,
+    "device": "cuda",
+    "storage": {
+      "version": 2,
+      "kind": "decision-node-street-sharded",
+      "bucket_counts": [
+        169,
+        150,
+        150,
+        30
+      ],
+      "decision_counts": [
+        28,
+        512,
+        2925,
+        10241
+      ],
+      "row_counts": [
+        4732,
+        76800,
+        438750,
+        307230
+      ],
+      "total_rows": 827512,
+      "actions": 7,
+      "regret_bytes": 23170336,
+      "strategy_sum_bytes": 23170336,
+      "table_bytes_total": 46340672,
+      "legacy_dense_rows": 6237114,
+      "row_reduction_fraction": 0.867325
+    },
+    "action_profile": {
+      "name": "uniform-v1",
+      "profile_sha256": null,
+      "override_count": 0,
+      "sized_raise_nodes": {
+        "0": 11612,
+        "1": 1061,
+        "2": 432,
+        "3": 314,
+        "4": 287
+      }
+    },
+    "timestamp": "2026-07-29T23:26:38Z"
+  },
+  {
+    "iteration": 3600,
+    "iterations_per_second": 3.178,
+    "device": "cuda",
+    "storage": {
+      "version": 2,
+      "kind": "decision-node-street-sharded",
+      "bucket_counts": [
+        169,
+        150,
+        150,
+        30
+      ],
+      "decision_counts": [
+        28,
+        512,
+        2925,
+        10241
+      ],
+      "row_counts": [
+        4732,
+        76800,
+        438750,
+        307230
+      ],
+      "total_rows": 827512,
+      "actions": 7,
+      "regret_bytes": 23170336,
+      "strategy_sum_bytes": 23170336,
+      "table_bytes_total": 46340672,
+      "legacy_dense_rows": 6237114,
+      "row_reduction_fraction": 0.867325
+    },
+    "action_profile": {
+      "name": "uniform-v1",
+      "profile_sha256": null,
+      "override_count": 0,
+      "sized_raise_nodes": {
+        "0": 11612,
+        "1": 1061,
+        "2": 432,
+        "3": 314,
+        "4": 287
+      }
+    },
+    "timestamp": "2026-07-29T23:27:41Z"
+  },
+  {
+    "iteration": 3800,
+    "iterations_per_second": 3.196,
+    "device": "cuda",
+    "storage": {
+      "version": 2,
+      "kind": "decision-node-street-sharded",
+      "bucket_counts": [
+        169,
+        150,
+        150,
+        30
+      ],
+      "decision_counts": [
+        28,
+        512,
+        2925,
+        10241
+      ],
+      "row_counts": [
+        4732,
+        76800,
+        438750,
+        307230
+      ],
+      "total_rows": 827512,
+      "actions": 7,
+      "regret_bytes": 23170336,
+      "strategy_sum_bytes": 23170336,
+      "table_bytes_total": 46340672,
+      "legacy_dense_rows": 6237114,
+      "row_reduction_fraction": 0.867325
+    },
+    "action_profile": {
+      "name": "uniform-v1",
+      "profile_sha256": null,
+      "override_count": 0,
+      "sized_raise_nodes": {
+        "0": 11612,
+        "1": 1061,
+        "2": 432,
+        "3": 314,
+        "4": 287
+      }
+    },
+    "timestamp": "2026-07-29T23:28:44Z"
+  },
+  {
+    "iteration": 4000,
+    "iterations_per_second": 3.107,
+    "device": "cuda",
+    "storage": {
+      "version": 2,
+      "kind": "decision-node-street-sharded",
+      "bucket_counts": [
+        169,
+        150,
+        150,
+        30
+      ],
+      "decision_counts": [
+        28,
+        512,
+        2925,
+        10241
+      ],
+      "row_counts": [
+        4732,
+        76800,
+        438750,
+        307230
+      ],
+      "total_rows": 827512,
+      "actions": 7,
+      "regret_bytes": 23170336,
+      "strategy_sum_bytes": 23170336,
+      "table_bytes_total": 46340672,
+      "legacy_dense_rows": 6237114,
+      "row_reduction_fraction": 0.867325
+    },
+    "action_profile": {
+      "name": "uniform-v1",
+      "profile_sha256": null,
+      "override_count": 0,
+      "sized_raise_nodes": {
+        "0": 11612,
+        "1": 1061,
+        "2": 432,
+        "3": 314,
+        "4": 287
+      }
+    },
+    "timestamp": "2026-07-29T23:29:48Z"
+  },
+  {
+    "iteration": 4200,
+    "iterations_per_second": 3.487,
+    "device": "cuda",
+    "storage": {
+      "version": 2,
+      "kind": "decision-node-street-sharded",
+      "bucket_counts": [
+        169,
+        150,
+        150,
+        30
+      ],
+      "decision_counts": [
+        28,
+        512,
+        2925,
+        10241
+      ],
+      "row_counts": [
+        4732,
+        76800,
+        438750,
+        307230
+      ],
+      "total_rows": 827512,
+      "actions": 7,
+      "regret_bytes": 23170336,
+      "strategy_sum_bytes": 23170336,
+      "table_bytes_total": 46340672,
+      "legacy_dense_rows": 6237114,
+      "row_reduction_fraction": 0.867325
+    },
+    "action_profile": {
+      "name": "uniform-v1",
+      "profile_sha256": null,
+      "override_count": 0,
+      "sized_raise_nodes": {
+        "0": 11612,
+        "1": 1061,
+        "2": 432,
+        "3": 314,
+        "4": 287
+      }
+    },
+    "timestamp": "2026-07-29T23:30:45Z"
+  },
+  {
+    "iteration": 4400,
+    "iterations_per_second": 3.598,
+    "device": "cuda",
+    "storage": {
+      "version": 2,
+      "kind": "decision-node-street-sharded",
+      "bucket_counts": [
+        169,
+        150,
+        150,
+        30
+      ],
+      "decision_counts": [
+        28,
+        512,
+        2925,
+        10241
+      ],
+      "row_counts": [
+        4732,
+        76800,
+        438750,
+        307230
+      ],
+      "total_rows": 827512,
+      "actions": 7,
+      "regret_bytes": 23170336,
+      "strategy_sum_bytes": 23170336,
+      "table_bytes_total": 46340672,
+      "legacy_dense_rows": 6237114,
+      "row_reduction_fraction": 0.867325
+    },
+    "action_profile": {
+      "name": "uniform-v1",
+      "profile_sha256": null,
+      "override_count": 0,
+      "sized_raise_nodes": {
+        "0": 11612,
+        "1": 1061,
+        "2": 432,
+        "3": 314,
+        "4": 287
+      }
+    },
+    "timestamp": "2026-07-29T23:31:41Z"
+  },
+  {
+    "iteration": 4600,
+    "iterations_per_second": 3.404,
+    "device": "cuda",
+    "storage": {
+      "version": 2,
+      "kind": "decision-node-street-sharded",
+      "bucket_counts": [
+        169,
+        150,
+        150,
+        30
+      ],
+      "decision_counts": [
+        28,
+        512,
+        2925,
+        10241
+      ],
+      "row_counts": [
+        4732,
+        76800,
+        438750,
+        307230
+      ],
+      "total_rows": 827512,
+      "actions": 7,
+      "regret_bytes": 23170336,
+      "strategy_sum_bytes": 23170336,
+      "table_bytes_total": 46340672,
+      "legacy_dense_rows": 6237114,
+      "row_reduction_fraction": 0.867325
+    },
+    "action_profile": {
+      "name": "uniform-v1",
+      "profile_sha256": null,
+      "override_count": 0,
+      "sized_raise_nodes": {
+        "0": 11612,
+        "1": 1061,
+        "2": 432,
+        "3": 314,
+        "4": 287
+      }
+    },
+    "timestamp": "2026-07-29T23:32:40Z"
+  },
+  {
+    "iteration": 4800,
+    "iterations_per_second": 3.21,
+    "device": "cuda",
+    "storage": {
+      "version": 2,
+      "kind": "decision-node-street-sharded",
+      "bucket_counts": [
+        169,
+        150,
+        150,
+        30
+      ],
+      "decision_counts": [
+        28,
+        512,
+        2925,
+        10241
+      ],
+      "row_counts": [
+        4732,
+        76800,
+        438750,
+        307230
+      ],
+      "total_rows": 827512,
+      "actions": 7,
+      "regret_bytes": 23170336,
+      "strategy_sum_bytes": 23170336,
+      "table_bytes_total": 46340672,
+      "legacy_dense_rows": 6237114,
+      "row_reduction_fraction": 0.867325
+    },
+    "action_profile": {
+      "name": "uniform-v1",
+      "profile_sha256": null,
+      "override_count": 0,
+      "sized_raise_nodes": {
+        "0": 11612,
+        "1": 1061,
+        "2": 432,
+        "3": 314,
+        "4": 287
+      }
+    },
+    "timestamp": "2026-07-29T23:33:42Z"
+  },
+  {
+    "iteration": 5000,
+    "iterations_per_second": 3.563,
+    "device": "cuda",
+    "storage": {
+      "version": 2,
+      "kind": "decision-node-street-sharded",
+      "bucket_counts": [
+        169,
+        150,
+        150,
+        30
+      ],
+      "decision_counts": [
+        28,
+        512,
+        2925,
+        10241
+      ],
+      "row_counts": [
+        4732,
+        76800,
+        438750,
+        307230
+      ],
+      "total_rows": 827512,
+      "actions": 7,
+      "regret_bytes": 23170336,
+      "strategy_sum_bytes": 23170336,
+      "table_bytes_total": 46340672,
+      "legacy_dense_rows": 6237114,
+      "row_reduction_fraction": 0.867325
+    },
+    "action_profile": {
+      "name": "uniform-v1",
+      "profile_sha256": null,
+      "override_count": 0,
+      "sized_raise_nodes": {
+        "0": 11612,
+        "1": 1061,
+        "2": 432,
+        "3": 314,
+        "4": 287
+      }
+    },
+    "timestamp": "2026-07-29T23:34:38Z"
+  },
+  {
+    "iteration": 6000,
+    "iterations_per_second": 3.647,
+    "device": "cuda",
+    "storage": {
+      "version": 2,
+      "kind": "decision-node-street-sharded",
+      "bucket_counts": [
+        169,
+        150,
+        150,
+        30
+      ],
+      "decision_counts": [
+        28,
+        512,
+        2925,
+        10241
+      ],
+      "row_counts": [
+        4732,
+        76800,
+        438750,
+        307230
+      ],
+      "total_rows": 827512,
+      "actions": 7,
+      "regret_bytes": 23170336,
+      "strategy_sum_bytes": 23170336,
+      "table_bytes_total": 46340672,
+      "legacy_dense_rows": 6237114,
+      "row_reduction_fraction": 0.867325
+    },
+    "action_profile": {
+      "name": "uniform-v1",
+      "profile_sha256": null,
+      "override_count": 0,
+      "sized_raise_nodes": {
+        "0": 11612,
+        "1": 1061,
+        "2": 432,
+        "3": 314,
+        "4": 287
+      }
+    },
+    "timestamp": "2026-07-29T23:50:01Z"
+  },
+  {
+    "iteration": 7000,
+    "iterations_per_second": 3.651,
+    "device": "cuda",
+    "storage": {
+      "version": 2,
+      "kind": "decision-node-street-sharded",
+      "bucket_counts": [
+        169,
+        150,
+        150,
+        30
+      ],
+      "decision_counts": [
+        28,
+        512,
+        2925,
+        10241
+      ],
+      "row_counts": [
+        4732,
+        76800,
+        438750,
+        307230
+      ],
+      "total_rows": 827512,
+      "actions": 7,
+      "regret_bytes": 23170336,
+      "strategy_sum_bytes": 23170336,
+      "table_bytes_total": 46340672,
+      "legacy_dense_rows": 6237114,
+      "row_reduction_fraction": 0.867325
+    },
+    "action_profile": {
+      "name": "uniform-v1",
+      "profile_sha256": null,
+      "override_count": 0,
+      "sized_raise_nodes": {
+        "0": 11612,
+        "1": 1061,
+        "2": 432,
+        "3": 314,
+        "4": 287
+      }
+    },
+    "timestamp": "2026-07-29T23:54:35Z"
+  },
+  {
+    "iteration": 8000,
+    "iterations_per_second": 3.651,
+    "device": "cuda",
+    "storage": {
+      "version": 2,
+      "kind": "decision-node-street-sharded",
+      "bucket_counts": [
+        169,
+        150,
+        150,
+        30
+      ],
+      "decision_counts": [
+        28,
+        512,
+        2925,
+        10241
+      ],
+      "row_counts": [
+        4732,
+        76800,
+        438750,
+        307230
+      ],
+      "total_rows": 827512,
+      "actions": 7,
+      "regret_bytes": 23170336,
+      "strategy_sum_bytes": 23170336,
+      "table_bytes_total": 46340672,
+      "legacy_dense_rows": 6237114,
+      "row_reduction_fraction": 0.867325
+    },
+    "action_profile": {
+      "name": "uniform-v1",
+      "profile_sha256": null,
+      "override_count": 0,
+      "sized_raise_nodes": {
+        "0": 11612,
+        "1": 1061,
+        "2": 432,
+        "3": 314,
+        "4": 287
+      }
+    },
+    "timestamp": "2026-07-29T23:59:09Z"
+  },
+  {
+    "iteration": 9000,
+    "iterations_per_second": 3.651,
+    "device": "cuda",
+    "storage": {
+      "version": 2,
+      "kind": "decision-node-street-sharded",
+      "bucket_counts": [
+        169,
+        150,
+        150,
+        30
+      ],
+      "decision_counts": [
+        28,
+        512,
+        2925,
+        10241
+      ],
+      "row_counts": [
+        4732,
+        76800,
+        438750,
+        307230
+      ],
+      "total_rows": 827512,
+      "actions": 7,
+      "regret_bytes": 23170336,
+      "strategy_sum_bytes": 23170336,
+      "table_bytes_total": 46340672,
+      "legacy_dense_rows": 6237114,
+      "row_reduction_fraction": 0.867325
+    },
+    "action_profile": {
+      "name": "uniform-v1",
+      "profile_sha256": null,
+      "override_count": 0,
+      "sized_raise_nodes": {
+        "0": 11612,
+        "1": 1061,
+        "2": 432,
+        "3": 314,
+        "4": 287
+      }
+    },
+    "timestamp": "2026-07-30T00:03:43Z"
+  },
+  {
+    "iteration": 10000,
+    "iterations_per_second": 3.651,
+    "device": "cuda",
+    "storage": {
+      "version": 2,
+      "kind": "decision-node-street-sharded",
+      "bucket_counts": [
+        169,
+        150,
+        150,
+        30
+      ],
+      "decision_counts": [
+        28,
+        512,
+        2925,
+        10241
+      ],
+      "row_counts": [
+        4732,
+        76800,
+        438750,
+        307230
+      ],
+      "total_rows": 827512,
+      "actions": 7,
+      "regret_bytes": 23170336,
+      "strategy_sum_bytes": 23170336,
+      "table_bytes_total": 46340672,
+      "legacy_dense_rows": 6237114,
+      "row_reduction_fraction": 0.867325
+    },
+    "action_profile": {
+      "name": "uniform-v1",
+      "profile_sha256": null,
+      "override_count": 0,
+      "sized_raise_nodes": {
+        "0": 11612,
+        "1": 1061,
+        "2": 432,
+        "3": 314,
+        "4": 287
+      }
+    },
+    "timestamp": "2026-07-30T00:08:17Z"
+  },
+  {
+    "iteration": 11000,
+    "iterations_per_second": 3.644,
+    "device": "cuda",
+    "storage": {
+      "version": 2,
+      "kind": "decision-node-street-sharded",
+      "bucket_counts": [
+        169,
+        150,
+        150,
+        30
+      ],
+      "decision_counts": [
+        28,
+        512,
+        2925,
+        10241
+      ],
+      "row_counts": [
+        4732,
+        76800,
+        438750,
+        307230
+      ],
+      "total_rows": 827512,
+      "actions": 7,
+      "regret_bytes": 23170336,
+      "strategy_sum_bytes": 23170336,
+      "table_bytes_total": 46340672,
+      "legacy_dense_rows": 6237114,
+      "row_reduction_fraction": 0.867325
+    },
+    "action_profile": {
+      "name": "uniform-v1",
+      "profile_sha256": null,
+      "override_count": 0,
+      "sized_raise_nodes": {
+        "0": 11612,
+        "1": 1061,
+        "2": 432,
+        "3": 314,
+        "4": 287
+      }
+    },
+    "timestamp": "2026-07-30T00:13:25Z"
+  },
+  {
+    "iteration": 12000,
+    "iterations_per_second": 3.647,
+    "device": "cuda",
+    "storage": {
+      "version": 2,
+      "kind": "decision-node-street-sharded",
+      "bucket_counts": [
+        169,
+        150,
+        150,
+        30
+      ],
+      "decision_counts": [
+        28,
+        512,
+        2925,
+        10241
+      ],
+      "row_counts": [
+        4732,
+        76800,
+        438750,
+        307230
+      ],
+      "total_rows": 827512,
+      "actions": 7,
+      "regret_bytes": 23170336,
+      "strategy_sum_bytes": 23170336,
+      "table_bytes_total": 46340672,
+      "legacy_dense_rows": 6237114,
+      "row_reduction_fraction": 0.867325
+    },
+    "action_profile": {
+      "name": "uniform-v1",
+      "profile_sha256": null,
+      "override_count": 0,
+      "sized_raise_nodes": {
+        "0": 11612,
+        "1": 1061,
+        "2": 432,
+        "3": 314,
+        "4": 287
+      }
+    },
+    "timestamp": "2026-07-30T00:25:31Z"
+  },
+  {
+    "iteration": 13000,
+    "iterations_per_second": 3.652,
+    "device": "cuda",
+    "storage": {
+      "version": 2,
+      "kind": "decision-node-street-sharded",
+      "bucket_counts": [
+        169,
+        150,
+        150,
+        30
+      ],
+      "decision_counts": [
+        28,
+        512,
+        2925,
+        10241
+      ],
+      "row_counts": [
+        4732,
+        76800,
+        438750,
+        307230
+      ],
+      "total_rows": 827512,
+      "actions": 7,
+      "regret_bytes": 23170336,
+      "strategy_sum_bytes": 23170336,
+      "table_bytes_total": 46340672,
+      "legacy_dense_rows": 6237114,
+      "row_reduction_fraction": 0.867325
+    },
+    "action_profile": {
+      "name": "uniform-v1",
+      "profile_sha256": null,
+      "override_count": 0,
+      "sized_raise_nodes": {
+        "0": 11612,
+        "1": 1061,
+        "2": 432,
+        "3": 314,
+        "4": 287
+      }
+    },
+    "timestamp": "2026-07-30T00:30:05Z"
+  },
+  {
+    "iteration": 14000,
+    "iterations_per_second": 3.651,
+    "device": "cuda",
+    "storage": {
+      "version": 2,
+      "kind": "decision-node-street-sharded",
+      "bucket_counts": [
+        169,
+        150,
+        150,
+        30
+      ],
+      "decision_counts": [
+        28,
+        512,
+        2925,
+        10241
+      ],
+      "row_counts": [
+        4732,
+        76800,
+        438750,
+        307230
+      ],
+      "total_rows": 827512,
+      "actions": 7,
+      "regret_bytes": 23170336,
+      "strategy_sum_bytes": 23170336,
+      "table_bytes_total": 46340672,
+      "legacy_dense_rows": 6237114,
+      "row_reduction_fraction": 0.867325
+    },
+    "action_profile": {
+      "name": "uniform-v1",
+      "profile_sha256": null,
+      "override_count": 0,
+      "sized_raise_nodes": {
+        "0": 11612,
+        "1": 1061,
+        "2": 432,
+        "3": 314,
+        "4": 287
+      }
+    },
+    "timestamp": "2026-07-30T00:34:39Z"
+  },
+  {
+    "iteration": 15000,
+    "iterations_per_second": 3.652,
+    "device": "cuda",
+    "storage": {
+      "version": 2,
+      "kind": "decision-node-street-sharded",
+      "bucket_counts": [
+        169,
+        150,
+        150,
+        30
+      ],
+      "decision_counts": [
+        28,
+        512,
+        2925,
+        10241
+      ],
+      "row_counts": [
+        4732,
+        76800,
+        438750,
+        307230
+      ],
+      "total_rows": 827512,
+      "actions": 7,
+      "regret_bytes": 23170336,
+      "strategy_sum_bytes": 23170336,
+      "table_bytes_total": 46340672,
+      "legacy_dense_rows": 6237114,
+      "row_reduction_fraction": 0.867325
+    },
+    "action_profile": {
+      "name": "uniform-v1",
+      "profile_sha256": null,
+      "override_count": 0,
+      "sized_raise_nodes": {
+        "0": 11612,
+        "1": 1061,
+        "2": 432,
+        "3": 314,
+        "4": 287
+      }
+    },
+    "timestamp": "2026-07-30T00:39:13Z"
+  },
+  {
+    "iteration": 16000,
+    "iterations_per_second": 3.652,
+    "device": "cuda",
+    "storage": {
+      "version": 2,
+      "kind": "decision-node-street-sharded",
+      "bucket_counts": [
+        169,
+        150,
+        150,
+        30
+      ],
+      "decision_counts": [
+        28,
+        512,
+        2925,
+        10241
+      ],
+      "row_counts": [
+        4732,
+        76800,
+        438750,
+        307230
+      ],
+      "total_rows": 827512,
+      "actions": 7,
+      "regret_bytes": 23170336,
+      "strategy_sum_bytes": 23170336,
+      "table_bytes_total": 46340672,
+      "legacy_dense_rows": 6237114,
+      "row_reduction_fraction": 0.867325
+    },
+    "action_profile": {
+      "name": "uniform-v1",
+      "profile_sha256": null,
+      "override_count": 0,
+      "sized_raise_nodes": {
+        "0": 11612,
+        "1": 1061,
+        "2": 432,
+        "3": 314,
+        "4": 287
+      }
+    },
+    "timestamp": "2026-07-30T00:43:47Z"
+  },
+  {
+    "iteration": 17000,
+    "iterations_per_second": 3.651,
+    "device": "cuda",
+    "storage": {
+      "version": 2,
+      "kind": "decision-node-street-sharded",
+      "bucket_counts": [
+        169,
+        150,
+        150,
+        30
+      ],
+      "decision_counts": [
+        28,
+        512,
+        2925,
+        10241
+      ],
+      "row_counts": [
+        4732,
+        76800,
+        438750,
+        307230
+      ],
+      "total_rows": 827512,
+      "actions": 7,
+      "regret_bytes": 23170336,
+      "strategy_sum_bytes": 23170336,
+      "table_bytes_total": 46340672,
+      "legacy_dense_rows": 6237114,
+      "row_reduction_fraction": 0.867325
+    },
+    "action_profile": {
+      "name": "uniform-v1",
+      "profile_sha256": null,
+      "override_count": 0,
+      "sized_raise_nodes": {
+        "0": 11612,
+        "1": 1061,
+        "2": 432,
+        "3": 314,
+        "4": 287
+      }
+    },
+    "timestamp": "2026-07-30T00:48:21Z"
+  },
+  {
+    "iteration": 18000,
+    "iterations_per_second": 3.65,
+    "device": "cuda",
+    "storage": {
+      "version": 2,
+      "kind": "decision-node-street-sharded",
+      "bucket_counts": [
+        169,
+        150,
+        150,
+        30
+      ],
+      "decision_counts": [
+        28,
+        512,
+        2925,
+        10241
+      ],
+      "row_counts": [
+        4732,
+        76800,
+        438750,
+        307230
+      ],
+      "total_rows": 827512,
+      "actions": 7,
+      "regret_bytes": 23170336,
+      "strategy_sum_bytes": 23170336,
+      "table_bytes_total": 46340672,
+      "legacy_dense_rows": 6237114,
+      "row_reduction_fraction": 0.867325
+    },
+    "action_profile": {
+      "name": "uniform-v1",
+      "profile_sha256": null,
+      "override_count": 0,
+      "sized_raise_nodes": {
+        "0": 11612,
+        "1": 1061,
+        "2": 432,
+        "3": 314,
+        "4": 287
+      }
+    },
+    "timestamp": "2026-07-30T00:52:55Z"
+  },
+  {
+    "iteration": 19000,
+    "iterations_per_second": 3.65,
+    "device": "cuda",
+    "storage": {
+      "version": 2,
+      "kind": "decision-node-street-sharded",
+      "bucket_counts": [
+        169,
+        150,
+        150,
+        30
+      ],
+      "decision_counts": [
+        28,
+        512,
+        2925,
+        10241
+      ],
+      "row_counts": [
+        4732,
+        76800,
+        438750,
+        307230
+      ],
+      "total_rows": 827512,
+      "actions": 7,
+      "regret_bytes": 23170336,
+      "strategy_sum_bytes": 23170336,
+      "table_bytes_total": 46340672,
+      "legacy_dense_rows": 6237114,
+      "row_reduction_fraction": 0.867325
+    },
+    "action_profile": {
+      "name": "uniform-v1",
+      "profile_sha256": null,
+      "override_count": 0,
+      "sized_raise_nodes": {
+        "0": 11612,
+        "1": 1061,
+        "2": 432,
+        "3": 314,
+        "4": 287
+      }
+    },
+    "timestamp": "2026-07-30T00:57:29Z"
+  },
+  {
+    "iteration": 20000,
+    "iterations_per_second": 3.649,
+    "device": "cuda",
+    "storage": {
+      "version": 2,
+      "kind": "decision-node-street-sharded",
+      "bucket_counts": [
+        169,
+        150,
+        150,
+        30
+      ],
+      "decision_counts": [
+        28,
+        512,
+        2925,
+        10241
+      ],
+      "row_counts": [
+        4732,
+        76800,
+        438750,
+        307230
+      ],
+      "total_rows": 827512,
+      "actions": 7,
+      "regret_bytes": 23170336,
+      "strategy_sum_bytes": 23170336,
+      "table_bytes_total": 46340672,
+      "legacy_dense_rows": 6237114,
+      "row_reduction_fraction": 0.867325
+    },
+    "action_profile": {
+      "name": "uniform-v1",
+      "profile_sha256": null,
+      "override_count": 0,
+      "sized_raise_nodes": {
+        "0": 11612,
+        "1": 1061,
+        "2": 432,
+        "3": 314,
+        "4": 287
+      }
+    },
+    "timestamp": "2026-07-30T01:02:03Z"
+  },
+  {
+    "iteration": 21000,
+    "iterations_per_second": 3.648,
+    "device": "cuda",
+    "storage": {
+      "version": 2,
+      "kind": "decision-node-street-sharded",
+      "bucket_counts": [
+        169,
+        150,
+        150,
+        30
+      ],
+      "decision_counts": [
+        28,
+        512,
+        2925,
+        10241
+      ],
+      "row_counts": [
+        4732,
+        76800,
+        438750,
+        307230
+      ],
+      "total_rows": 827512,
+      "actions": 7,
+      "regret_bytes": 23170336,
+      "strategy_sum_bytes": 23170336,
+      "table_bytes_total": 46340672,
+      "legacy_dense_rows": 6237114,
+      "row_reduction_fraction": 0.867325
+    },
+    "action_profile": {
+      "name": "uniform-v1",
+      "profile_sha256": null,
+      "override_count": 0,
+      "sized_raise_nodes": {
+        "0": 11612,
+        "1": 1061,
+        "2": 432,
+        "3": 314,
+        "4": 287
+      }
+    },
+    "timestamp": "2026-07-30T01:07:11Z"
+  },
+  {
+    "iteration": 22000,
+    "iterations_per_second": 3.651,
+    "device": "cuda",
+    "storage": {
+      "version": 2,
+      "kind": "decision-node-street-sharded",
+      "bucket_counts": [
+        169,
+        150,
+        150,
+        30
+      ],
+      "decision_counts": [
+        28,
+        512,
+        2925,
+        10241
+      ],
+      "row_counts": [
+        4732,
+        76800,
+        438750,
+        307230
+      ],
+      "total_rows": 827512,
+      "actions": 7,
+      "regret_bytes": 23170336,
+      "strategy_sum_bytes": 23170336,
+      "table_bytes_total": 46340672,
+      "legacy_dense_rows": 6237114,
+      "row_reduction_fraction": 0.867325
+    },
+    "action_profile": {
+      "name": "uniform-v1",
+      "profile_sha256": null,
+      "override_count": 0,
+      "sized_raise_nodes": {
+        "0": 11612,
+        "1": 1061,
+        "2": 432,
+        "3": 314,
+        "4": 287
+      }
+    },
+    "timestamp": "2026-07-30T01:11:45Z"
+  },
+  {
+    "iteration": 23000,
+    "iterations_per_second": 3.651,
+    "device": "cuda",
+    "storage": {
+      "version": 2,
+      "kind": "decision-node-street-sharded",
+      "bucket_counts": [
+        169,
+        150,
+        150,
+        30
+      ],
+      "decision_counts": [
+        28,
+        512,
+        2925,
+        10241
+      ],
+      "row_counts": [
+        4732,
+        76800,
+        438750,
+        307230
+      ],
+      "total_rows": 827512,
+      "actions": 7,
+      "regret_bytes": 23170336,
+      "strategy_sum_bytes": 23170336,
+      "table_bytes_total": 46340672,
+      "legacy_dense_rows": 6237114,
+      "row_reduction_fraction": 0.867325
+    },
+    "action_profile": {
+      "name": "uniform-v1",
+      "profile_sha256": null,
+      "override_count": 0,
+      "sized_raise_nodes": {
+        "0": 11612,
+        "1": 1061,
+        "2": 432,
+        "3": 314,
+        "4": 287
+      }
+    },
+    "timestamp": "2026-07-30T01:16:19Z"
+  },
+  {
+    "iteration": 24000,
+    "iterations_per_second": 3.634,
+    "device": "cuda",
+    "storage": {
+      "version": 2,
+      "kind": "decision-node-street-sharded",
+      "bucket_counts": [
+        169,
+        150,
+        150,
+        30
+      ],
+      "decision_counts": [
+        28,
+        512,
+        2925,
+        10241
+      ],
+      "row_counts": [
+        4732,
+        76800,
+        438750,
+        307230
+      ],
+      "total_rows": 827512,
+      "actions": 7,
+      "regret_bytes": 23170336,
+      "strategy_sum_bytes": 23170336,
+      "table_bytes_total": 46340672,
+      "legacy_dense_rows": 6237114,
+      "row_reduction_fraction": 0.867325
+    },
+    "action_profile": {
+      "name": "uniform-v1",
+      "profile_sha256": null,
+      "override_count": 0,
+      "sized_raise_nodes": {
+        "0": 11612,
+        "1": 1061,
+        "2": 432,
+        "3": 314,
+        "4": 287
+      }
+    },
+    "timestamp": "2026-07-30T14:07:00Z"
+  },
+  {
+    "iteration": 25000,
+    "iterations_per_second": 3.637,
+    "device": "cuda",
+    "storage": {
+      "version": 2,
+      "kind": "decision-node-street-sharded",
+      "bucket_counts": [
+        169,
+        150,
+        150,
+        30
+      ],
+      "decision_counts": [
+        28,
+        512,
+        2925,
+        10241
+      ],
+      "row_counts": [
+        4732,
+        76800,
+        438750,
+        307230
+      ],
+      "total_rows": 827512,
+      "actions": 7,
+      "regret_bytes": 23170336,
+      "strategy_sum_bytes": 23170336,
+      "table_bytes_total": 46340672,
+      "legacy_dense_rows": 6237114,
+      "row_reduction_fraction": 0.867325
+    },
+    "action_profile": {
+      "name": "uniform-v1",
+      "profile_sha256": null,
+      "override_count": 0,
+      "sized_raise_nodes": {
+        "0": 11612,
+        "1": 1061,
+        "2": 432,
+        "3": 314,
+        "4": 287
+      }
+    },
+    "timestamp": "2026-07-30T14:11:35Z"
+  },
+  {
+    "iteration": 26000,
+    "iterations_per_second": 3.636,
+    "device": "cuda",
+    "storage": {
+      "version": 2,
+      "kind": "decision-node-street-sharded",
+      "bucket_counts": [
+        169,
+        150,
+        150,
+        30
+      ],
+      "decision_counts": [
+        28,
+        512,
+        2925,
+        10241
+      ],
+      "row_counts": [
+        4732,
+        76800,
+        438750,
+        307230
+      ],
+      "total_rows": 827512,
+      "actions": 7,
+      "regret_bytes": 23170336,
+      "strategy_sum_bytes": 23170336,
+      "table_bytes_total": 46340672,
+      "legacy_dense_rows": 6237114,
+      "row_reduction_fraction": 0.867325
+    },
+    "action_profile": {
+      "name": "uniform-v1",
+      "profile_sha256": null,
+      "override_count": 0,
+      "sized_raise_nodes": {
+        "0": 11612,
+        "1": 1061,
+        "2": 432,
+        "3": 314,
+        "4": 287
+      }
+    },
+    "timestamp": "2026-07-30T14:16:10Z"
+  },
+  {
+    "iteration": 27000,
+    "iterations_per_second": 3.637,
+    "device": "cuda",
+    "storage": {
+      "version": 2,
+      "kind": "decision-node-street-sharded",
+      "bucket_counts": [
+        169,
+        150,
+        150,
+        30
+      ],
+      "decision_counts": [
+        28,
+        512,
+        2925,
+        10241
+      ],
+      "row_counts": [
+        4732,
+        76800,
+        438750,
+        307230
+      ],
+      "total_rows": 827512,
+      "actions": 7,
+      "regret_bytes": 23170336,
+      "strategy_sum_bytes": 23170336,
+      "table_bytes_total": 46340672,
+      "legacy_dense_rows": 6237114,
+      "row_reduction_fraction": 0.867325
+    },
+    "action_profile": {
+      "name": "uniform-v1",
+      "profile_sha256": null,
+      "override_count": 0,
+      "sized_raise_nodes": {
+        "0": 11612,
+        "1": 1061,
+        "2": 432,
+        "3": 314,
+        "4": 287
+      }
+    },
+    "timestamp": "2026-07-30T14:20:45Z"
+  },
+  {
+    "iteration": 28000,
+    "iterations_per_second": 3.64,
+    "device": "cuda",
+    "storage": {
+      "version": 2,
+      "kind": "decision-node-street-sharded",
+      "bucket_counts": [
+        169,
+        150,
+        150,
+        30
+      ],
+      "decision_counts": [
+        28,
+        512,
+        2925,
+        10241
+      ],
+      "row_counts": [
+        4732,
+        76800,
+        438750,
+        307230
+      ],
+      "total_rows": 827512,
+      "actions": 7,
+      "regret_bytes": 23170336,
+      "strategy_sum_bytes": 23170336,
+      "table_bytes_total": 46340672,
+      "legacy_dense_rows": 6237114,
+      "row_reduction_fraction": 0.867325
+    },
+    "action_profile": {
+      "name": "uniform-v1",
+      "profile_sha256": null,
+      "override_count": 0,
+      "sized_raise_nodes": {
+        "0": 11612,
+        "1": 1061,
+        "2": 432,
+        "3": 314,
+        "4": 287
+      }
+    },
+    "timestamp": "2026-07-30T14:25:19Z"
+  },
+  {
+    "iteration": 29000,
+    "iterations_per_second": 3.638,
+    "device": "cuda",
+    "storage": {
+      "version": 2,
+      "kind": "decision-node-street-sharded",
+      "bucket_counts": [
+        169,
+        150,
+        150,
+        30
+      ],
+      "decision_counts": [
+        28,
+        512,
+        2925,
+        10241
+      ],
+      "row_counts": [
+        4732,
+        76800,
+        438750,
+        307230
+      ],
+      "total_rows": 827512,
+      "actions": 7,
+      "regret_bytes": 23170336,
+      "strategy_sum_bytes": 23170336,
+      "table_bytes_total": 46340672,
+      "legacy_dense_rows": 6237114,
+      "row_reduction_fraction": 0.867325
+    },
+    "action_profile": {
+      "name": "uniform-v1",
+      "profile_sha256": null,
+      "override_count": 0,
+      "sized_raise_nodes": {
+        "0": 11612,
+        "1": 1061,
+        "2": 432,
+        "3": 314,
+        "4": 287
+      }
+    },
+    "timestamp": "2026-07-30T14:29:54Z"
+  },
+  {
+    "iteration": 30000,
+    "iterations_per_second": 3.638,
+    "device": "cuda",
+    "storage": {
+      "version": 2,
+      "kind": "decision-node-street-sharded",
+      "bucket_counts": [
+        169,
+        150,
+        150,
+        30
+      ],
+      "decision_counts": [
+        28,
+        512,
+        2925,
+        10241
+      ],
+      "row_counts": [
+        4732,
+        76800,
+        438750,
+        307230
+      ],
+      "total_rows": 827512,
+      "actions": 7,
+      "regret_bytes": 23170336,
+      "strategy_sum_bytes": 23170336,
+      "table_bytes_total": 46340672,
+      "legacy_dense_rows": 6237114,
+      "row_reduction_fraction": 0.867325
+    },
+    "action_profile": {
+      "name": "uniform-v1",
+      "profile_sha256": null,
+      "override_count": 0,
+      "sized_raise_nodes": {
+        "0": 11612,
+        "1": 1061,
+        "2": 432,
+        "3": 314,
+        "4": 287
+      }
+    },
+    "timestamp": "2026-07-30T14:34:29Z"
+  },
+  {
+    "iteration": 31000,
+    "iterations_per_second": 3.649,
+    "device": "cuda",
+    "storage": {
+      "version": 2,
+      "kind": "decision-node-street-sharded",
+      "bucket_counts": [
+        169,
+        150,
+        150,
+        30
+      ],
+      "decision_counts": [
+        28,
+        512,
+        2925,
+        10241
+      ],
+      "row_counts": [
+        4732,
+        76800,
+        438750,
+        307230
+      ],
+      "total_rows": 827512,
+      "actions": 7,
+      "regret_bytes": 23170336,
+      "strategy_sum_bytes": 23170336,
+      "table_bytes_total": 46340672,
+      "legacy_dense_rows": 6237114,
+      "row_reduction_fraction": 0.867325
+    },
+    "action_profile": {
+      "name": "uniform-v1",
+      "profile_sha256": null,
+      "override_count": 0,
+      "sized_raise_nodes": {
+        "0": 11612,
+        "1": 1061,
+        "2": 432,
+        "3": 314,
+        "4": 287
+      }
+    },
+    "timestamp": "2026-07-30T14:42:48Z"
+  },
+  {
+    "iteration": 32000,
+    "iterations_per_second": 3.653,
+    "device": "cuda",
+    "storage": {
+      "version": 2,
+      "kind": "decision-node-street-sharded",
+      "bucket_counts": [
+        169,
+        150,
+        150,
+        30
+      ],
+      "decision_counts": [
+        28,
+        512,
+        2925,
+        10241
+      ],
+      "row_counts": [
+        4732,
+        76800,
+        438750,
+        307230
+      ],
+      "total_rows": 827512,
+      "actions": 7,
+      "regret_bytes": 23170336,
+      "strategy_sum_bytes": 23170336,
+      "table_bytes_total": 46340672,
+      "legacy_dense_rows": 6237114,
+      "row_reduction_fraction": 0.867325
+    },
+    "action_profile": {
+      "name": "uniform-v1",
+      "profile_sha256": null,
+      "override_count": 0,
+      "sized_raise_nodes": {
+        "0": 11612,
+        "1": 1061,
+        "2": 432,
+        "3": 314,
+        "4": 287
+      }
+    },
+    "timestamp": "2026-07-30T14:47:22Z"
+  },
+  {
+    "iteration": 33000,
+    "iterations_per_second": 3.653,
+    "device": "cuda",
+    "storage": {
+      "version": 2,
+      "kind": "decision-node-street-sharded",
+      "bucket_counts": [
+        169,
+        150,
+        150,
+        30
+      ],
+      "decision_counts": [
+        28,
+        512,
+        2925,
+        10241
+      ],
+      "row_counts": [
+        4732,
+        76800,
+        438750,
+        307230
+      ],
+      "total_rows": 827512,
+      "actions": 7,
+      "regret_bytes": 23170336,
+      "strategy_sum_bytes": 23170336,
+      "table_bytes_total": 46340672,
+      "legacy_dense_rows": 6237114,
+      "row_reduction_fraction": 0.867325
+    },
+    "action_profile": {
+      "name": "uniform-v1",
+      "profile_sha256": null,
+      "override_count": 0,
+      "sized_raise_nodes": {
+        "0": 11612,
+        "1": 1061,
+        "2": 432,
+        "3": 314,
+        "4": 287
+      }
+    },
+    "timestamp": "2026-07-30T14:51:56Z"
+  },
+  {
+    "iteration": 34000,
+    "iterations_per_second": 3.653,
+    "device": "cuda",
+    "storage": {
+      "version": 2,
+      "kind": "decision-node-street-sharded",
+      "bucket_counts": [
+        169,
+        150,
+        150,
+        30
+      ],
+      "decision_counts": [
+        28,
+        512,
+        2925,
+        10241
+      ],
+      "row_counts": [
+        4732,
+        76800,
+        438750,
+        307230
+      ],
+      "total_rows": 827512,
+      "actions": 7,
+      "regret_bytes": 23170336,
+      "strategy_sum_bytes": 23170336,
+      "table_bytes_total": 46340672,
+      "legacy_dense_rows": 6237114,
+      "row_reduction_fraction": 0.867325
+    },
+    "action_profile": {
+      "name": "uniform-v1",
+      "profile_sha256": null,
+      "override_count": 0,
+      "sized_raise_nodes": {
+        "0": 11612,
+        "1": 1061,
+        "2": 432,
+        "3": 314,
+        "4": 287
+      }
+    },
+    "timestamp": "2026-07-30T14:56:30Z"
+  },
+  {
+    "iteration": 35000,
+    "iterations_per_second": 3.653,
+    "device": "cuda",
+    "storage": {
+      "version": 2,
+      "kind": "decision-node-street-sharded",
+      "bucket_counts": [
+        169,
+        150,
+        150,
+        30
+      ],
+      "decision_counts": [
+        28,
+        512,
+        2925,
+        10241
+      ],
+      "row_counts": [
+        4732,
+        76800,
+        438750,
+        307230
+      ],
+      "total_rows": 827512,
+      "actions": 7,
+      "regret_bytes": 23170336,
+      "strategy_sum_bytes": 23170336,
+      "table_bytes_total": 46340672,
+      "legacy_dense_rows": 6237114,
+      "row_reduction_fraction": 0.867325
+    },
+    "action_profile": {
+      "name": "uniform-v1",
+      "profile_sha256": null,
+      "override_count": 0,
+      "sized_raise_nodes": {
+        "0": 11612,
+        "1": 1061,
+        "2": 432,
+        "3": 314,
+        "4": 287
+      }
+    },
+    "timestamp": "2026-07-30T15:01:03Z"
+  },
+  {
+    "iteration": 36000,
+    "iterations_per_second": 3.652,
+    "device": "cuda",
+    "storage": {
+      "version": 2,
+      "kind": "decision-node-street-sharded",
+      "bucket_counts": [
+        169,
+        150,
+        150,
+        30
+      ],
+      "decision_counts": [
+        28,
+        512,
+        2925,
+        10241
+      ],
+      "row_counts": [
+        4732,
+        76800,
+        438750,
+        307230
+      ],
+      "total_rows": 827512,
+      "actions": 7,
+      "regret_bytes": 23170336,
+      "strategy_sum_bytes": 23170336,
+      "table_bytes_total": 46340672,
+      "legacy_dense_rows": 6237114,
+      "row_reduction_fraction": 0.867325
+    },
+    "action_profile": {
+      "name": "uniform-v1",
+      "profile_sha256": null,
+      "override_count": 0,
+      "sized_raise_nodes": {
+        "0": 11612,
+        "1": 1061,
+        "2": 432,
+        "3": 314,
+        "4": 287
+      }
+    },
+    "timestamp": "2026-07-30T15:05:37Z"
+  },
+  {
+    "iteration": 37000,
+    "iterations_per_second": 3.653,
+    "device": "cuda",
+    "storage": {
+      "version": 2,
+      "kind": "decision-node-street-sharded",
+      "bucket_counts": [
+        169,
+        150,
+        150,
+        30
+      ],
+      "decision_counts": [
+        28,
+        512,
+        2925,
+        10241
+      ],
+      "row_counts": [
+        4732,
+        76800,
+        438750,
+        307230
+      ],
+      "total_rows": 827512,
+      "actions": 7,
+      "regret_bytes": 23170336,
+      "strategy_sum_bytes": 23170336,
+      "table_bytes_total": 46340672,
+      "legacy_dense_rows": 6237114,
+      "row_reduction_fraction": 0.867325
+    },
+    "action_profile": {
+      "name": "uniform-v1",
+      "profile_sha256": null,
+      "override_count": 0,
+      "sized_raise_nodes": {
+        "0": 11612,
+        "1": 1061,
+        "2": 432,
+        "3": 314,
+        "4": 287
+      }
+    },
+    "timestamp": "2026-07-30T15:10:11Z"
+  },
+  {
+    "iteration": 38000,
+    "iterations_per_second": 3.653,
+    "device": "cuda",
+    "storage": {
+      "version": 2,
+      "kind": "decision-node-street-sharded",
+      "bucket_counts": [
+        169,
+        150,
+        150,
+        30
+      ],
+      "decision_counts": [
+        28,
+        512,
+        2925,
+        10241
+      ],
+      "row_counts": [
+        4732,
+        76800,
+        438750,
+        307230
+      ],
+      "total_rows": 827512,
+      "actions": 7,
+      "regret_bytes": 23170336,
+      "strategy_sum_bytes": 23170336,
+      "table_bytes_total": 46340672,
+      "legacy_dense_rows": 6237114,
+      "row_reduction_fraction": 0.867325
+    },
+    "action_profile": {
+      "name": "uniform-v1",
+      "profile_sha256": null,
+      "override_count": 0,
+      "sized_raise_nodes": {
+        "0": 11612,
+        "1": 1061,
+        "2": 432,
+        "3": 314,
+        "4": 287
+      }
+    },
+    "timestamp": "2026-07-30T15:14:45Z"
+  },
+  {
+    "iteration": 39000,
+    "iterations_per_second": 3.653,
+    "device": "cuda",
+    "storage": {
+      "version": 2,
+      "kind": "decision-node-street-sharded",
+      "bucket_counts": [
+        169,
+        150,
+        150,
+        30
+      ],
+      "decision_counts": [
+        28,
+        512,
+        2925,
+        10241
+      ],
+      "row_counts": [
+        4732,
+        76800,
+        438750,
+        307230
+      ],
+      "total_rows": 827512,
+      "actions": 7,
+      "regret_bytes": 23170336,
+      "strategy_sum_bytes": 23170336,
+      "table_bytes_total": 46340672,
+      "legacy_dense_rows": 6237114,
+      "row_reduction_fraction": 0.867325
+    },
+    "action_profile": {
+      "name": "uniform-v1",
+      "profile_sha256": null,
+      "override_count": 0,
+      "sized_raise_nodes": {
+        "0": 11612,
+        "1": 1061,
+        "2": 432,
+        "3": 314,
+        "4": 287
+      }
+    },
+    "timestamp": "2026-07-30T15:19:18Z"
+  },
+  {
+    "iteration": 40000,
+    "iterations_per_second": 3.653,
+    "device": "cuda",
+    "storage": {
+      "version": 2,
+      "kind": "decision-node-street-sharded",
+      "bucket_counts": [
+        169,
+        150,
+        150,
+        30
+      ],
+      "decision_counts": [
+        28,
+        512,
+        2925,
+        10241
+      ],
+      "row_counts": [
+        4732,
+        76800,
+        438750,
+        307230
+      ],
+      "total_rows": 827512,
+      "actions": 7,
+      "regret_bytes": 23170336,
+      "strategy_sum_bytes": 23170336,
+      "table_bytes_total": 46340672,
+      "legacy_dense_rows": 6237114,
+      "row_reduction_fraction": 0.867325
+    },
+    "action_profile": {
+      "name": "uniform-v1",
+      "profile_sha256": null,
+      "override_count": 0,
+      "sized_raise_nodes": {
+        "0": 11612,
+        "1": 1061,
+        "2": 432,
+        "3": 314,
+        "4": 287
+      }
+    },
+    "timestamp": "2026-07-30T15:23:52Z"
+  },
+  {
+    "iteration": 41000,
+    "iterations_per_second": 3.65,
+    "device": "cuda",
+    "storage": {
+      "version": 2,
+      "kind": "decision-node-street-sharded",
+      "bucket_counts": [
+        169,
+        150,
+        150,
+        30
+      ],
+      "decision_counts": [
+        28,
+        512,
+        2925,
+        10241
+      ],
+      "row_counts": [
+        4732,
+        76800,
+        438750,
+        307230
+      ],
+      "total_rows": 827512,
+      "actions": 7,
+      "regret_bytes": 23170336,
+      "strategy_sum_bytes": 23170336,
+      "table_bytes_total": 46340672,
+      "legacy_dense_rows": 6237114,
+      "row_reduction_fraction": 0.867325
+    },
+    "action_profile": {
+      "name": "uniform-v1",
+      "profile_sha256": null,
+      "override_count": 0,
+      "sized_raise_nodes": {
+        "0": 11612,
+        "1": 1061,
+        "2": 432,
+        "3": 314,
+        "4": 287
+      }
+    },
+    "timestamp": "2026-07-30T15:29:00Z"
+  },
+  {
+    "iteration": 42000,
+    "iterations_per_second": 3.654,
+    "device": "cuda",
+    "storage": {
+      "version": 2,
+      "kind": "decision-node-street-sharded",
+      "bucket_counts": [
+        169,
+        150,
+        150,
+        30
+      ],
+      "decision_counts": [
+        28,
+        512,
+        2925,
+        10241
+      ],
+      "row_counts": [
+        4732,
+        76800,
+        438750,
+        307230
+      ],
+      "total_rows": 827512,
+      "actions": 7,
+      "regret_bytes": 23170336,
+      "strategy_sum_bytes": 23170336,
+      "table_bytes_total": 46340672,
+      "legacy_dense_rows": 6237114,
+      "row_reduction_fraction": 0.867325
+    },
+    "action_profile": {
+      "name": "uniform-v1",
+      "profile_sha256": null,
+      "override_count": 0,
+      "sized_raise_nodes": {
+        "0": 11612,
+        "1": 1061,
+        "2": 432,
+        "3": 314,
+        "4": 287
+      }
+    },
+    "timestamp": "2026-07-30T15:33:34Z"
+  },
+  {
+    "iteration": 43000,
+    "iterations_per_second": 3.653,
+    "device": "cuda",
+    "storage": {
+      "version": 2,
+      "kind": "decision-node-street-sharded",
+      "bucket_counts": [
+        169,
+        150,
+        150,
+        30
+      ],
+      "decision_counts": [
+        28,
+        512,
+        2925,
+        10241
+      ],
+      "row_counts": [
+        4732,
+        76800,
+        438750,
+        307230
+      ],
+      "total_rows": 827512,
+      "actions": 7,
+      "regret_bytes": 23170336,
+      "strategy_sum_bytes": 23170336,
+      "table_bytes_total": 46340672,
+      "legacy_dense_rows": 6237114,
+      "row_reduction_fraction": 0.867325
+    },
+    "action_profile": {
+      "name": "uniform-v1",
+      "profile_sha256": null,
+      "override_count": 0,
+      "sized_raise_nodes": {
+        "0": 11612,
+        "1": 1061,
+        "2": 432,
+        "3": 314,
+        "4": 287
+      }
+    },
+    "timestamp": "2026-07-30T15:38:08Z"
+  },
+  {
+    "iteration": 44000,
+    "iterations_per_second": 3.654,
+    "device": "cuda",
+    "storage": {
+      "version": 2,
+      "kind": "decision-node-street-sharded",
+      "bucket_counts": [
+        169,
+        150,
+        150,
+        30
+      ],
+      "decision_counts": [
+        28,
+        512,
+        2925,
+        10241
+      ],
+      "row_counts": [
+        4732,
+        76800,
+        438750,
+        307230
+      ],
+      "total_rows": 827512,
+      "actions": 7,
+      "regret_bytes": 23170336,
+      "strategy_sum_bytes": 23170336,
+      "table_bytes_total": 46340672,
+      "legacy_dense_rows": 6237114,
+      "row_reduction_fraction": 0.867325
+    },
+    "action_profile": {
+      "name": "uniform-v1",
+      "profile_sha256": null,
+      "override_count": 0,
+      "sized_raise_nodes": {
+        "0": 11612,
+        "1": 1061,
+        "2": 432,
+        "3": 314,
+        "4": 287
+      }
+    },
+    "timestamp": "2026-07-30T15:42:41Z"
+  },
+  {
+    "iteration": 45000,
+    "iterations_per_second": 3.655,
+    "device": "cuda",
+    "storage": {
+      "version": 2,
+      "kind": "decision-node-street-sharded",
+      "bucket_counts": [
+        169,
+        150,
+        150,
+        30
+      ],
+      "decision_counts": [
+        28,
+        512,
+        2925,
+        10241
+      ],
+      "row_counts": [
+        4732,
+        76800,
+        438750,
+        307230
+      ],
+      "total_rows": 827512,
+      "actions": 7,
+      "regret_bytes": 23170336,
+      "strategy_sum_bytes": 23170336,
+      "table_bytes_total": 46340672,
+      "legacy_dense_rows": 6237114,
+      "row_reduction_fraction": 0.867325
+    },
+    "action_profile": {
+      "name": "uniform-v1",
+      "profile_sha256": null,
+      "override_count": 0,
+      "sized_raise_nodes": {
+        "0": 11612,
+        "1": 1061,
+        "2": 432,
+        "3": 314,
+        "4": 287
+      }
+    },
+    "timestamp": "2026-07-30T15:47:15Z"
+  },
+  {
+    "iteration": 46000,
+    "iterations_per_second": 3.653,
+    "device": "cuda",
+    "storage": {
+      "version": 2,
+      "kind": "decision-node-street-sharded",
+      "bucket_counts": [
+        169,
+        150,
+        150,
+        30
+      ],
+      "decision_counts": [
+        28,
+        512,
+        2925,
+        10241
+      ],
+      "row_counts": [
+        4732,
+        76800,
+        438750,
+        307230
+      ],
+      "total_rows": 827512,
+      "actions": 7,
+      "regret_bytes": 23170336,
+      "strategy_sum_bytes": 23170336,
+      "table_bytes_total": 46340672,
+      "legacy_dense_rows": 6237114,
+      "row_reduction_fraction": 0.867325
+    },
+    "action_profile": {
+      "name": "uniform-v1",
+      "profile_sha256": null,
+      "override_count": 0,
+      "sized_raise_nodes": {
+        "0": 11612,
+        "1": 1061,
+        "2": 432,
+        "3": 314,
+        "4": 287
+      }
+    },
+    "timestamp": "2026-07-30T15:51:49Z"
+  },
+  {
+    "iteration": 47000,
+    "iterations_per_second": 3.653,
+    "device": "cuda",
+    "storage": {
+      "version": 2,
+      "kind": "decision-node-street-sharded",
+      "bucket_counts": [
+        169,
+        150,
+        150,
+        30
+      ],
+      "decision_counts": [
+        28,
+        512,
+        2925,
+        10241
+      ],
+      "row_counts": [
+        4732,
+        76800,
+        438750,
+        307230
+      ],
+      "total_rows": 827512,
+      "actions": 7,
+      "regret_bytes": 23170336,
+      "strategy_sum_bytes": 23170336,
+      "table_bytes_total": 46340672,
+      "legacy_dense_rows": 6237114,
+      "row_reduction_fraction": 0.867325
+    },
+    "action_profile": {
+      "name": "uniform-v1",
+      "profile_sha256": null,
+      "override_count": 0,
+      "sized_raise_nodes": {
+        "0": 11612,
+        "1": 1061,
+        "2": 432,
+        "3": 314,
+        "4": 287
+      }
+    },
+    "timestamp": "2026-07-30T15:56:23Z"
+  },
+  {
+    "iteration": 48000,
+    "iterations_per_second": 3.653,
+    "device": "cuda",
+    "storage": {
+      "version": 2,
+      "kind": "decision-node-street-sharded",
+      "bucket_counts": [
+        169,
+        150,
+        150,
+        30
+      ],
+      "decision_counts": [
+        28,
+        512,
+        2925,
+        10241
+      ],
+      "row_counts": [
+        4732,
+        76800,
+        438750,
+        307230
+      ],
+      "total_rows": 827512,
+      "actions": 7,
+      "regret_bytes": 23170336,
+      "strategy_sum_bytes": 23170336,
+      "table_bytes_total": 46340672,
+      "legacy_dense_rows": 6237114,
+      "row_reduction_fraction": 0.867325
+    },
+    "action_profile": {
+      "name": "uniform-v1",
+      "profile_sha256": null,
+      "override_count": 0,
+      "sized_raise_nodes": {
+        "0": 11612,
+        "1": 1061,
+        "2": 432,
+        "3": 314,
+        "4": 287
+      }
+    },
+    "timestamp": "2026-07-30T16:00:56Z"
+  },
+  {
+    "iteration": 49000,
+    "iterations_per_second": 3.653,
+    "device": "cuda",
+    "storage": {
+      "version": 2,
+      "kind": "decision-node-street-sharded",
+      "bucket_counts": [
+        169,
+        150,
+        150,
+        30
+      ],
+      "decision_counts": [
+        28,
+        512,
+        2925,
+        10241
+      ],
+      "row_counts": [
+        4732,
+        76800,
+        438750,
+        307230
+      ],
+      "total_rows": 827512,
+      "actions": 7,
+      "regret_bytes": 23170336,
+      "strategy_sum_bytes": 23170336,
+      "table_bytes_total": 46340672,
+      "legacy_dense_rows": 6237114,
+      "row_reduction_fraction": 0.867325
+    },
+    "action_profile": {
+      "name": "uniform-v1",
+      "profile_sha256": null,
+      "override_count": 0,
+      "sized_raise_nodes": {
+        "0": 11612,
+        "1": 1061,
+        "2": 432,
+        "3": 314,
+        "4": 287
+      }
+    },
+    "timestamp": "2026-07-30T16:05:30Z"
+  },
+  {
+    "iteration": 50000,
+    "iterations_per_second": 3.653,
+    "device": "cuda",
+    "storage": {
+      "version": 2,
+      "kind": "decision-node-street-sharded",
+      "bucket_counts": [
+        169,
+        150,
+        150,
+        30
+      ],
+      "decision_counts": [
+        28,
+        512,
+        2925,
+        10241
+      ],
+      "row_counts": [
+        4732,
+        76800,
+        438750,
+        307230
+      ],
+      "total_rows": 827512,
+      "actions": 7,
+      "regret_bytes": 23170336,
+      "strategy_sum_bytes": 23170336,
+      "table_bytes_total": 46340672,
+      "legacy_dense_rows": 6237114,
+      "row_reduction_fraction": 0.867325
+    },
+    "action_profile": {
+      "name": "uniform-v1",
+      "profile_sha256": null,
+      "override_count": 0,
+      "sized_raise_nodes": {
+        "0": 11612,
+        "1": 1061,
+        "2": 432,
+        "3": 314,
+        "4": 287
+      }
+    },
+    "timestamp": "2026-07-30T16:10:04Z"
+  }
+]

@@ -1,0 +1,131 @@
+{
+  "mean_bb_per_100": 2.75,
+  "ci_low_bb_per_100": -17.86,
+  "ci_high_bb_per_100": 23.36,
+  "hands": 1500,
+  "pairs": 750,
+  "seed": 30260729,
+  "verdict": "KEEP",
+  "diagnostics": {
+    "challenger": {
+      "decisions": 3522,
+      "exact_nodes": 3522,
+      "fallbacks": 0,
+      "observed_raises": 1077,
+      "off_tree_raises": 115,
+      "off_tree_nonraises": 0,
+      "translation_gap_sum": 19.068165077133326,
+      "translation_gap_max": 0.16000000000000003,
+      "decisions_by_street": {
+        "preflop": 1684,
+        "flop": 973,
+        "turn": 522,
+        "river": 343
+      },
+      "decisions_by_position": {
+        "button": 1756,
+        "out_of_position": 1766
+      },
+      "decisions_by_pot_bb": {
+        "lt5": 2736,
+        "5to20": 506,
+        "20to50": 280,
+        "ge50": 0
+      },
+      "decisions_by_spr": {
+        "lt1": 352,
+        "1to3": 307,
+        "3to6": 820,
+        "ge6": 2043
+      },
+      "exact_node_rate": 1.0,
+      "fallback_rate": 0.0,
+      "off_tree_raise_rate": 0.106778,
+      "mean_translation_gap_pot": 0.017705,
+      "max_translation_gap_pot": 0.16
+    },
+    "champion": {
+      "decisions": 3541,
+      "exact_nodes": 3541,
+      "fallbacks": 0,
+      "observed_raises": 1107,
+      "off_tree_raises": 128,
+      "off_tree_nonraises": 0,
+      "translation_gap_sum": 21.01371054145113,
+      "translation_gap_max": 0.16000000000000003,
+      "decisions_by_street": {
+        "preflop": 1686,
+        "flop": 980,
+        "turn": 525,
+        "river": 350
+      },
+      "decisions_by_position": {
+        "button": 1767,
+        "out_of_position": 1774
+      },
+      "decisions_by_pot_bb": {
+        "lt5": 2772,
+        "5to20": 514,
+        "20to50": 255,
+        "ge50": 0
+      },
+      "decisions_by_spr": {
+        "lt1": 330,
+        "1to3": 317,
+        "3to6": 827,
+        "ge6": 2067
+      },
+      "exact_node_rate": 1.0,
+      "fallback_rate": 0.0,
+      "off_tree_raise_rate": 0.115628,
+      "mean_translation_gap_pot": 0.018983,
+      "max_translation_gap_pot": 0.16
+    },
+    "river_search": {
+      "challenger": {
+        "attempts": 0,
+        "resolved": 0,
+        "fallbacks": 0,
+        "elapsed_ms_max": 0.0,
+        "fallback_errors": {},
+        "tree_nodes_max": 0,
+        "samples": [],
+        "resolve_rate": 0.0,
+        "fallback_rate": 0.0,
+        "mean_elapsed_ms": 0.0,
+        "max_elapsed_ms": 0.0
+      },
+      "champion": {
+        "attempts": 0,
+        "resolved": 0,
+        "fallbacks": 0,
+        "elapsed_ms_max": 0.0,
+        "fallback_errors": {},
+        "tree_nodes_max": 0,
+        "samples": [],
+        "resolve_rate": 0.0,
+        "fallback_rate": 0.0,
+        "mean_elapsed_ms": 0.0,
+        "max_elapsed_ms": 0.0
+      }
+    },
+    "terminal_streets": {
+      "preflop": {
+        "hands": 668,
+        "challenger_bb_per_100": -2.32
+      },
+      "flop": {
+        "hands": 278,
+        "challenger_bb_per_100": 9.57
+      },
+      "turn": {
+        "hands": 102,
+        "challenger_bb_per_100": 60.05
+      },
+      "river": {
+        "hands": 452,
+        "challenger_bb_per_100": -6.87
+      }
+    }
+  }
+}

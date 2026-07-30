@@ -1,0 +1,20 @@
+{
+  "null_5k_vs_5k": {
+    "mean_bb_per_100": 0.0,
+    "ci_low_bb_per_100": 0.0,
+    "ci_high_bb_per_100": 0.0,
+    "hands": 1500,
+    "pairs": 750,
+    "seed": 30260729,
+    "verdict": "KEEP"
+  },
+  "10k_vs_5k": {
+    "mean_bb_per_100": -0.87,
+    "ci_low_bb_per_100": -14.3,
+    "ci_high_bb_per_100": 12.57,
+    "hands": 1500,
+    "pairs": 750,
+    "seed": 30260729,
+    "verdict": "KEEP"
+  }
+}

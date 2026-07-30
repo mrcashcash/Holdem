@@ -1,0 +1,56 @@
+2026-07-29 22:47:40 sizing menus for depths [20.0]
+2026-07-29 22:47:40  depth      menu      nodes   decisions  tables MiB  verdict
+2026-07-29 22:47:40     20      lean      6,169       2,360          23  FITS (built in 0.0s)
+2026-07-29 22:47:40     20       mid     25,201       9,484         106  FITS (built in 0.1s)
+2026-07-29 22:47:40     20  mid+cap3     32,319      12,232         139  FITS (built in 0.1s)
+2026-07-29 22:47:40     20      rich    121,885      44,808         558  FITS (built in 0.3s)
+2026-07-29 22:47:40        -> richest affordable at 20bb: rich (121,885 nodes, 558 MiB)
+2026-07-29 22:47:40 written to backend/data/evaluations/blueprint-menu-sizing.json
+2026-07-29 22:50:14 sizing menus for depths [20.0]
+2026-07-29 22:50:14  depth      menu      nodes   decisions  tables MiB  verdict
+2026-07-29 22:50:14     20      lean      6,169       2,360          23  FITS (built in 0.0s)
+2026-07-29 22:50:14     20       mid     25,201       9,484         106  FITS (built in 0.1s)
+2026-07-29 22:50:15     20  mid+cap3     32,319      12,232         139  FITS (built in 0.1s)
+2026-07-29 22:50:15     20      rich     78,725      29,268         373  FITS (built in 0.2s)
+2026-07-29 22:50:15        -> richest affordable at 20bb: rich (78,725 nodes, 373 MiB)
+2026-07-29 22:50:15 written to backend/data/evaluations/blueprint-menu-sizing.json
+2026-07-29 22:51:57 sizing menus for depths [20.0]
+2026-07-29 22:51:57  depth      menu      nodes   decisions  tables MiB  verdict
+2026-07-29 22:51:57     20      lean      6,169       2,360          23  FITS (built in 0.0s)
+2026-07-29 22:51:58     20       mid     25,201       9,484         106  FITS (built in 0.1s)
+2026-07-29 22:51:58     20  mid+cap3     32,319      12,232         139  FITS (built in 0.1s)
+2026-07-29 22:51:58     20      rich     59,781      22,356         291  FITS (built in 0.2s)
+2026-07-29 22:51:58        -> richest affordable at 20bb: rich (59,781 nodes, 291 MiB)
+2026-07-29 22:51:58 written to backend/data/evaluations/blueprint-menu-sizing.json
+2026-07-29 22:54:20 sizing menus for depths [20.0]
+2026-07-29 22:54:20  depth      menu      nodes   decisions  tables MiB  verdict
+2026-07-29 22:54:20     20      lean      6,169       2,360          23  FITS (built in 0.0s)
+2026-07-29 22:54:20     20       mid     25,201       9,484         106  FITS (built in 0.1s)
+2026-07-29 22:54:20     20  mid+cap3     32,319      12,232         139  FITS (built in 0.1s)
+2026-07-29 22:54:20     20      rich     49,552      18,582         243  FITS (built in 0.1s)
+2026-07-29 22:54:20        -> richest affordable at 20bb: rich (49,552 nodes, 243 MiB)
+2026-07-29 22:54:20 written to backend/data/evaluations/blueprint-menu-sizing.json
+2026-07-29 22:55:24 sizing menus for depths [20.0]
+2026-07-29 22:55:24  depth      menu      nodes   decisions  tables MiB  verdict
+2026-07-29 22:55:24     20      lean      6,169       2,360          23  FITS (built in 0.0s)
+2026-07-29 22:55:24     20       mid     25,201       9,484         106  FITS (built in 0.1s)
+2026-07-29 22:55:25     20  mid+cap3     32,319      12,232         139  FITS (built in 0.1s)
+2026-07-29 22:55:25     20      rich     47,026      17,688         232  FITS (built in 0.1s)
+2026-07-29 22:55:25        -> richest affordable at 20bb: rich (47,026 nodes, 232 MiB)
+2026-07-29 22:55:25 written to backend/data/evaluations/blueprint-menu-sizing.json
+2026-07-29 23:03:20 sizing menus for depths [20.0]
+2026-07-29 23:03:20  depth      menu      nodes   decisions  tables MiB  verdict
+2026-07-29 23:03:21     20      lean      6,169       2,360          23  FITS (built in 0.0s)
+2026-07-29 23:03:21     20       mid     25,201       9,484         106  FITS (built in 0.1s)
+2026-07-29 23:03:21     20  mid+cap3     32,319      12,232         139  FITS (built in 0.1s)
+2026-07-29 23:03:21     20      rich     28,194      10,398         132  FITS (built in 0.1s)
+2026-07-29 23:03:21        -> richest affordable at 20bb: rich (28,194 nodes, 132 MiB)
+2026-07-29 23:03:21 written to backend/data/evaluations/blueprint-menu-sizing.json
+2026-07-29 23:06:05 sizing menus for depths [20.0]
+2026-07-29 23:06:05  depth      menu      nodes   decisions  tables MiB  verdict
+2026-07-29 23:06:05     20      lean      6,169       2,360          23  FITS (built in 0.0s)
+2026-07-29 23:06:05     20       mid     25,201       9,484         106  FITS (built in 0.1s)
+2026-07-29 23:06:05     20  mid+cap3     32,319      12,232         139  FITS (built in 0.1s)
+2026-07-29 23:06:05     20      rich     36,906      13,706         176  FITS (built in 0.1s)
+2026-07-29 23:06:05        -> richest affordable at 20bb: rich (36,906 nodes, 176 MiB)
+2026-07-29 23:06:05 written to backend/data/evaluations/blueprint-menu-sizing.json

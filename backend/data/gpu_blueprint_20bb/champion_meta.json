@@ -1,0 +1,5 @@
+{
+  "iteration": 5000,
+  "styles_mean_bb_per_100": null,
+  "promotion_method": "head-to-head vs 30000 (+32.08 bb/100, CI[+20.16, +44.01], n=6000)"
+}

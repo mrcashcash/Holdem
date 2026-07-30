@@ -1,0 +1,288 @@
+{
+  "schema_version": 1,
+  "evaluator_version": 4,
+  "started_utc": "2026-07-30T15:23:54Z",
+  "data_dir": "/workspace/Holdem/backend/data/gpu_blueprint_20bb",
+  "stack_bb": 20.0,
+  "depth_comparison": {
+    "evaluation_depth_bb": 20.0,
+    "challenger_trained_depth_bb": 20.0,
+    "incumbent_trained_depth_bb": 20.0,
+    "bootstrap_incumbent": false
+  },
+  "seeds": {
+    "screen": 60260729,
+    "confirm": 61260732,
+    "retained": 62260732,
+    "lbr": 63260746
+  },
+  "budgets": {
+    "screen_pairs": 750,
+    "confirm_pairs": 3000,
+    "retained_pairs": 1500,
+    "retained_limit": 3,
+    "lbr_pairs": 400
+  },
+  "git": {
+    "revision": "9ec37f25663970064dac9fb03091ae91ac35e3c2",
+    "dirty": true,
+    "changed_paths": [
+      " M backend/agents/gpu_blueprint_agent.py",
+      " M backend/eval/gate.py",
+      " M backend/solver/gpu/train.py",
+      " M backend/solver/gpu/tree.py",
+      " M docs/SERVING.md",
+      " M docs/STATUS.md",
+      " M tests/test_multistack_routing.py",
+      " M tools/size_blueprint_menus.py",
+      "?? docs/20BB_BLUEPRINT_PLAN.md",
+      "?? server.log",
+      "?? tests/test_20bb_blueprint.py",
+      "?? tests/test_gate_bootstrap.py",
+      "?? tools/run_20bb_to_50k.py"
+    ]
+  },
+  "challenger": {
+    "path": "/workspace/Holdem/backend/data/gpu_blueprint_20bb/checkpoint.npz",
+    "sha256": "48369fb8cd40a0226d06c99581a069fb93a6e855c7c89483bfc8098884fb5918",
+    "abstraction_sha256": "89b5c315afca712419d7a4f045ccf2c8b135111fea037bc5b6b64370caea646c",
+    "bytes": 18880253,
+    "iteration": 40000,
+    "config": {
+      "preflop_fractions": [
+        0.5,
+        0.75
+      ],
+      "postflop_fractions": [
+        0.33,
+        0.66,
+        1.0,
+        1.5
+      ],
+      "max_raises_per_street": 2,
+      "stack_bb": 20.0,
+      "no_limp": false,
+      "preflop_raise_cap": null,
+      "action_profile": "uniform-v1",
+      "max_sized_raises_per_node": 3,
+      "phase3_overrides": [],
+      "phase3_profile_sha256": null,
+      "no_donk_srp": true
+    },
+    "sampler": {
+      "flop_buckets": 150,
+      "turn_buckets": 150,
+      "river_buckets": 30,
+      "flop_samples": 24,
+      "turn_samples": 16,
+      "distributional": false,
+      "std_bins": 4,
+      "histogram": true,
+      "hist_bins": 10,
+      "potential_aware": false,
+      "recall_bins": 1,
+      "flop_transition_samples": 8,
+      "turn_transition_samples": 16,
+      "flop_landmarks": 24,
+      "turn_landmarks": 16,
+      "potential_seed": 0
+    }
+  },
+  "incumbent": {
+    "path": "/workspace/Holdem/backend/data/gpu_blueprint_20bb/champion.npz",
+    "sha256": "888f38ac9bf75bf706ff928fdb705347202151f9d3a54e86015690a1f4ee345c",
+    "abstraction_sha256": "89b5c315afca712419d7a4f045ccf2c8b135111fea037bc5b6b64370caea646c",
+    "bytes": 18758741,
+    "iteration": 5000,
+    "config": {
+      "preflop_fractions": [
+        0.5,
+        0.75
+      ],
+      "postflop_fractions": [
+        0.33,
+        0.66,
+        1.0,
+        1.5
+      ],
+      "max_raises_per_street": 2,
+      "stack_bb": 20.0,
+      "no_limp": false,
+      "preflop_raise_cap": null,
+      "action_profile": "uniform-v1",
+      "max_sized_raises_per_node": 3,
+      "phase3_overrides": [],
+      "phase3_profile_sha256": null,
+      "no_donk_srp": true
+    },
+    "sampler": {
+      "flop_buckets": 150,
+      "turn_buckets": 150,
+      "river_buckets": 30,
+      "flop_samples": 24,
+      "turn_samples": 16,
+      "distributional": false,
+      "std_bins": 4,
+      "histogram": true,
+      "hist_bins": 10,
+      "potential_aware": false,
+      "recall_bins": 1,
+      "flop_transition_samples": 8,
+      "turn_transition_samples": 16,
+      "flop_landmarks": 24,
+      "turn_landmarks": 16,
+      "potential_seed": 0
+    }
+  },
+  "screen": {
+    "mean_bb_per_100": -24.68,
+    "ci_low_bb_per_100": -46.23,
+    "ci_high_bb_per_100": -3.13,
+    "hands": 1500,
+    "pairs": 750,
+    "seed": 60260729,
+    "verdict": "REGRESSION",
+    "diagnostics": {
+      "challenger": {
+        "decisions": 3610,
+        "exact_nodes": 3610,
+        "fallbacks": 0,
+        "observed_raises": 1130,
+        "off_tree_raises": 104,
+        "off_tree_nonraises": 0,
+        "translation_gap_sum": 17.019071740503733,
+        "translation_gap_max": 0.16000000000000003,
+        "decisions_by_street": {
+          "preflop": 1716,
+          "flop": 926,
+          "turn": 570,
+          "river": 398
+        },
+        "decisions_by_position": {
+          "button": 1816,
+          "out_of_position": 1794
+        },
+        "decisions_by_pot_bb": {
+          "lt5": 2842,
+          "5to20": 477,
+          "20to50": 291,
+          "ge50": 0
+        },
+        "decisions_by_spr": {
+          "lt1": 371,
+          "1to3": 294,
+          "3to6": 903,
+          "ge6": 2042
+        },
+        "exact_node_rate": 1.0,
+        "fallback_rate": 0.0,
+        "off_tree_raise_rate": 0.092035,
+        "mean_translation_gap_pot": 0.015061,
+        "max_translation_gap_pot": 0.16
+      },
+      "champion": {
+        "decisions": 3567,
+        "exact_nodes": 3567,
+        "fallbacks": 0,
+        "observed_raises": 1066,
+        "off_tree_raises": 67,
+        "off_tree_nonraises": 0,
+        "translation_gap_sum": 11.64002713206951,
+        "translation_gap_max": 0.16000000000000003,
+        "decisions_by_street": {
+          "preflop": 1697,
+          "flop": 918,
+          "turn": 556,
+          "river": 396
+        },
+        "decisions_by_position": {
+          "button": 1814,
+          "out_of_position": 1753
+        },
+        "decisions_by_pot_bb": {
+          "lt5": 2849,
+          "5to20": 475,
+          "20to50": 243,
+          "ge50": 0
+        },
+        "decisions_by_spr": {
+          "lt1": 309,
+          "1to3": 320,
+          "3to6": 937,
+          "ge6": 2001
+        },
+        "exact_node_rate": 1.0,
+        "fallback_rate": 0.0,
+        "off_tree_raise_rate": 0.062852,
+        "mean_translation_gap_pot": 0.010919,
+        "max_translation_gap_pot": 0.16
+      },
+      "river_search": {
+        "challenger": {
+          "attempts": 0,
+          "resolved": 0,
+          "fallbacks": 0,
+          "elapsed_ms_max": 0.0,
+          "fallback_errors": {},
+          "tree_nodes_max": 0,
+          "samples": [],
+          "resolve_rate": 0.0,
+          "fallback_rate": 0.0,
+          "mean_elapsed_ms": 0.0,
+          "max_elapsed_ms": 0.0
+        },
+        "champion": {
+          "attempts": 0,
+          "resolved": 0,
+          "fallbacks": 0,
+          "elapsed_ms_max": 0.0,
+          "fallback_errors": {},
+          "tree_nodes_max": 0,
+          "samples": [],
+          "resolve_rate": 0.0,
+          "fallback_rate": 0.0,
+          "mean_elapsed_ms": 0.0,
+          "max_elapsed_ms": 0.0
+        }
+      },
+      "terminal_streets": {
+        "preflop": {
+          "hands": 643,
+          "challenger_bb_per_100": -0.47
+        },
+        "flop": {
+          "hands": 232,
+          "challenger_bb_per_100": -11.77
+        },
+        "turn": {
+          "hands": 108,
+          "challenger_bb_per_100": -60.09
+        },
+        "river": {
+          "hands": 517,
+          "challenger_bb_per_100": -53.19
+        }
+      }
+    }
+  },
+  "screen_pass": false,
+  "confirm": null,
+  "retained_crossplay": [],
+  "mapping_gate": {
+    "ok": false,
+    "reason": "screen did not pass"
+  },
+  "lbr_gate": {
+    "enabled": false,
+    "ok": true,
+    "reason": "screen did not pass"
+  },
+  "promotion": {
+    "eligible": false,
+    "installed": false,
+    "reason": "screen did not pass"
+  },
+  "elapsed_seconds": 30.76,
+  "finished_utc": "2026-07-30T15:24:25Z",
+  "report_path": "/workspace/Holdem/backend/data/gpu_blueprint_20bb/evaluations/gate-20260730T152425Z-iter40000.json"
+}

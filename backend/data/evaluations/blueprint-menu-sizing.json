@@ -1,0 +1,81 @@
+[
+  {
+    "stack_bb": 20.0,
+    "menu": "lean",
+    "preflop": [
+      0.75,
+      1.5
+    ],
+    "postflop": [
+      0.5,
+      1.0
+    ],
+    "raise_cap": 2,
+    "nodes": 6169,
+    "decisions": 2360,
+    "table_mib": 22.7,
+    "fits": true,
+    "no_donk_srp": false
+  },
+  {
+    "stack_bb": 20.0,
+    "menu": "mid",
+    "preflop": [
+      0.5,
+      1.0,
+      1.5
+    ],
+    "postflop": [
+      0.33,
+      0.75,
+      1.5
+    ],
+    "raise_cap": 2,
+    "nodes": 25201,
+    "decisions": 9484,
+    "table_mib": 106.4,
+    "fits": true,
+    "no_donk_srp": false
+  },
+  {
+    "stack_bb": 20.0,
+    "menu": "mid+cap3",
+    "preflop": [
+      0.5,
+      1.0,
+      1.5
+    ],
+    "postflop": [
+      0.33,
+      0.75,
+      1.5
+    ],
+    "raise_cap": 3,
+    "nodes": 32319,
+    "decisions": 12232,
+    "table_mib": 138.9,
+    "fits": true,
+    "no_donk_srp": false
+  },
+  {
+    "stack_bb": 20.0,
+    "menu": "rich",
+    "preflop": [
+      0.5,
+      0.75
+    ],
+    "postflop": [
+      0.33,
+      0.66,
+      1.0,
+      1.5
+    ],
+    "raise_cap": 2,
+    "nodes": 36906,
+    "decisions": 13706,
+    "table_mib": 175.7,
+    "fits": true,
+    "no_donk_srp": true,
+    "selected": true
+  }
+]

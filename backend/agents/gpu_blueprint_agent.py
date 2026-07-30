@@ -170,6 +170,11 @@ class GpuBlueprintAgent:
         # Stale diagnostics are worse than none: the decision log would report a
         # resize from an earlier street as if it happened on this one.
         self.last_all_in_rescale = None
+        # This strategic restriction must precede continual resolving: the
+        # resolver uses a richer exact tree and could otherwise reintroduce a
+        # donk bet that the native blueprint deliberately excludes.
+        if self.tree.config.no_donk_srp and self._must_check_no_donk(game, player):
+            return NEURAL_CHECK_CALL
         searchable = game.street >= 2
         if self.continual_search and game.street in self.continual_streets:
             continual_choice = self._continual_decision(game, player)
@@ -203,6 +208,38 @@ class GpuBlueprintAgent:
         if choice == ALL_IN:
             return self._all_in_choice(game, player, node)
         return self._to_neural_raise(game, player, int(self.tree.street[node]), choice)
+
+    @staticmethod
+    def _must_check_no_donk(game: HeadsUpHoldem, player: int) -> bool:
+        """Whether ``player`` is the non-aggressor acting first in a SRP.
+
+        The most recent raiser remains the aggressor across streets, so an OOP
+        check-raiser is allowed to lead the following street. Opponent donks
+        remain observable/off-tree; this guard constrains only our action.
+        """
+        if game.street <= 0:
+            return False
+        current_street_actions = [
+            event for event in game.public_actions if int(event["street"]) == game.street
+        ]
+        if current_street_actions:
+            return False
+        preflop_raises = [
+            event
+            for event in game.public_actions
+            if int(event["street"]) == 0 and event["action"] in {"raise", "all_in"}
+        ]
+        if len(preflop_raises) != 1:
+            return False
+        aggressors = [
+            event
+            for event in game.public_actions
+            if int(event["street"]) < game.street and event["action"] in {"raise", "all_in"}
+        ]
+        if not aggressors or int(aggressors[-1]["player"]) == player:
+            return False
+        legal = game.legal_actions(player)
+        return bool(legal.get("check"))
 
     def strategy_for_state(self, game: HeadsUpHoldem, player: int) -> dict:
         """Return the mixed strategy for a state without sampling or acting."""

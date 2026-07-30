@@ -256,15 +256,18 @@ stack, so an odd depth is absorbed by the resolver rather than mis-served.
 
 | depth | blueprint | LBR exploitability |
 |---|---|---:|
-| 20bb | none — routes to 100bb | **+130.31** [+95.22, +165.40] |
-| 50bb | none — routes to 100bb | +85.05 [−12.80, +182.90] |
+| 20bb | histogram@5k | **+22.02** [−25.85,+69.90] on bootstrap block |
+| 50bb | routes to 20bb on the equal-distance tie | not yet measured |
 | 100bb | histogram@30k | +137.58 [−3.57, +278.73] |
 | 200bb | scalar@118k | +291.23 [+79.10, +503.36] |
 
-**20bb is the weakest depth and has no blueprint of its own** — its interval
-clears zero decisively, because a 100bb-trained blueprint plays far too many small
-bets at a depth that is nearly push-fold. It is also the cheapest to fix: an exact
-flop-to-river tree there is only 5,303 nodes, so 20bb can be played exactly on
-every postflop street with no value net at all
-(`backend/search/exact_flop.py`). That path is implemented and resource-gated;
-the blueprint remains the fail-closed fallback.
+**20bb now has a native promoted blueprint.** Its preflop opens are 2bb/2.5bb,
+postflop sizes are 0.33/0.66/1.0/1.5 pot, sized raises are capped at two per
+street, and the OOP non-aggressor cannot donk in a single-raised pot. The 5k
+checkpoint beat the former 100bb fallback by +32.08 bb/100
+[+20.16,+44.01] on the disjoint confirmation block. Training through 50k found
+no stronger checkpoint. Exact flop-to-river resolving remains implemented and
+resource-gated above this base policy; resolver failure now falls back to the
+native 20bb champion. The multi-stack loader discovers the champion
+automatically on the next server start. Verify `/api/health`; the server was
+offline during the 2026-07-30 audit.

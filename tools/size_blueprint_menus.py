@@ -29,7 +29,7 @@ MENUS = (
     ("lean", (0.75, 1.5), (0.5, 1.0), 2),
     ("mid", (0.5, 1.0, 1.5), (0.33, 0.75, 1.5), 2),
     ("mid+cap3", (0.5, 1.0, 1.5), (0.33, 0.75, 1.5), 3),
-    ("rich", (0.5, 0.75, 1.0, 1.5), (0.25, 0.5, 0.75, 1.25), 2),
+    ("rich", (0.5, 0.75), (0.33, 0.66, 1.0, 1.5), 2),
 )
 # ~150k nodes is the documented comfort ceiling with the server up; tables must
 # also leave room for transients on a 12 GB card shared with the desktop.
@@ -62,6 +62,7 @@ def main() -> None:
             config = GpuActionConfig(
                 preflop_fractions=preflop, postflop_fractions=postflop,
                 max_raises_per_street=cap, stack_bb=stack,
+                no_donk_srp=(stack == 20.0 and name == "rich"),
             )
             started = time.monotonic()
             try:
@@ -83,6 +84,7 @@ def main() -> None:
                 "stack_bb": stack, "menu": name, "preflop": list(preflop),
                 "postflop": list(postflop), "raise_cap": cap, "nodes": len(tree),
                 "decisions": decisions, "table_mib": round(mib, 1), "fits": fits,
+                "no_donk_srp": config.no_donk_srp,
             }
             records.append(record)
             if fits:

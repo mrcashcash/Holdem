@@ -9,6 +9,12 @@ CLI:
     python -m backend.eval.gate \
         --data-dir backend/data/gpu_blueprint_200bb_nolimp \
         --stack-bb 200 --promote
+
+First native depth only:
+    python -m backend.eval.gate \
+        --data-dir backend/data/gpu_blueprint_20bb --stack-bb 20 \
+        --incumbent backend/data/gpu_blueprint/champion.npz \
+        --allow-bootstrap-incumbent
 """
 
 from __future__ import annotations
@@ -24,7 +30,7 @@ from pathlib import Path
 
 from backend.eval.duel import head_to_head, promote
 
-EVALUATOR_VERSION = 3
+EVALUATOR_VERSION = 4
 
 
 def _sha256(path: Path) -> str:
@@ -164,6 +170,7 @@ def evaluate_gate(
     lbr_pairs: int = 100,
     seed: int | None = None,
     install: bool = False,
+    allow_bootstrap_incumbent: bool = False,
 ) -> dict:
     if stack_bb <= 0:
         raise ValueError("stack_bb must be positive")
@@ -192,10 +199,17 @@ def evaluate_gate(
 
     challenger = _load_agent(challenger_path)
     incumbent = _load_agent(incumbent_path)
-    for label, agent in (("challenger", challenger), ("incumbent", incumbent)):
-        trained_depth = float(agent.tree.config.stack_bb)
-        if abs(trained_depth - stack_bb) > 1e-6:
-            raise ValueError(f"{label} was trained for {trained_depth:g}bb, not {stack_bb:g}bb")
+    challenger_depth = float(challenger.tree.config.stack_bb)
+    incumbent_depth = float(incumbent.tree.config.stack_bb)
+    if abs(challenger_depth - stack_bb) > 1e-6:
+        raise ValueError(f"challenger was trained for {challenger_depth:g}bb, not {stack_bb:g}bb")
+    incumbent_mismatch = abs(incumbent_depth - stack_bb) > 1e-6
+    if incumbent_mismatch and not allow_bootstrap_incumbent:
+        raise ValueError(f"incumbent was trained for {incumbent_depth:g}bb, not {stack_bb:g}bb")
+    if allow_bootstrap_incumbent and not incumbent_mismatch:
+        raise ValueError("--allow-bootstrap-incumbent requires a cross-depth incumbent")
+    if allow_bootstrap_incumbent and (data_dir / "champion.npz").exists():
+        raise ValueError("bootstrap incumbent is only allowed before this depth has a champion")
 
     started = time.time()
     report = {
@@ -204,6 +218,12 @@ def evaluate_gate(
         "started_utc": time.strftime("%Y-%m-%dT%H:%M:%SZ", time.gmtime()),
         "data_dir": str(data_dir),
         "stack_bb": float(stack_bb),
+        "depth_comparison": {
+            "evaluation_depth_bb": float(stack_bb),
+            "challenger_trained_depth_bb": challenger_depth,
+            "incumbent_trained_depth_bb": incumbent_depth,
+            "bootstrap_incumbent": bool(allow_bootstrap_incumbent),
+        },
         "seeds": seeds,
         "budgets": {
             "screen_pairs": screen_pairs,
@@ -345,6 +365,11 @@ def main() -> None:
     parser.add_argument("--lbr-pairs", type=int, default=100)
     parser.add_argument("--seed", type=int, default=None)
     parser.add_argument("--promote", action="store_true")
+    parser.add_argument(
+        "--allow-bootstrap-incumbent",
+        action="store_true",
+        help="allow a cross-depth incumbent only when this depth has no champion yet",
+    )
     arguments = parser.parse_args()
 
     report = evaluate_gate(
@@ -359,6 +384,7 @@ def main() -> None:
         lbr_pairs=arguments.lbr_pairs,
         seed=arguments.seed,
         install=arguments.promote,
+        allow_bootstrap_incumbent=arguments.allow_bootstrap_incumbent,
     )
     promotion = report["promotion"]
     print(

@@ -54,10 +54,14 @@ The river CFV horizon is connected but action-gated. The current checkpoint
 remains OFF: 0.3766 agreement / 1.1474 policy L1 fails the 0.90 / 0.30
 requirements.
 
-The two frozen blueprints below remain the depth-routed base policy:
+The three frozen blueprints below are the depth-routed base policy. The 20bb
+artifact is promoted on disk; the API server was not running during the
+2026-07-30 documentation audit, so verify `/api/health` after startup before
+claiming a live process loaded it.
 
 | Depth | Model | Why it holds the slot |
 |---|---|---|
+| 20bb | **histogram@5k** (`gpu_blueprint_20bb/champion.npz`) | Native shallow policy beat the former 100bb fallback by +32.08 [+20.16,+44.01]; 10k–50k were ties or regression |
 | 100bb | **histogram@30k** (`gpu_blueprint/champion.npz`) | Ties the fully-trained scalar@100k head-to-head (+7 [−16,+31]) AND fixes the draw-fold leak class (hand #326: fold 97.8% → call 95.9%) |
 | 200bb | **scalar@118k** (`gpu_blueprint_200bb/champion.npz`) | Plateau champion; all checkpoints 47k–118k are statistical ties |
 
@@ -78,9 +82,11 @@ quality: scripted opponents do not probe. See
 | LBR probe fallback rate | 1.11% | 0.58% |
 | **Slumbot, 20,000 hands** (real API, search off) | **−18.33 bb/100** [−40.41, +3.74] | not run (Slumbot is 200bb native) |
 
-LBR at the shallower target depths, both served today by the 100bb champion:
-**20bb +130.31** [+95.22, +165.40] (interval clears zero) and **50bb +85.05**
-[−12.80, +182.90].
+Historical shallow-depth LBR with the 100bb champion was **20bb +130.31**
+[+95.22,+165.40] and **50bb +85.05** [−12.80,+182.90]. The promoted native
+20bb champion measured +22.02 [−25.85,+69.90] on its bootstrap block versus
+the fallback's +116.88 [+80.03,+153.72]. These blocks are not interchangeable
+absolute estimates; the shared-block difference is the useful comparison.
 
 #### The completed Slumbot baseline (2026-07-28)
 
@@ -312,14 +318,15 @@ does NOT hide GPUs on this Windows/torch — never rely on it.
 - **Serving now:** depth-routed blueprints with exact-card resolving ON for
   flop/turn/river at capped own-bet menus (0.33/0.75/1.4, cap 2). See
   docs/SERVING.md; verify with `GET /api/health` before believing any claim.
+- **Recently closed:** native 20bb blueprint. The final configuration reached
+  50,000 iterations; histogram@5k won the bootstrap confirmation by +32.08
+  [+20.16,+44.01] and was promoted. Every later milestone was a tie or
+  regression (50k confirmation +0.32 [−10.28,+10.91]), so identical training
+  is stopped. See `docs/20BB_BLUEPRINT_PLAN.md`.
 - **Known open leaks, in priority order:**
-  1. **20bb is the worst-served depth** (LBR +130.31 [+95.22, +165.40], interval
-     clears zero) and has no blueprint of its own. Cheapest fix in the project: an
-     exact flop-to-river tree there is only 5,303 nodes, so 20bb can be played
-     exactly on every postflop street with no value net (`exact_flop.py`). Queued.
-  2. **Preflop translation** — half the observed overbets were preflop, and
+  1. **Preflop translation** — half the observed overbets were preflop, and
      nothing covers it before P5 (§3.6).
-  3. **River value net still OFF** (failed gate: 38% action agreement, policy L1
+  2. **River value net still OFF** (failed gate: 38% action agreement, policy L1
      1.15 vs ~0.21 solver noise). Representation work reached ratio 0.301 with
      strength-ordered inputs but is not integrated into `RiverCfvNet`.
 - **Next measurements, in order:** LBR guard-on vs guard-off (settles §3.6);

@@ -68,6 +68,10 @@ class GpuActionConfig:
     max_sized_raises_per_node: int = 3
     phase3_overrides: tuple[tuple[str, tuple[float, ...]], ...] = ()
     phase3_profile_sha256: str | None = None
+    # In a single-raised pot, the out-of-position preflop caller must check
+    # their first action on every postflop street.  The preflop aggressor may
+    # still lead when they are out of position (limp/raise lines).
+    no_donk_srp: bool = False
 
     def __post_init__(self) -> None:
         preflop = tuple(float(value) for value in self.preflop_fractions)
@@ -242,6 +246,8 @@ class BettingTree:
                 acted=tuple(bool(value) for value in root_state.acted),
                 raises=int(root_state.raises),
                 last_increment=float(root_state.last_increment),
+                preflop_raises=-1,
+                last_aggressor=-1,
             )
         elif start_street == 0:
             # Preflop: player 0 = button/SB (acts first), commits 0.5/1.0.
@@ -256,6 +262,8 @@ class BettingTree:
                 acted=(False, False),
                 raises=0,
                 last_increment=1.0,
+                preflop_raises=0,
+                last_aggressor=-1,
             )
         else:
             half_pot = (start_pot or 0.0) / 2.0
@@ -271,6 +279,8 @@ class BettingTree:
                 acted=(False, False),
                 raises=0,
                 last_increment=1.0,
+                preflop_raises=-1,
+                last_aggressor=-1,
             )
         self.kind = np.asarray(builder.kind, dtype=np.int8)
         self.street = np.asarray(builder.street, dtype=np.int8)
@@ -313,7 +323,12 @@ def _menu(
     to_call: float,
     stack_behind: float,
     raises: int,
+    force_check: bool = False,
 ) -> list[int]:
+    if force_check:
+        if to_call > 0:
+            raise ValueError("forced postflop check cannot face a bet")
+        return [CHECK_CALL]
     actions: list[int] = []
     if to_call > 0:
         actions.append(FOLD)
@@ -349,14 +364,28 @@ def _enumerate(
     acted: tuple[bool, bool],
     raises: int,
     last_increment: float,
+    preflop_raises: int,
+    last_aggressor: int,
 ) -> int:
     node = builder.add(DECISION, street, to_act)
     pot = committed[0] + committed[1]
     to_call = max(street_commit) - street_commit[to_act]
-    for action in _menu(config, street, to_act, pot, to_call, stacks[to_act], raises):
+    force_check = (
+        config.no_donk_srp
+        and street > 0
+        and not any(acted)
+        and preflop_raises == 1
+        and to_act != last_aggressor
+    )
+    for action in _menu(
+        config, street, to_act, pot, to_call, stacks[to_act], raises,
+        force_check=force_check,
+    ):
         builder.legal[node][action] = True
         builder.children[node][action] = _apply(
-            builder, config, action, street, to_act, committed, street_commit, stacks, acted, raises, last_increment
+            builder, config, action, street, to_act, committed, street_commit,
+            stacks, acted, raises, last_increment, preflop_raises,
+            last_aggressor,
         )
     return node
 
@@ -373,6 +402,8 @@ def _apply(
     acted: tuple[bool, bool],
     raises: int,
     last_increment: float,
+    preflop_raises: int,
+    last_aggressor: int,
 ) -> int:
     if action == FOLD:
         node = builder.add(FOLD_NODE, street)
@@ -402,6 +433,9 @@ def _apply(
     if increment > 0:
         new_raises += 1
         new_increment = max(increment, 1.0)
+        last_aggressor = actor
+        if street == 0:
+            preflop_raises = new_raises
     new_acted = list(acted)
     new_acted[actor] = True
 
@@ -411,16 +445,19 @@ def _apply(
         return _enumerate(
             builder, config, street, opponent,
             tuple(new_committed), tuple(new_street_commit), tuple(new_stacks),
-            tuple(new_acted), new_raises, new_increment,
+            tuple(new_acted), new_raises, new_increment, preflop_raises,
+            last_aggressor,
         )
     if opponent_owes <= 0 and not new_acted[opponent] and new_stacks[opponent] > 0:
         return _enumerate(
             builder, config, street, opponent,
             tuple(new_committed), tuple(new_street_commit), tuple(new_stacks),
-            tuple(new_acted), new_raises, new_increment,
+            tuple(new_acted), new_raises, new_increment, preflop_raises,
+            last_aggressor,
         )
     return _close_street(
-        builder, config, street, tuple(new_committed), tuple(new_stacks)
+        builder, config, street, tuple(new_committed), tuple(new_stacks),
+        preflop_raises, last_aggressor,
     )
 
 
@@ -430,6 +467,8 @@ def _close_street(
     street: int,
     committed: tuple[float, float],
     stacks: tuple[float, float],
+    preflop_raises: int,
+    last_aggressor: int,
 ) -> int:
     if street == 3 or min(stacks) <= 0:
         # River done, or someone is all-in: remaining streets have no
@@ -454,6 +493,8 @@ def _close_street(
         acted=(False, False),
         raises=0,
         last_increment=1.0,
+        preflop_raises=preflop_raises,
+        last_aggressor=last_aggressor,
     )
     builder.children[node][0] = child
     builder.legal[node][0] = True

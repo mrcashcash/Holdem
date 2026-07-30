@@ -1439,6 +1439,13 @@ those depths can afford a *richer* menu than the deep ones
 At 20bb the game is close enough to solvable that a rich-menu blueprint may be
 strong outright, which is a cheaper win than anything on the net path.
 
+> **Implemented outcome (2026-07-30):** the final 20bb tree differs from this
+> preliminary sizing proposal. It uses 2bb/2.5bb preflop opens,
+> 0.33/0.66/1.0/1.5-pot postflop sizes, cap 2, and the no-donk SRP rule:
+> 36,906 nodes / 13,706 decisions. Histogram@5k was promoted after winning
+> +32.08 bb/100 [+20.16,+44.01] versus the 100bb fallback. Checkpoints through
+> 50k did not improve on 5k.
+
 **2. The river datagen grid was 50/100/200bb with absolute pot sizes.** A 160bb
 pot is meaningless at 20bb, so pots are now a FRACTION of the effective stack and
 the stack grid includes 20bb. Verified: zero-sum holds on 24/24 situations with
@@ -1522,6 +1529,10 @@ from helpful to **essential** at 100/200bb. Datagen cost rose only 16%
 20bb is the **worst-served depth with the tightest evidence** — its interval
 clears zero decisively (shallow play has lower variance), because a 100bb-trained
 blueprint plays far too many small bets at a depth that is nearly push-fold.
+
+> This table and conclusion are the pre-native historical baseline. The
+> promoted histogram@5k 20bb blueprint supersedes the serving assignment; see
+> `docs/20BB_BLUEPRINT_PLAN.md` and `docs/SERVING.md`.
 
 ### P3b Exact FLOP resolving for shallow stacks — no value net required
 

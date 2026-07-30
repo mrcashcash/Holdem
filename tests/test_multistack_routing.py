@@ -39,6 +39,12 @@ class RoutingTests(unittest.TestCase):
                 chosen.tree.config.stack_bb, expected_depth, f"{chips_bb}bb routed to {chosen.tree.config.stack_bb}"
             )
 
+    def test_equal_distance_tie_routes_to_shallower_depth(self) -> None:
+        router = MultiStackBlueprintAgent({20.0: tiny_agent(20.0), 100.0: tiny_agent(100.0)})
+        engine = HeadsUpHoldem(initial_stack=50 * 20, small_blind=10, big_blind=20)
+        engine.new_hand()
+        self.assertEqual(router.selected_depth(engine, engine.current_player), 20.0)
+
     def test_route_locked_for_the_whole_hand(self) -> None:
         engine = HeadsUpHoldem(initial_stack=2000, small_blind=10, big_blind=20)  # 100bb
         engine.new_hand()

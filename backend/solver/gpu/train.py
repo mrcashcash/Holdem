@@ -35,6 +35,18 @@ DEFAULT_CONFIG = GpuActionConfig(
     max_raises_per_street=3,
     stack_bb=100.0,  # matches the serving game: 2000 chips at a 20-chip big blind
 )
+# Native shallow-stack blueprint.  Menu sizing on 2026-07-29 measured 36,906
+# nodes / 13,706 decision nodes / ~176 MiB of v3-sized CFR tables at 20bb, well
+# below the documented training ceilings.  Shallow trees can afford this richer
+# menu; using DEFAULT_CONFIG here would preserve the exact 100bb mismatch this
+# blueprint is intended to remove.
+BLUEPRINT_CONFIG_20 = GpuActionConfig(
+    preflop_fractions=(0.5, 0.75),
+    postflop_fractions=(0.33, 0.66, 1.0, 1.5),
+    max_raises_per_street=2,
+    stack_bb=20.0,
+    no_donk_srp=True,
+)
 # House ruleset (2026-07-25 user directive): never limp preflop (raise or
 # fold) + a wider sizing menu. Selected with --ruleset nolimp.
 NO_LIMP_CONFIG = GpuActionConfig(
@@ -111,6 +123,7 @@ V3_SAMPLER = dict(
     turn_landmarks=16,
     potential_seed=20260725,
 )
+MILESTONE_ITERATIONS = frozenset((5_000, 10_000, 20_000))
 
 
 def configure_stack(stack_bb: float, tag: str | None = None) -> None:
@@ -269,7 +282,7 @@ def save_solver(solver: VectorCFR) -> None:
     )
     temporary.replace(CHECKPOINT_PATH)
     # Keep sparse history so convergence trends can be probed retroactively.
-    if solver.iteration % 20_000 == 0:
+    if solver.iteration in MILESTONE_ITERATIONS or solver.iteration % 20_000 == 0:
         import shutil
 
         shutil.copy2(CHECKPOINT_PATH, DATA_DIR / f"checkpoint-{solver.iteration}.npz")
@@ -375,6 +388,8 @@ def main() -> None:
             DEFAULT_CONFIG = NO_LIMP_PHASE3_CONFIG_200
         else:
             DEFAULT_CONFIG = NO_LIMP_CONFIG_200 if arguments.stack_bb == 200.0 else NO_LIMP_CONFIG
+    elif arguments.stack_bb == 20.0:
+        DEFAULT_CONFIG = BLUEPRINT_CONFIG_20
     if arguments.action_profile is not None:
         overrides, profile_sha256 = load_compiled_profile(arguments.action_profile.resolve())
         DEFAULT_CONFIG = replace(

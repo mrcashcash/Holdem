@@ -33,7 +33,14 @@ MENUS = (
 )
 # ~150k nodes is the documented comfort ceiling with the server up; tables must
 # also leave room for transients on a 12 GB card shared with the desktop.
-NODE_CEILING = 200_000
+#
+# Lowered from 200,000 on 2026-07-31 after a CUDA probe MEASURED the real peak at
+# 66.5-67.5 KB/node: 195,751 nodes peaked at 12,896 MiB, which exceeds the RTX
+# 3060's 12,287 MiB total outright. The old ceiling therefore reported "FITS" for
+# a tree that cannot run at all. 12,287 MiB less ~2 GiB of display headroom over
+# 66.6 KB/node is ~157,000 nodes, so 150,000 is both safe and the figure
+# STATUS.md 6 already gives.
+NODE_CEILING = 150_000
 TABLE_MIB_CEILING = 2_500
 
 

@@ -400,6 +400,55 @@ Everything below survived NULL-tested, timing-sane instruments (§5).
    mangles every preflop all-in, so anyone who ever enables the flag now gets the
    intended behaviour rather than a 90%-false-positive one.
 
+### 2026-07-31 the river-net acceptance gate fails its own null test
+
+`tools/river_net_gate.py` had never been null-tested, which the standing rule in
+§4 requires before any of its numbers are believed. Gating an **all-zero net** —
+weights zeroed, so it predicts 0 CFVs everywhere and is definitionally the
+zero-predictor — against the same 12 situations x 160 iterations as the recorded
+run:
+
+| net | action agreement | policy L1 |
+|---|---:|---:|
+| **all-zero NULL net** | **0.9269** | 0.4657 |
+| trained net (ratio 0.4864 vs baseline) | **0.3766** | 1.1474 |
+| gate requirement | ≥ 0.90 | ≤ 0.30 |
+
+**The null net PASSES the agreement criterion and the trained net fails it**, and
+the null is better on *both* criteria. Two readings, and they are not exclusive:
+
+1. **The 0.90 threshold is uninformative.** It sits *below* what predicting
+   nothing scores (0.9269), so agreement cannot separate a useful net from an
+   empty one. STATUS.md §7 already flagged that "the 0.1 acceptance threshold was
+   assumed and never measured" — it is now measured, and it is wrong. Any future
+   criterion has to be stated relative to the null floor, not as an absolute.
+2. **A partially-wrong horizon may be genuinely worse than none.** Pricing the
+   river at zero is neutral and leaves the solve's relative action values roughly
+   intact, whereas a half-learned horizon actively misprices and flips top
+   actions. On that reading the gate is working and its verdict is stronger than
+   recorded: this net is not merely unhelpful, it is harmful.
+
+Either way the roadmap consequence is the same. **The CFV line is blocked on its
+acceptance instrument, not only on datagen throughput.** Do not spend GPU-days
+generating rows for a net whose gate cannot tell learning from nothing. Rebuild the
+criterion first, null-anchored, and re-derive the threshold from measurement.
+
+Also settled while investigating, both cheaply and both retiring hypotheses from
+`docs/PLAN_V3_LITERATURE_ALIGNED.md` §P5.1:
+
+- **The EV-versus-CFV target variant is a mathematical no-op here.** Measured
+  range mass per player is **exactly 1.0000** (min 0.9998, max 1.0002, std
+  0.0000), so the counterfactual value already *is* the expected value.
+- **Rebucketing to Supremus's 1,000 is a no-op too.** Exactly **1,081** combos are
+  live on every river board, so 1,326-raw, 1,081-live and 1,000-bucket are the
+  same width. The genuine contrast is the v0 **169**-bucket run (a 6.4x reduction,
+  `backend/data/cfv/bucket_net.pt`, input 391 = 52 board + 2x169 + 1 pot,
+  val MAE 9.324 bb), not 1,000.
+
+The "ratio 0.301 with strength-ordered inputs" result quoted in §7 and in
+`backend/agents/serving.py` has **no code in the repo** — it is unreproducible as
+recorded, and should not be relied on until someone reconstructs it.
+
 ## 4. The great eval corrections (why numbers before 2026-07-24 are suspect)
 
 Five instrument bugs, all user-instinct-triggered ("too consistent", "are you

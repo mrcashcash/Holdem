@@ -45,6 +45,7 @@ class VectorCFR:
         discount_beta: float = 0.0,
         discount_gamma: float = 2.0,
         averaging_delay: int = 0,
+        dcfr_plus_delay: int | None = None,
         batch_boards: int = 1,
         fused_forward: bool = True,
         independent_situations: bool = False,
@@ -83,6 +84,11 @@ class VectorCFR:
         self.discount_beta = discount_beta
         self.discount_gamma = discount_gamma
         self.averaging_delay = averaging_delay
+        # None keeps the existing DCFR quadratic averaging. An integer switches to
+        # DCFR+ linear averaging, weight max{0, t - d}; see _discount. Kept as an
+        # opt-in flag so the default solver -- which every recorded number and the
+        # convergence guard were measured on -- is bit-for-bit unchanged.
+        self.dcfr_plus_delay = dcfr_plus_delay
         self.batch_boards = max(1, batch_boards)
         # Optional [2, NUM_COMBOS] root reach (re-solving subgames start from
         # tracked ranges instead of uniform deals).
@@ -339,7 +345,23 @@ class VectorCFR:
                 torch.tensor(negative_factor, dtype=torch.float32, device=self.device),
             )
         )
-        if self.iteration > self.averaging_delay:
+        if self.dcfr_plus_delay is not None:
+            # DCFR+ (Supremus, arXiv 2007.10442): iteration t contributes to the
+            # average policy with weight max{0, t - d} instead of t**gamma, with
+            # d = 100 in their experiments.
+            #
+            # Accumulation happens BEFORE this decay (run() adds sigma_t in both
+            # _iterate passes, then calls _discount), so sigma_t is multiplied by
+            # every factor from s = t to T. Choosing f(s) = (s-d)/(s+1-d) makes
+            # that product telescope to (t-d)/(T+1-d), i.e. exactly proportional
+            # to (t-d). Iterations at or below d carry zero weight, so their
+            # contribution is discarded outright rather than decayed.
+            delay = float(self.dcfr_plus_delay)
+            if t <= delay:
+                self.strategy_sums.zero_()
+            else:
+                self.strategy_sums *= (t - delay) / (t + 1.0 - delay)
+        elif self.iteration > self.averaging_delay:
             self.strategy_sums *= (t / (t + 1.0)) ** self.discount_gamma
         else:
             self.strategy_sums.zero_()

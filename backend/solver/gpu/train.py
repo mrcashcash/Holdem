@@ -145,7 +145,8 @@ def configure_stack(stack_bb: float, tag: str | None = None) -> None:
         TELEMETRY_PATH = DATA_DIR / "telemetry.json"
 
 
-def build_solver(device: str = "cuda", seed: int = 0, batch_boards: int = 1) -> VectorCFR:
+def build_solver(device: str = "cuda", seed: int = 0, batch_boards: int = 1,
+                 dcfr_plus_delay: int | None = None) -> VectorCFR:
     if device == "cuda" and not torch.cuda.is_available():
         device = "cpu"
     checkpoint = None
@@ -198,6 +199,10 @@ def build_solver(device: str = "cuda", seed: int = 0, batch_boards: int = 1) -> 
         seed=seed,
         averaging_delay=1000,
         batch_boards=batch_boards,
+        # None keeps DCFR quadratic averaging, which every recorded champion
+        # was trained under. An integer switches to DCFR+ (Supremus) linear
+        # averaging, weight max{0, t - d}.
+        dcfr_plus_delay=dcfr_plus_delay,
     )
     storage = solver.storage_report()
     print(
@@ -295,8 +300,10 @@ def train(
     seed: int = 0,
     progress: bool = True,
     batch_boards: int = 1,
+    dcfr_plus_delay: int | None = None,
 ) -> VectorCFR:
-    solver = build_solver(device=device, seed=seed, batch_boards=batch_boards)
+    solver = build_solver(device=device, seed=seed, batch_boards=batch_boards,
+                          dcfr_plus_delay=dcfr_plus_delay)
     completed = 0
     started = time.time()
     while completed < iterations:
@@ -370,6 +377,13 @@ def main() -> None:
         help="reuse only a fitted card sampler from another checkpoint; CFR tables remain zero",
     )
     parser.add_argument("--ruleset", type=str, default=None, choices=["nolimp"], help="house ruleset (never-limp + wide sizing menu)")
+    parser.add_argument(
+        "--dcfr-plus-delay",
+        type=int,
+        default=None,
+        help="DCFR+ linear average-policy weighting max{0, t-d} (Supremus used d=100); "
+             "omit to keep the DCFR quadratic averaging every champion was trained under",
+    )
     arguments = parser.parse_args()
     if arguments.histogram and arguments.abstraction not in ("legacy", "histogram"):
         parser.error("--histogram cannot be combined with --abstraction v3")
@@ -422,6 +436,7 @@ def main() -> None:
         save_every=arguments.save_every,
         seed=arguments.seed,
         batch_boards=arguments.batch_boards,
+        dcfr_plus_delay=arguments.dcfr_plus_delay,
     )
 
 

@@ -200,9 +200,50 @@ quality: scripted opponents do not probe. See
 | instrument | 200bb scalar@118k | 100bb histogram@30k |
 |---|---:|---:|
 | **LBR exploitability** (400 pairs, multi-size probe) | **+291.23 bb/100** [+79.10, +503.36] | **+137.58 bb/100** [−3.57, +278.73] |
-| **LBR, 20,000 pairs** (2026-07-30, supersedes the row above at 200bb) | **+252.45 bb/100** [+223.34, +281.55] | not re-run |
+| **LBR, 20,000 pairs** (2026-07-30, supersedes the row above at 200bb) | **+252.45 bb/100** [+223.34, +281.55] | **+118.64** [+99.40, +137.87] |
 | LBR probe fallback rate | 1.11% (400 pairs) / 1.36% (20,000) | 0.58% |
 | **Slumbot, 20,000 hands** (real API, search off) | **−18.33 bb/100** [−40.41, +3.74] | not run (Slumbot is 200bb native) |
+
+#### Exploitability by depth at 20,000 pairs (2026-07-31)
+
+The full depth curve, each arm 20,000 duplicate pairs, blueprint only. The 20/50/100bb
+rows were run on a rented instance that has since been **destroyed**, and
+`/workspace` there was overlay storage rather than a volume, so the JSON artifacts
+are unrecoverable — these are transcribed from the run logs. Weaker provenance than
+a checked-in artifact; re-run before treating any single figure as load-bearing.
+The 200bb row was run locally and its artifact survives at
+`backend/data/evaluations/lbr-guard-gate-200bb-20k.json`.
+
+| depth | blueprint | LBR exploitability | probe fallback |
+|---|---|---:|---:|
+| 20bb | native 20bb histogram@5k | **+13.34** [+6.93, +19.75] | 0.35% |
+| 50bb | 20bb champion (serving routes 50→20) | **+19.12** [+6.54, +31.70] | 0.79% |
+| 100bb | histogram@30k | **+118.64** [+99.40, +137.87] | 0.12% |
+| 200bb | scalar@118k | **+252.45** [+223.34, +281.55] | 1.36% |
+
+**Exploitability is overwhelmingly a deep-stack problem.** The probe wins 133
+mbb/hand at 20bb and **2,525 at 200bb** — a 19x spread. For scale, Supremus *beats*
+LBR by 951 mbb/hand. Shallow play is within sight of the resolving-agent class;
+200bb is not. Any effort aimed at overall strength belongs at 100-200bb, and the
+50bb figure also vindicates routing 50bb to the native 20bb blueprint rather than
+the 100bb one (the old 400-pair figure with the 100bb champion was +85.05).
+
+The all-in geometry guard was A/B'd in the same runs (paired, ON minus OFF,
+negative means less exploitable):
+
+| depth | paired delta | pairs differing | verdict |
+|---|---:|---:|---|
+| 20bb | −0.09 [−0.31, +0.12] | 37 / 20,000 | inconclusive, effect ~nil |
+| 50bb | −1.84 [−11.65, +7.98] | **3,014 / 20,000** | inconclusive |
+| 100bb | **−5.65 [−10.30, −1.00]** | 164 / 20,000 | **reduces exploitability** |
+| 200bb | −4.74 [−10.63, +1.14] | 69 / 20,000 | same direction |
+
+100bb is the guard's first significant positive result, and no depth is harmed. It
+still ships OFF because the head-to-head cost (−139 to −244 against a min-raiser)
+outweighs it — see §3.6. Two oddities worth chasing: 50bb had **20x more** differing
+pairs than any other depth, consistent with real 50bb geometry against a 20bb
+abstract tree being the most strained translation; and 50bb's guard-ON fallback rose
+to **3.45%** from 0.79%, above the ≤1% rule, which is unexplained.
 
 **The 400-pair LBR figures are imprecise and should not be quoted as headline
 numbers.** At 400 pairs the 200bb interval was [+79.10, +503.36] — a width of 424
@@ -484,6 +525,60 @@ Also settled while investigating, both cheaply and both retiring hypotheses from
 The "ratio 0.301 with strength-ordered inputs" result quoted in §7 and in
 `backend/agents/serving.py` has **no code in the repo** — it is unreproducible as
 recorded, and should not be relied on until someone reconstructs it.
+
+### 2026-07-31 DCFR+ averaging: implemented, measured, NOT adopted
+
+Supremus (arXiv 2007.10442) weights iteration t in the average policy by
+max{0, t - d} rather than t**gamma. Implemented in `VectorCFR._discount` behind
+`dcfr_plus_delay` (opt-in; default None keeps the quadratic averaging every
+champion was trained under) and threaded through `build_solver`, `train` and
+`--dcfr-plus-delay`.
+
+Measured by `tools/dcfr_plus_duel.py`: two 20bb blueprints trained from scratch at
+5,000 iterations, identical solver seed, abstraction and tree, differing ONLY in
+the averaging rule, then duelled at 3,000 seat-swapped duplicate pairs with CRN.
+
+| | result |
+|---|---|
+| CRN null, control vs itself | **+0.00 [+0.00, +0.00]** |
+| DCFR+ minus DCFR | **+2.80 bb/100 [−2.56, +8.16]** |
+| verdict | **INCONCLUSIVE — do not change the default** |
+
+The interval is tight, so this is a real null rather than an underpowered test: the
+effect at this depth is bounded small in both directions. The flag stays in the
+codebase, off, because Supremus's related finding — that simultaneous regret
+updates beat alternating ones — holds specifically *when a value network is in the
+loop*, a regime this project cannot enter until the CFV line is unblocked. Retest
+there, not here.
+
+**Why exploitability could not be used, and why the duel had to be:**
+`abstract_exploitability_mbb` reads exactly 0.00 mbb for BOTH rules at 1,000 and
+4,000 iterations on the fixed-river control game, raises IndexError below ~500
+iterations on an under-trained strategy, and raises IndexError outright on a larger
+tree. It is a converged-strategy instrument with no dynamic range for a
+convergence-speed claim.
+
+**Two confounds this measurement had to remove, both of which faked a large win:**
+
+1. **Unequal averaging warmup.** `build_solver` hardcodes `averaging_delay=1000`,
+   so pairing it against Supremus's d=100 changes how many early iterations are
+   discarded AND the weighting rule. At 300 iterations the control accumulates
+   *nothing* (300 < 1000) while DCFR+ averages 200 iterations — that alone read
+   **+142.12 bb/100**, roughly 50x the real effect. The gate now defaults d to 1000
+   to match, and refuses to run unless iterations >= 3d.
+2. **Unequal training.** A killed run left the control at 5,000 iterations and the
+   challenger at 4,500, and the resume check tested checkpoint *existence* rather
+   than iteration count. 500 fewer iterations of training is indistinguishable from
+   a worse averaging rule. Resume is now iteration-aware (training only the
+   shortfall, since the trainer's `--iterations` is an increment), and a pre-duel
+   assertion refuses to produce any number unless both arms sit at exactly the
+   requested count.
+
+Caveat on scope: this tests linear-versus-quadratic weighting at a *matched*
+1,000-iteration warmup, which isolates the rule but is not literally Supremus's
+d=100 configuration. And it is one seed at 20bb — the depth where the agent is
+already strongest (+13.34 exploitability) with trees 4x smaller than the 200bb case
+that actually needs help (+252.45).
 
 ## 4. The great eval corrections (why numbers before 2026-07-24 are suspect)
 

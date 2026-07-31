@@ -51,6 +51,8 @@ def main() -> None:
     parser.add_argument("--stack-bb", type=float, default=200.0)
     parser.add_argument("--opponent", default="always-min-raise")
     parser.add_argument("--seed", type=int, default=20260731)
+    parser.add_argument("--geometry-aware", action="store_true",
+                        help="enable geometry-aware _locate (off in serving)")
     parser.add_argument("--output", type=Path,
                         default=Path("backend/data/evaluations/translation-drift.json"))
     arguments = parser.parse_args()
@@ -74,6 +76,9 @@ def main() -> None:
         raise SystemExit("expected the multi-stack router")
     agent.continual_search = False        # measure the blueprint's own translation
     agent.all_in_geometry_guard = False   # serving default; behaviour unchanged
+    for _sub in agent.agents.values():
+        if hasattr(_sub, "geometry_aware_translation"):
+            _sub.geometry_aware_translation = arguments.geometry_aware
 
     records: list[dict] = []
 
@@ -113,7 +118,7 @@ def main() -> None:
         sub._locate = probe
 
     log(f"=== translation drift: {arguments.hands} hands @ {arguments.stack_bb:.0f}bb "
-        f"vs {arguments.opponent} ===")
+        f"vs {arguments.opponent}, geometry_aware={arguments.geometry_aware} ===")
     log(f"durable log: {log_path}")
 
     big_blind = 20

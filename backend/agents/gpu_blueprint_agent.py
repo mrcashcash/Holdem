@@ -10,6 +10,7 @@ the current board (cached per board+street).
 from __future__ import annotations
 
 import json
+import math
 import os
 import random
 import time
@@ -121,6 +122,11 @@ class GpuBlueprintAgent:
         #: exploitation rather than a bug. Nothing has measured the guard as
         #: helpful, and this project does not serve that. The measurement that
         #: would settle it -- LBR guard-on vs guard-off -- has not been taken.
+        # Geometry-aware node location. Off by default: it changes which abstract
+        # node every decision reads, so it must earn its place on a duel and an LBR
+        # run, not on the drift measurement alone. See _locate.
+        self.geometry_aware_translation = False
+        self.translation_drift_tolerance = 1.5
         self.all_in_geometry_guard = False
         self.all_in_geometry_tolerance = ALL_IN_GEOMETRY_TOLERANCE
         self.all_in_max_pot_multiple = ALL_IN_MAX_POT_MULTIPLE
@@ -329,29 +335,129 @@ class GpuBlueprintAgent:
     def _abstract_seat(game: HeadsUpHoldem, player: int) -> int:
         return 0 if player == game.button else 1
 
-    def _locate(self, game: HeadsUpHoldem, player: int) -> int | None:
-        """Walk the flattened tree along the hand's public actions."""
+    def _geometry_drift(self, game: HeadsUpHoldem, player: int, node: int) -> float | None:
+        """How far the located node's stack-to-pot geometry is from reality.
+
+        Unitless, so bb and chips cannot be confused — the same form the all-in
+        guard uses. 1.0 means the node has reality's geometry; above 1.0 means the
+        abstract node is deeper into its pot than the real situation is, so the
+        action trained there is more committal than the spot warrants.
+        """
         try:
-            abstract_seat = 0 if player == game.button else 1
-            node = self.tree.root
-            rng = random.Random(game.hand_number * 8191 + len(game.public_actions))
-            for event in game.public_actions:
-                if event["action"] == "blind":
-                    continue
-                while self.tree.kind[node] == STREET_END:
-                    node = int(self.tree.children[node][0])
-                if self.tree.kind[node] != DECISION:
-                    return None
-                action = self._translate_event(node, game, event, rng)
-                child = int(self.tree.children[node][action])
-                if child < 0:
-                    return None
-                node = child
+            matched_abstract = float(self._abstract_matched_pot(node))
+            matched_real = 2.0 * float(min(game.contributions))
+            if matched_abstract <= 0.0 or matched_real <= 0.0:
+                return None
+            ratio_abstract = float(self.tree.config.stack_bb) / matched_abstract
+            ratio_real = (
+                float(game.contributions[player]) + float(game.stacks[player])
+            ) / matched_real
+            return ratio_real / max(ratio_abstract, 1e-9)
+        except Exception:
+            return None
+
+    def _walk(self, game: HeadsUpHoldem, player: int, size_bias: int) -> int | None:
+        """One pass down the tree along the hand's translated actions."""
+        abstract_seat = 0 if player == game.button else 1
+        node = self.tree.root
+        rng = random.Random(game.hand_number * 8191 + len(game.public_actions))
+        for event in game.public_actions:
+            if event["action"] == "blind":
+                continue
             while self.tree.kind[node] == STREET_END:
                 node = int(self.tree.children[node][0])
-            if self.tree.kind[node] != DECISION or int(self.tree.actor[node]) != abstract_seat:
+            if self.tree.kind[node] != DECISION:
                 return None
-            return node
+            action = self._translate_event(node, game, event, rng, size_bias=size_bias)
+            child = int(self.tree.children[node][action])
+            if child < 0:
+                return None
+            node = child
+        while self.tree.kind[node] == STREET_END:
+            node = int(self.tree.children[node][0])
+        if self.tree.kind[node] != DECISION or int(self.tree.actor[node]) != abstract_seat:
+            return None
+        return node
+
+    def _locate(self, game: HeadsUpHoldem, player: int) -> int | None:
+        """Walk the flattened tree along the hand's public actions.
+
+        With `geometry_aware_translation` off this is exactly the historical
+        behaviour: one unbiased walk, pseudo-harmonic sizing at each step.
+
+        With it on, the walk is repeated with a size bias when the node it reached
+        has drifted. Measured over 300 hands at 200bb against a min-raiser
+        (`tools/translation_drift_audit.py`), unbiased translation drifts because
+        per-action errors compound in one direction:
+
+            translated actions   <=3   >=6      street   preflop  flop  turn  river
+            median drift        1.00  2.50      median      1.00  1.25  1.84   3.33
+
+        By the river the located node's stack-to-pot ratio is typically 3.3x
+        reality's, so the blueprint answers a materially different question. A
+        `size_bias` of -1 prefers the smaller of the two candidate raises at every
+        step, shrinking the abstract pot and pulling drift down; +1 does the
+        reverse. Both alternatives are tried only when the unbiased walk is out of
+        tolerance, and the walk whose node is geometrically closest to reality
+        wins. Walks are pointer-chases down a path, so this costs at most two extra
+        traversals and no solving.
+
+        **IT DOES NOT FIX THE DRIFT MEASURED ABOVE, and here is why.** Instrumenting
+        the branches `_translate_event` takes over 120 hands against a min-raiser:
+
+            forced to the smallest fraction (observed below the menu)   652
+            exact match                                                198
+            no raise available at all                                   31
+            genuine CHOICE between two fractions, where bias applies      0
+
+        A min-raise is roughly 0.1x pot and the smallest abstract raise is 0.5x, so
+        every one is FORCED to the smallest fraction with no candidate to choose
+        between — which is precisely how the pot inflates ~5x per raise and
+        compounds to 3.3x by the river. The drift is a **menu-coverage** failure,
+        not a choice failure, and re-walking cannot repair it: an A/B over 300 hands
+        produced byte-identical drift with this enabled and disabled.
+
+        What it would help is an opponent whose raises land BETWEEN two abstract
+        fractions, which is what a human does and what no scripted opponent here
+        does. That is why this stays implemented but off and unproven, rather than
+        deleted: it is untested, not refuted. The measured drift needs a smaller
+        minimum raise fraction in the menu — and at 200bb the tree is already at
+        this card's VRAM ceiling, so the promising version is size-NEUTRAL: swap the
+        fraction set (e.g. 0.5/1.0 -> 0.25/0.75) rather than extend it.
+
+        Randomisation is preserved in the in-tolerance case, which is the common
+        one: pseudo-harmonic sampling exists so an opponent cannot bet between two
+        abstract sizes and know which branch we take, and a deterministic
+        translation would hand that back.
+        """
+        try:
+            node = self._walk(game, player, size_bias=0)
+            if not getattr(self, "geometry_aware_translation", False):
+                return node
+
+            tolerance = float(getattr(self, "translation_drift_tolerance", 1.5))
+            best, best_error = node, None
+            if node is not None:
+                drift = self._geometry_drift(game, player, node)
+                if drift is None:
+                    return node
+                if 1.0 / tolerance <= drift <= tolerance:
+                    return node  # already faithful; keep the randomised choice
+                best_error = abs(math.log(drift))
+
+            # Out of tolerance: a drift above 1 means the abstract pot is too
+            # large, so try the smaller-raise bias first, and vice versa.
+            for bias in (-1, 1):
+                candidate = self._walk(game, player, size_bias=bias)
+                if candidate is None:
+                    continue
+                candidate_drift = self._geometry_drift(game, player, candidate)
+                if candidate_drift is None:
+                    continue
+                error = abs(math.log(candidate_drift))
+                if best_error is None or error < best_error:
+                    best, best_error = candidate, error
+            return best
         except Exception:
             return None
 
@@ -677,7 +783,8 @@ class GpuBlueprintAgent:
             return None
 
     def _translate_event(
-        self, node: int, game: HeadsUpHoldem, event: dict, rng: random.Random, tree: BettingTree | None = None
+        self, node: int, game: HeadsUpHoldem, event: dict, rng: random.Random,
+        tree: BettingTree | None = None, size_bias: int = 0
     ) -> int:
         tree = tree or self.tree
         legal = tree.legal[node]
@@ -720,6 +827,16 @@ class GpuBlueprintAgent:
         lower, upper = below[-1], above[0]
         if lower == upper:
             return lower
+        # size_bias is set only by a geometry-corrected re-walk in _locate: -1
+        # takes the smaller candidate at every step (shrinking the abstract pot,
+        # pulling drift down), +1 the larger. Zero keeps the pseudo-harmonic
+        # randomisation, which is what makes the translation unexploitable, so the
+        # bias must stay confined to walks _locate has already found to be out of
+        # tolerance.
+        if size_bias < 0:
+            return lower
+        if size_bias > 0:
+            return upper
         weight_lower, weight_upper = pseudo_harmonic_weights(observed, fractions[lower - 3], fractions[upper - 3])
         return rng.choices([lower, upper], weights=[weight_lower, weight_upper])[0]
 

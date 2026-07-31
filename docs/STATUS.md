@@ -597,14 +597,34 @@ exact-card resolving measured **helpful at 100bb (+31.83) and harmful at 200bb
 it starts from 150-bucket ranges and at 200bb from 20-bucket ones. A resolver
 seeded with a much coarser prior is a resolver solving the wrong subgame.
 
-Training in progress: 200bb, `--abstraction histogram`, **the deployed menu left
-unchanged** (0.5/1.0, cap 3, 147,349 nodes) so the card abstraction is the only
-variable, with the 100bb champion's fitted sampler imported so bucket counts match
-and centroid fitting is skipped. Promotion still requires the usual gates — a
-CRN-coupled duel against `scalar@118k`, LBR at 20,000 pairs against the frozen
-+252.45, and the mapping/fallback checks. 5,000 iterations may be undertrained at
-this tree size; `20BB_BLUEPRINT_PLAN.md` saw histogram@5k win at 36,906 nodes, and
-this tree is 4x larger.
+A 200bb histogram blueprint was trained with **the deployed menu left unchanged**
+(0.5/1.0, cap 3, 147,349 nodes) and the 100bb champion's fitted sampler imported, so
+the card abstraction is the only variable. First gate at 5,000 iterations
+(`tools/abstraction_duel.py`, 3,000 seat-swapped duplicate pairs, CRN, null exactly
+**+0.00**):
+
+| | value |
+|---|---|
+| histogram@5k minus scalar@118k | **−17.79 bb/100 [−50.04, +14.47]** |
+| verdict | **INCONCLUSIVE — not promoted** |
+
+The number that matters here is not the point estimate but the pairing: **5,000
+iterations against 118,000**, a **23.6x training deficit**, and the interval still
+spans zero. §2.3 already records histogram "reaching parity with a 3.3x-trained
+scalar model"; this is the same effect at seven times the deficit, which is
+consistent with the abstraction being materially better rather than worthless.
+
+So the read is undertraining, not a dead end, and training was continued from 5,000
+toward 20,000 iterations (~10.4h at the measured 0.40 iters/s). Gate again at 10k
+and 20k. Promotion still needs a positive disjoint confirmatory interval, LBR at
+20,000 pairs against the frozen +252.45 [+223.34, +281.55], and the mapping and
+fallback checks — a duel win alone is necessary, not sufficient.
+
+Measured training cost at this tree size, for planning: **0.385–0.405 iterations/s**,
+flat across fourteen 500-iteration chunks, i.e. ~21 min per 500. Progress is
+visible only in `telemetry.json` and the checkpoint files — the trainer's stdout
+prints nothing after startup, so a healthy run and a hung one look identical from the
+log alone.
 
 Note for anyone repeating this: two OOMs preceded the discovery and both are
 informative. A GPU OOM in `_showdown_values` needed

@@ -68,9 +68,55 @@ from backend.search.river_horizon import RiverNetEvaluator  # noqa: E402
 from backend.solver.gpu.cfr import VectorCFR  # noqa: E402
 from backend.solver.gpu.tree import BettingTree  # noqa: E402
 
-# Reuse v1's situation sampler and tree config verbatim so the two gates describe
-# the same population and any difference is the metric, not the setup.
+# Reuse v1's situation sampler and tree config so the two gates can describe the
+# same population when asked to.
 from tools.river_net_gate import _config, _situation  # noqa: E402
+
+
+def _situation_polarized(rng: random.Random):
+    """v1's situation, but with ranges drawn the way TRAINING and real play draw them.
+
+    v1 (and therefore v2 by default) sets both ranges to `live / live.sum()` --
+    perfectly uniform. The datagen deliberately does not: `random_range`'s own
+    docstring says uniform weights are "far too flat to look like anything
+    re-solving actually meets" and splits mass recursively to get "the lumpy,
+    polarized shapes real play generates."
+
+    Measured on one river board (1,081 live combos):
+
+        uniform          effective support 1081.0   max weight 0.0009   top-1% mass 0.009
+        random_range      effective support  31-102   max weight 0.07-0.32  top-1% mass 0.39-0.60
+
+    So the gate was grading the net 10-35x outside its training support on every
+    concentration statistic. A net that has never seen a flat range will
+    extrapolate erratically on one, which is what the bimodal collapse looked
+    like. This sampler removes that mismatch so the gate measures the net on the
+    inputs it was built for -- and which real play actually produces.
+    """
+    import numpy as np_local
+
+    from backend.cfv.river_dataset import random_range
+    from backend.solver.gpu.deals import CARD_IN_COMBO, NUM_COMBOS
+
+    board = tuple(rng.sample(range(52), 4))
+    stack_bb, pot_bb = 200.0, float(rng.choice((14.0, 22.0, 34.0, 50.0)))
+    behind = stack_bb - pot_bb / 2.0
+    from backend.solver.gpu.tree import BettingRootState
+
+    root = BettingRootState(
+        street=2, to_act=1, committed=(pot_bb / 2.0, pot_bb / 2.0),
+        street_commit=(0.0, 0.0), stacks=(behind, behind),
+        acted=(False, False), raises=0, last_increment=1.0,
+    )
+    live = np_local.ones(NUM_COMBOS, dtype=bool)
+    for card in board:
+        live &= ~CARD_IN_COMBO[card]
+    ranges = np_local.stack([
+        random_range(rng, live), random_range(rng, live)
+    ]).astype(np_local.float32)
+    # A polarized range can leave a combo at zero; the metrics weight by mass, so
+    # zero-mass combos simply drop out rather than needing special handling.
+    return board, root, ranges, live, stack_bb
 
 
 def load_net(path: Path):
@@ -102,6 +148,9 @@ def main() -> None:
     parser.add_argument("--situations", type=int, default=12)
     parser.add_argument("--iterations", type=int, default=160)
     parser.add_argument("--seed", type=int, default=5)
+    parser.add_argument("--ranges", choices=("polarized", "uniform"), default="polarized",
+                        help="polarized matches the datagen and real play (default); "
+                             "uniform reproduces v1's out-of-distribution population")
     parser.add_argument("--output", type=Path,
                         default=Path("backend/data/evaluations/river-gate-v2.json"))
     arguments = parser.parse_args()
@@ -124,14 +173,18 @@ def main() -> None:
     null = zero_net(candidate)
     device = "cuda" if torch.cuda.is_available() else "cpu"
     rng = random.Random(arguments.seed)
+    sample = _situation_polarized if arguments.ranges == "polarized" else _situation
 
     log(f"=== river-net gate v2 (null-anchored): {arguments.net} ===")
     log(f"{arguments.situations} situations x {arguments.iterations} iterations on {device}")
+    log(f"range distribution: {arguments.ranges.upper()}"
+        + ("  (matches datagen + real play)" if arguments.ranges == "polarized"
+           else "  (v1 population; OUT OF DISTRIBUTION for the net)"))
     log(f"durable log: {log_path}")
 
     rows = []
     for index in range(arguments.situations):
-        board, root, ranges, live, stack_bb = _situation(rng)
+        board, root, ranges, live, stack_bb = sample(rng)
         config = _config(stack_bb)
 
         def solve_full():
@@ -227,6 +280,7 @@ def main() -> None:
         "gate": "river-net-acceptance-v2",
         "generated_utc": datetime.now(timezone.utc).isoformat(timespec="seconds"),
         "net": str(arguments.net),
+        "ranges": arguments.ranges,
         "situations": arguments.situations,
         "iterations": arguments.iterations,
         "situations_with_sensitive_mass": len(scored),

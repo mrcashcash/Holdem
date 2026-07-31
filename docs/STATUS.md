@@ -592,30 +592,60 @@ That 7.3% is the whole explanation for v1: **93% of range mass has a top action 
 horizon can change**, so v1's statistic was measuring insensitive decisions and its
 floor was pinned near 0.93.
 
-**The per-situation split is the finding.** Grouping by sensitive-set accuracy
-(policy L1 maxes at 2.0, meaning maximally different policies):
+**Both gates fed the net a range distribution it was never trained on.** v1's
+`_situation` sets both ranges to `live / live.sum()` — perfectly uniform — and v2
+inherited it to keep the metric change isolated. But `random_range`, which the
+datagen uses, exists precisely to avoid that: its docstring says uniform weights are
+"far too flat to look like anything re-solving actually meets." Measured on one
+river board with 1,081 live combos:
 
-| group | situations | sensitive accuracy | L1 net | L1 null |
-|---|---:|---:|---:|---:|
-| **works** | 5 / 12 | **0.703** | 0.571 | 0.500 |
-| **collapses** | 7 / 12 | **0.017** | **1.560** | 0.441 |
+| ranges | effective support | max weight | top-1% mass |
+|---|---:|---:|---:|
+| uniform (what both gates fed it) | **1081.0** | 0.0009 | 0.009 |
+| `random_range` (what it was trained on) | **31–102** | 0.07–0.32 | 0.39–0.60 |
 
-On 7 of 12 situations the net is **near-maximally wrong** (L1 1.18–1.98), and on 5
-of 12 it gets **70%** of the decisions that matter right. It beats the null on L1 in
-only 2 of 12.
+10–35x outside its training support on every concentration statistic. `--ranges
+polarized` was added to sample the way training and real play do. Re-running the
+whole gate on that population, 12 situations x 160 iterations:
 
-**This reframes the whole CFV line.** The architecture demonstrably *can* learn this
-mapping — 0.70 accuracy where it works is not noise. The problem is that it
-generalises catastrophically badly to more than half the situation space, which is
-an out-of-distribution failure, not the uniform sample-starvation that
-`PLAN_V3` §2 assumed when it priced the line at 482 GPU-days for 50M rows. More
-rows help only if they cover the regions where it collapses.
+| metric | uniform | **polarized (in-distribution)** |
+|---|---:|---:|
+| mean horizon-sensitive mass | 0.0732 | 0.0695 |
+| sensitive-set accuracy | 0.3029 | **0.1313** |
+| policy L1, net | 1.1482 | 0.5038 |
+| policy L1, null | 0.4657 | 0.2258 |
+| L1 skill vs null | −1.4658 | **−1.2306** |
+| situations where the net works (acc ≥ 0.5) | 5 / 12 | **1 / 12** |
+| situations where the net beats the null on L1 | 2 / 12 | **0 / 12** |
 
-So the next question is coverage, not volume: `tools/generate_river_cfv.py` walks a
-`(stack, pot)` grid with `--per-cell` samples, and the collapsing situations should
-be checked against that grid before any datagen is commissioned. Characterising
-what distinguishes the 7 collapses from the 5 successes — pot/SPR extremes, range
-shape, board texture — is cheap and is the highest-value CFV work available.
+**The distribution mismatch was not the explanation.** On its own training
+distribution the net is worse by every measure that matters — accuracy on the
+decisions the horizon moves falls to 0.13, and it never once beats a zero horizon.
+Only the absolute L1 magnitudes shrink, for both arms, because polarized ranges are
+lower-entropy so all policies sit closer together.
+
+**Two claims made earlier on 2026-07-31 are retracted:**
+
+1. *"The failure is bimodal — the architecture can demonstrably learn this, 0.70
+   accuracy where it works is not noise."* That 5/12 success rate was measured on
+   the out-of-distribution uniform population, where occasional agreement is
+   extrapolation luck. In-distribution it is 1/12. There is no demonstrated
+   sub-population where this net works.
+2. *"Polarized ranges make it 7x less bad (L1 skill −0.20)."* That came from a
+   **3-situation** smoke and did not survive n=12, where the figure is −1.23. Over-
+   reading an underpowered run is the exact failure this document warns about
+   throughout, and it happened here.
+
+Also checked and dead: `(stack, pot)` coverage does not explain anything. The gate
+drew pots {14, 22, 34} and both the working and collapsing groups span all of them
+(means 21.2 vs 22.0), so the datagen grid's spacing is not implicated.
+
+**Net conclusion for the CFV line.** The river net is worse than pricing the river at
+zero, on every population tested, by a wide margin. That is now an instrument-clean
+result rather than an artifact: the gate is null-anchored, sensitivity-restricted,
+and run in-distribution. Whether more rows would fix it is untested and should not be
+assumed in either direction — but nothing measured so far supports spending 482
+GPU-days to find out.
 
 **No replacement threshold is proposed, deliberately.** v1's 0.90 was assumed and
 never measured (§7 said so); inventing a new constant would repeat that with fresh

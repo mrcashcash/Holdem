@@ -568,6 +568,53 @@ The "ratio 0.301 with strength-ordered inputs" result quoted in §7 and in
 `backend/agents/serving.py` has **no code in the repo** — it is unreproducible as
 recorded, and should not be relied on until someone reconstructs it.
 
+### 2026-07-31 THE 200bb CHAMPION IS RUNNING A STALE CARD ABSTRACTION
+
+Found while a menu experiment failed to start: `--sampler-init` from the 200bb
+champion was rejected with
+
+    sampler bucket counts do not match: (169, 20, 20, 20) != (169, 150, 150, 30)
+
+Reading all three champions' stored samplers:
+
+| depth | abstraction | postflop buckets | LBR exploitability |
+|---|---|---|---:|
+| 20bb | histogram-EMD | (169, **150, 150, 30**) | **+13.34** |
+| 100bb | histogram-EMD | (169, **150, 150, 30**) | **+118.64** |
+| **200bb** | **scalar (legacy)** | (169, **20, 20, 20**) | **+252.45** |
+
+**The 200bb champion is 7.5x coarser on flop and turn than either other depth**, and
+1.5x coarser on the river. §2.3 of this document already records histogram-EMD as
+"the default abstraction now", crediting it with reaching parity against a
+3.3x-trained scalar model and fixing a whole leak class — but `scalar@118k` predates
+that switch and was never retrained. The deepest stack, where the agent is by far
+the weakest, is the one depth still on the superseded abstraction.
+
+This is a better candidate explanation for the deep-stack weakness than the betting
+menu, and it plausibly explains something else that had been left unexplained: why
+exact-card resolving measured **helpful at 100bb (+31.83) and harmful at 200bb
+(−58.61)**. The resolver projects blueprint ranges into its exact solve, so at 100bb
+it starts from 150-bucket ranges and at 200bb from 20-bucket ones. A resolver
+seeded with a much coarser prior is a resolver solving the wrong subgame.
+
+Training in progress: 200bb, `--abstraction histogram`, **the deployed menu left
+unchanged** (0.5/1.0, cap 3, 147,349 nodes) so the card abstraction is the only
+variable, with the 100bb champion's fitted sampler imported so bucket counts match
+and centroid fitting is skipped. Promotion still requires the usual gates — a
+CRN-coupled duel against `scalar@118k`, LBR at 20,000 pairs against the frozen
++252.45, and the mapping/fallback checks. 5,000 iterations may be undertrained at
+this tree size; `20BB_BLUEPRINT_PLAN.md` saw histogram@5k win at 36,906 nodes, and
+this tree is 4x larger.
+
+Note for anyone repeating this: two OOMs preceded the discovery and both are
+informative. A GPU OOM in `_showdown_values` needed
+`HOLDEM_SHOWDOWN_WORKSPACE_MB=128` (the tiling is mathematically identical at any
+tile size, so this costs speed and not quality), and `PYTORCH_CUDA_ALLOC_CONF=
+expandable_segments:True` is **not supported on Windows** — torch warns and ignores
+it. A host-RAM OOM then came from refitting histogram centroids from scratch;
+`--sampler-init` avoids it, and is also the better experiment because it holds the
+card abstraction fixed across runs.
+
 ### 2026-07-31 river-net gate rebuilt, and the failure is BIMODAL not uniform
 
 `tools/river_net_gate_v2.py` replaces the retired v1 criterion. It computes the

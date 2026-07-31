@@ -377,6 +377,19 @@ def main() -> None:
         help="reuse only a fitted card sampler from another checkpoint; CFR tables remain zero",
     )
     parser.add_argument("--ruleset", type=str, default=None, choices=["nolimp"], help="house ruleset (never-limp + wide sizing menu)")
+    # Menu overrides for translation-drift experiments. The deployed 200bb menu
+    # forces every min-raise up to its smallest fraction of 0.5x pot, which
+    # compounds to 3.3x geometry drift by the river
+    # (tools/translation_drift_audit.py, tools/menu_drift_probe.py). Overriding
+    # the fractions is how a lower-drift menu gets trained and duelled.
+    parser.add_argument("--preflop-fractions", type=str, default=None,
+                        help="comma-separated override, e.g. 0.75,1.5")
+    parser.add_argument("--postflop-fractions", type=str, default=None,
+                        help="comma-separated override, e.g. 0.25,0.75")
+    parser.add_argument("--raise-cap", type=int, default=None,
+                        help="max raises per street override")
+    parser.add_argument("--preflop-raise-cap", type=int, default=None,
+                        help="preflop-only raise cap override")
     parser.add_argument(
         "--dcfr-plus-delay",
         type=int,
@@ -419,6 +432,31 @@ def main() -> None:
         tag = "v3_nolimp" if arguments.ruleset == "nolimp" else "v3"
     if arguments.stack_bb != 100.0 or tag:
         configure_stack(arguments.stack_bb, tag=tag)
+    # Menu overrides apply AFTER configure_stack, which itself rewrites
+    # DEFAULT_CONFIG's stack_bb -- otherwise the depth would clobber them.
+    def _fractions(text):
+        return tuple(float(part) for part in text.split(',') if part.strip())
+    overrides = {}
+    if arguments.preflop_fractions:
+        overrides['preflop_fractions'] = _fractions(arguments.preflop_fractions)
+    if arguments.postflop_fractions:
+        overrides['postflop_fractions'] = _fractions(arguments.postflop_fractions)
+    if arguments.raise_cap is not None:
+        overrides['max_raises_per_street'] = int(arguments.raise_cap)
+    if arguments.preflop_raise_cap is not None:
+        overrides['preflop_raise_cap'] = int(arguments.preflop_raise_cap)
+    if overrides:
+        if not arguments.tag:
+            raise SystemExit(
+                'a menu override needs --tag: it builds an incompatible tree, and '
+                'without a tag it would try to resume from a checkpoint whose '
+                'config does not match.'
+            )
+        DEFAULT_CONFIG = replace(DEFAULT_CONFIG, **overrides)
+        print(f'menu override -> preflop={DEFAULT_CONFIG.preflop_fractions} '
+              f'postflop={DEFAULT_CONFIG.postflop_fractions} '
+              f'cap={DEFAULT_CONFIG.max_raises_per_street} '
+              f'preflop_cap={DEFAULT_CONFIG.preflop_raise_cap}')
     if arguments.sampler_init is not None:
         SAMPLER_INIT_PATH = arguments.sampler_init.resolve()
     elif arguments.phase3_actions and arguments.abstraction == "v3":

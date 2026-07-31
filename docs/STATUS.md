@@ -387,8 +387,45 @@ Everything below survived NULL-tested, timing-sane instruments (§5).
    ≤3x pot at 14,492 of those 15,188 nodes — so the trained mass is reasonable and
    only the translation is wrong. Measured rate (`tools/overbet_audit.py`, 200bb):
    8 overbets in 640 decisions vs a min-raiser (worst 15.4x), **zero** vs a
-   calling station or in self-play; **four of the eight were preflop**, which no
-   postflop resolving can reach. The real fix is the
+   calling station or in self-play.
+
+   **RETRACTED 2026-07-31: the leak is not preflop, it is the river.** The claim
+   that "four of the eight were preflop, which no postflop resolving can reach"
+   came from `tools/overbet_audit.py`, whose criterion is `amount / pot_before >=
+   3.0` — an ABSOLUTE pot multiple, the same assumption that made the guard fire on
+   89.6% false positives. Preflop the matched pot is one or two big blinds, so a
+   correct 200bb shove is inherently 100-200x pot and trips any absolute bound.
+
+   `tools/overbet_distortion_audit.py` classifies by DISTORTION instead —
+   `ratio_real / ratio_abstract`, i.e. how far the real geometry has drifted from
+   the node the action was trained on — over 200 hands at 200bb versus the same
+   min-raiser, guard off, behaviour byte-identical to serving:
+
+   | street | translated all-ins | flagged by the ≥3x rule | genuinely distorted |
+   |---|---:|---:|---:|
+   | preflop | 4 | **4** | **0** |
+   | turn | 1 | 1 | 1 |
+   | river | 6 | 5 | **6** |
+   | total | 11 | 10 | **7** |
+
+   Every preflop jam is undistorted: real ratio equals abstract ratio, so these are
+   legitimate shoves. All six river all-ins ARE distorted, worst 6.25x (the abstract
+   node expected roughly a 1x-pot bet). So **`PLAN_V3` P3's 1-2 week preflop budget
+   is aimed at a leak that does not exist**, and the real one sits on streets that
+   postflop resolving *can* reach.
+
+   That creates a tension worth stating plainly: the river distortion is exactly
+   what the exact-card resolver removes, because its tree is built on the real
+   geometry — and resolving is now switched OFF at 200bb because it measured −58.61
+   bb/100 there. Both results stand: the resolver fixes translation and still loses
+   overall, so it must be introducing a larger error elsewhere. The guard also
+   addresses this distortion and is off for its own measured reason (§3.6 below).
+   With both mitigations rejected on measurement, the honest conclusion is that a
+   real river-translation leak is currently **unmitigated**, and the remaining fix
+   is structural: `_locate` matches a live hand onto an abstract node by translated
+   action sequence and **never compares pot/stack geometry**. Making it
+   geometry-aware attacks the cause rather than the symptom, and it is the work P3's
+   budget should be pointed at. The real fix is the
    resolver (0.16% on all-in at that spot, since its tree uses the real geometry)
    and, for preflop, a richer menu or preflop resolving — not a sizing heuristic.
 

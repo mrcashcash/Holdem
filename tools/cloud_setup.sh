@@ -61,7 +61,16 @@ PINS=(
   "pydantic==2.11.7"
   "websockets==16.1"
   "requests==2.34.2"
+  # Required by backend/api_auth.py, which backend/eval/duel.py imports -- so
+  # WITHOUT IT test_duel_null cannot even be collected, and the promotion gate
+  # is unavailable. It is not optional despite looking like server-only config.
+  "python-dotenv==1.2.2"
 )
+
+# Deliberately NOT installed: cv2/opencv, mss, rapidocr, resvg_py, tkinter and
+# windows_capture. Those serve the live screen-scraping and GUI overlay paths,
+# which are Windows-only and irrelevant on a headless Linux box. Every solver,
+# eval and serving import works without them.
 
 log "--- host ---"
 log "python: $(python -V 2>&1)"

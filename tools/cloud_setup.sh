@@ -26,6 +26,26 @@ log() { printf '%s %s\n' "$(date -u '+%Y-%m-%dT%H:%M:%SZ')" "$*" | tee -a "$LOG"
 
 log "=== cloud_setup start (repo=$REPO_ROOT) ==="
 
+# Vast.ai images keep Python in a venv (default /venv/main) that a
+# NON-INTERACTIVE shell does not activate -- `ssh host 'python ...'` would other-
+# wise hit the bare system interpreter and install into the wrong place. Activate
+# it before touching pip, and prefer `uv pip` when present (much faster).
+VENV="${VENV:-/venv/${ACTIVE_VENV:-main}}"
+if [ -f "$VENV/bin/activate" ]; then
+  # shellcheck disable=SC1091
+  . "$VENV/bin/activate"
+  log "activated venv at $VENV"
+else
+  log "no venv at $VENV; using python/pip from PATH"
+fi
+
+if command -v uv >/dev/null 2>&1; then
+  PIP="uv pip"
+  log "using uv pip"
+else
+  PIP="pip"
+fi
+
 # ---------------------------------------------------------------- pinned deps
 # Matched to the validated local environment. torch cu128 wheels run on any
 # driver >= 525, including CUDA 13.x images (driver ABI is backward compatible),
@@ -56,7 +76,7 @@ if python -c "import torch; assert torch.__version__.startswith('2.7.0')" 2>/dev
   log "torch already at 2.7.0; skipping install"
 else
   log "installing $TORCH_SPEC from $TORCH_INDEX"
-  pip install -q "$TORCH_SPEC" --index-url "$TORCH_INDEX" 2>&1 | tee -a "$LOG"
+  $PIP install -q "$TORCH_SPEC" --index-url "$TORCH_INDEX" 2>&1 | tee -a "$LOG"
 fi
 
 for pin in "${PINS[@]}"; do
@@ -67,7 +87,7 @@ for pin in "${PINS[@]}"; do
     log "$name==$want already present"
   else
     log "installing $pin (had '${have:-none}')"
-    pip install -q "$pin" 2>&1 | tee -a "$LOG"
+    $PIP install -q "$pin" 2>&1 | tee -a "$LOG"
   fi
 done
 

@@ -365,9 +365,40 @@ Everything below survived NULL-tested, timing-sane instruments (§5).
    way. An earlier 400-pair attempt read −26.50 [−78.44, +25.44] with 399/400
    pairs identical — effective sample size 1, which is why it resolved nothing.
 
-   Still open: the head-to-head A/B has **not** been re-run with the fixed guard,
-   so whether the −268.82 / −124.00 costs disappear is unmeasured. That is the
-   remaining input to a ship/no-ship decision.
+   **The head-to-head was re-run with the fixed guard, and the cost did NOT go
+   away** (`tools/guard_headtohead_gate.py`, 3,000 pairs, blueprint-only, CRN):
+
+   | depth | opponent | before the fix | after the fix |
+   |---|---|---:|---:|
+   | 200bb | always-min-raise | −268.82 | **−244.14** |
+   | 100bb | always-min-raise | −124.00 | **−139.46** |
+   | either | always-call | ~0 | **+0.00** (never fires) |
+
+   So the earlier reading that the −268.82 was "the defect, not the mechanism" is
+   **wrong** and is retracted. The defect inflated the firing count 10x but not
+   the cost: the fix removed the *cap-only* firings, which were overwhelmingly
+   preflop shoves the opponent folds to anyway, while the expensive firings are
+   the **genuine mismatches** the guard is designed to correct. Trimming a truly
+   distorted jam is correct by the guard's own logic, and against an opponent who
+   calls too wide, jamming was the profitable error.
+
+   **Ship/no-ship: the guard stays OFF, and §3.6's original decision was right.**
+
+   | | magnitude |
+   |---|---:|
+   | exploitability gained (LBR paired, 100bb, significant) | **−5.65 bb/100** |
+   | head-to-head cost against a min-raiser | **−139 to −244 bb/100** |
+
+   A 25–43x unfavourable ratio. The two numbers are not on one utility scale — LBR
+   measures what a best responder extracts, the duel measures value against one
+   artificial script — but the asymmetry is far too large for the trade to be
+   worth taking without an opponent model to switch between them. That switch is
+   what this agent lacks, and what the AlphaExploitem line addresses
+   (docs/PLAN_V3_LITERATURE_ALIGNED.md).
+
+   The fix is still worth keeping even with the guard off: without it the guard
+   mangles every preflop all-in, so anyone who ever enables the flag now gets the
+   intended behaviour rather than a 90%-false-positive one.
 
 ## 4. The great eval corrections (why numbers before 2026-07-24 are suspect)
 

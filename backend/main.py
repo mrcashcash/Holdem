@@ -451,6 +451,14 @@ def health() -> dict:
         for target in targets
     )
     search["continual_search"] = continual_active
+    # `any()` above is True whenever ANY depth resolves, so with resolving gated
+    # off at one depth the aggregate flag alone would misreport what plays. Report
+    # the per-depth truth read off the sub-agents that actually decide hands --
+    # the same decision-level-verification rule that STATUS.md 4.4 was fixed for.
+    search["continual_search_by_depth"] = {
+        str(float(depth)): bool(getattr(sub_agent, "continual_search", False))
+        for depth, sub_agent in sorted(getattr(agent, "agents", {}).items())
+    }
     search["river_net"] = river_net_active
     if (
         search.get("river_net_requested")
@@ -522,7 +530,7 @@ def update_game_settings(request: GameSettingsRequest) -> dict:
 
 @app.post("/api/game/reload-cash")
 def reload_game_cash(request: CashReloadRequest) -> dict:
-    """Add play money between hands without resetting the match or trainer."""
+    """Add play money immediately without resetting the hand, match, or trainer."""
     try:
         with game_lock:
             players = [0, 1] if request.player == "both" else [request.player]

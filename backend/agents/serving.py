@@ -70,6 +70,9 @@ DEFAULT_CONTINUAL_MIN_ITERS = 60
 #: frozen blueprint for the REST OF THE HAND rather than serving a partial solve.
 #: Generous on purpose: one blown deadline poisons every later street.
 DEFAULT_CONTINUAL_BUDGET_MS = 45_000
+#: Depths at which exact-card resolving is off by default; see the measurement
+#: table beside "continual_disabled_depths" below.
+DEFAULT_CONTINUAL_DISABLE_DEPTHS = "200"
 
 #: All postflop streets are eligible. Flop trees use a richest-safe menu ladder
 #: and explicit node/VRAM admission; turn and river retain exact-card solving to
@@ -173,6 +176,26 @@ def serving_configuration() -> dict:
     limits = ResolverResourceLimits.from_env()
     return {
         "continual_search": os.environ.get("HOLDEM_CONTINUAL", "1") != "0",
+        # Depths where exact-card resolving is DISABLED, because it measured
+        # harmful there. `tools/continual_search_gate.py --crn`, 300 seat-swapped
+        # duplicate pairs at 120 iterations, resolver on minus off:
+        #
+        #    20bb   -7.11 bb/100 [-16.46,  +2.24]  near-neutral
+        #   100bb  +31.83 bb/100 [ -9.40, +73.07]  positive, not significant
+        #   200bb  -58.61 bb/100 [-99.85, -17.37]  REGRESSION, clears zero
+        #
+        # 200bb is the only statistically solid result and it is negative, which
+        # the external GTO Wizard measurement independently agrees with
+        # (-35.89 bb/100, P(worse) = 0.962). Gating by depth rather than turning
+        # resolving off wholesale preserves the 100bb gain. Set
+        # HOLDEM_CONTINUAL_DISABLE_DEPTHS="" to re-enable everywhere.
+        "continual_disabled_depths": sorted(
+            float(value)
+            for value in os.environ.get(
+                "HOLDEM_CONTINUAL_DISABLE_DEPTHS", DEFAULT_CONTINUAL_DISABLE_DEPTHS
+            ).split(",")
+            if value.strip()
+        ),
         "resolve_streets": [
             label for label, value in sorted(_STREET_IDS.items(), key=lambda kv: kv[1])
             if value in streets
@@ -270,6 +293,16 @@ def load_serving_agent():
             )
             if target.subgame_search:
                 target.subgame_iterations = int(os.environ["HOLDEM_SUBGAME_ITERS"])
+
+        # Depth gating runs AFTER the uniform pass, never inside it. The router's
+        # `continual_search` setter fans out to every sub-agent, so a per-depth
+        # value assigned during the loop would be overwritten the moment the
+        # router itself was visited. Applying it here is order-independent.
+        disabled = set(config["continual_disabled_depths"])
+        if disabled and config["continual_search"]:
+            for depth, sub_agent in getattr(agent, "agents", {}).items():
+                if float(depth) in disabled and hasattr(sub_agent, "continual_search"):
+                    sub_agent.continual_search = False
         return agent
 
     router = MultiStackBlueprintAgent.try_load()

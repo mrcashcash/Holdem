@@ -171,9 +171,14 @@ Representative fresh solves on the RTX 3060 now measure **14.23 s flop
 sample was 22.78 / 10.64 / 2.45 s on slightly smaller trees. Per-stage timing is
 now emitted in every successful resolver diagnostic; see `docs/SERVING.md`.
 
-The river CFV horizon is connected but action-gated. The current checkpoint
-remains OFF: 0.3766 agreement / 1.1474 policy L1 fails the 0.90 / 0.30
-requirements.
+The river CFV horizon is connected but action-gated, and the checkpoint remains
+OFF. The reason it is off has been re-derived: the old figures (0.3766 agreement /
+1.1474 policy L1 against a 0.90 / 0.30 bar) came from a gate whose **null passes
+it** — an all-zero net scores 0.9269 agreement. Those numbers are retracted as a
+pass/fail signal. Under the rebuilt null-anchored gate
+(`tools/river_net_gate_v2.py`) the checkpoint stays off for a measured reason: it
+**adds** policy error relative to pricing the river at zero. See the 2026-07-31
+entries below.
 
 The three frozen blueprints below are the depth-routed base policy. The 20bb
 artifact is promoted on disk; the API server was not running during the
@@ -562,6 +567,62 @@ Also settled while investigating, both cheaply and both retiring hypotheses from
 The "ratio 0.301 with strength-ordered inputs" result quoted in §7 and in
 `backend/agents/serving.py` has **no code in the repo** — it is unreproducible as
 recorded, and should not be relied on until someone reconstructs it.
+
+### 2026-07-31 river-net gate rebuilt, and the failure is BIMODAL not uniform
+
+`tools/river_net_gate_v2.py` replaces the retired v1 criterion. It computes the
+null arm instead of assuming it, and scores on the horizon-SENSITIVE subset — the
+combos whose top action actually differs between a full solve and a zero-priced
+horizon — where the floor is 0 by construction rather than ~0.93.
+
+Validation that only the metric changed: v2 reproduces v1's figures on the same
+population almost exactly (agreement net **0.3759** vs the recorded 0.3766, null
+**0.9268** vs 0.9269).
+
+12 situations x 160 iterations, current checkpoint:
+
+| metric | value |
+|---|---|
+| mean horizon-sensitive mass | **7.3%** |
+| sensitive-set accuracy (primary) | **0.3029** |
+| policy L1, net vs null | **1.1482** vs **0.4657** |
+| L1 skill vs null | **−1.4658** |
+
+That 7.3% is the whole explanation for v1: **93% of range mass has a top action no
+horizon can change**, so v1's statistic was measuring insensitive decisions and its
+floor was pinned near 0.93.
+
+**The per-situation split is the finding.** Grouping by sensitive-set accuracy
+(policy L1 maxes at 2.0, meaning maximally different policies):
+
+| group | situations | sensitive accuracy | L1 net | L1 null |
+|---|---:|---:|---:|---:|
+| **works** | 5 / 12 | **0.703** | 0.571 | 0.500 |
+| **collapses** | 7 / 12 | **0.017** | **1.560** | 0.441 |
+
+On 7 of 12 situations the net is **near-maximally wrong** (L1 1.18–1.98), and on 5
+of 12 it gets **70%** of the decisions that matter right. It beats the null on L1 in
+only 2 of 12.
+
+**This reframes the whole CFV line.** The architecture demonstrably *can* learn this
+mapping — 0.70 accuracy where it works is not noise. The problem is that it
+generalises catastrophically badly to more than half the situation space, which is
+an out-of-distribution failure, not the uniform sample-starvation that
+`PLAN_V3` §2 assumed when it priced the line at 482 GPU-days for 50M rows. More
+rows help only if they cover the regions where it collapses.
+
+So the next question is coverage, not volume: `tools/generate_river_cfv.py` walks a
+`(stack, pot)` grid with `--per-cell` samples, and the collapsing situations should
+be checked against that grid before any datagen is commissioned. Characterising
+what distinguishes the 7 collapses from the 5 successes — pot/SPR extremes, range
+shape, board texture — is cheap and is the highest-value CFV work available.
+
+**No replacement threshold is proposed, deliberately.** v1's 0.90 was assumed and
+never measured (§7 said so); inventing a new constant would repeat that with fresh
+confidence. v2 reports position on two null-anchored scales, and the bar should be
+derived from an accuracy-versus-strength curve once one exists. What v2 does settle
+is that the CFV branch is now **decidable** — the gate can distinguish a learning
+net from an empty one, which it could not this morning.
 
 ### 2026-07-31 DCFR+ averaging: implemented, measured, NOT adopted
 

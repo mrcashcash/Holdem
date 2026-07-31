@@ -1,4 +1,23 @@
-"""P3a acceptance gate: does a net-priced river horizon change the turn decision?
+"""RETIRED 2026-07-31 as an ACCEPTANCE gate. Use tools/river_net_gate_v2.py.
+
+This gate's numbers are still reproducible and its situation sampler is reused by
+v2, but its pass/fail criterion is invalid. An all-zero net — weights zeroed, so it
+predicts nothing — scores **agreement 0.9269**, which CLEARS the 0.90 requirement,
+while the trained net scores 0.3766 and fails. The threshold sits below what
+learning nothing achieves.
+
+The cause: agreement here is weighted over ALL range mass at the turn root, and
+only ~26% of that mass has its top action changed by the river horizon at all. The
+statistic is dominated by decisions no horizon could affect, which pins its floor
+near 0.93 and leaves almost no dynamic range above it.
+
+v2 fixes this by computing the null arm instead of assuming it, and scoring on the
+horizon-SENSITIVE subset where the floor is 0 by construction. Keep using this file
+for the raw per-situation figures; do not use it to accept or reject a net.
+
+--- original docstring follows ---
+
+P3a acceptance gate: does a net-priced river horizon change the turn decision?
 
 The plan is explicit that lower validation loss is NOT the acceptance criterion.
 CFV v0 had a defensible-looking net (9.3 bb val MAE against a 24 bb zero

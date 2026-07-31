@@ -63,7 +63,14 @@ class _Recorder:
         return getattr(self.agent, name)
 
     def select(self, game, player):
-        watch = self.agent.continual_search and game.street in (2, 3)
+        # Streets 1, 2 and 3 -- flop, turn, river. This previously watched only
+        # (2, 3), so flop resolves were INVISIBLE to the counter and a run that
+        # never resolved a flop was indistinguishable from one that resolved
+        # every flop. That is the same blind spot as STATUS.md 4.3 (silent
+        # flop-solve discard) and 4.4 (the decision log could not see the
+        # resolver), and it is why the 2026-07-31 gate output had to be
+        # cross-checked against latency to learn that only rivers resolved.
+        watch = self.agent.continual_search and game.street in (1, 2, 3)
         choice = self.agent.select(game, player)
         if watch:
             detail = self.agent.last_continual_search

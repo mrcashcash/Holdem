@@ -10,6 +10,91 @@ turn and river (`tools/serve_best.ps1`; see docs/SERVING.md for the full config 
 off applied to the *retired bucketed* resolver, which stays off; exact-card
 resolving is a different mechanism and is served.
 
+### 2026-07-31 FIRST EXTERNAL PROBING MEASUREMENT — and it questions the serving default
+
+The GTO Wizard AI harness (§5) gives the first number from an opponent that both
+**probes** and is **variance-reduced**. 500 hands per arm at 200bb, AIVAT-adjusted,
+bootstrap intervals (the distribution is heavy-tailed, so the normal-approximation
+interval the harness prints understates uncertainty):
+
+| arm | hands | mean AIVAT bb/100 | bootstrap 95% | median | sd bb/hand |
+|---|---:|---:|---|---:|---:|
+| resolver **OFF** (blueprint only) | 500 | **−17.00** | [−47.71, +21.22] | −7.50 | 3.92 |
+| resolver **ON** (exact-card continual) | 497 | **−52.89** | [−80.04, −30.18] | −14.66 | 2.83 |
+| **difference (ON − OFF)** | | **−35.89** | **[−81.38, +3.27]** | | |
+
+`P(ON worse than OFF) = 0.962`. Zero board desyncs in both arms; 3 hands excluded
+in the ON arm, all transient API 503s, excluded rather than folded-and-scored.
+
+**Two things this establishes.**
+
+1. **The agent is far closer to a strong resolving opponent than LBR implies.**
+   LBR says +252 bb/100 exploitable, yet blueprint-only play is only ~17–31 bb/100
+   behind an agent that beat Slumbot by 19.4. Consistent with the §5 point that
+   head-to-head result is not distance from equilibrium — but the gap is larger
+   than expected.
+2. **Exact-card resolving measured WORSE, not better.** It is currently served ON,
+   justified in §3.2 "on mechanism and reliability, NOT on a passed gate." This is
+   the first external evidence pointing the other way, and it is not cheap: the ON
+   arm spent **9,302 s of GPU compute** (18.7 s/hand) versus 12 s for OFF, for a
+   worse result.
+
+**What it does NOT yet establish, and why the default should not be flipped on it.**
+
+- The interval includes zero (+3.27), so this is 96% suggestive, not significant.
+- The arms are **unpaired** — GTO Wizard deals its own hands and the external API
+  admits no common random numbers. Pairing is what made the LBR gate 9x more
+  sensitive.
+- It is **outlier-sensitive**: dropping each arm's single largest |AIVAT| hand
+  moves OFF to −30.74 and ON to −45.45, shrinking the difference from −35.89 to
+  **−14.71**. The OFF arm contains a +68.4 bb hand against a 3.92 sd — 17.5σ.
+
+Supporting the direction: the medians (outlier-immune) also favour OFF, −7.50
+versus −14.66, and the sign held across all six ON-arm milestones.
+
+**The deciding measurement was then taken and CONFIRMS the regression.**
+`tools/continual_search_gate.py --crn`, 300 seat-swapped duplicate pairs at 200bb,
+120 resolve iterations (the serving target):
+
+| | result |
+|---|---|
+| on minus off | **−58.61 bb/100 [−99.85, −17.37]** |
+| verdict | **REGRESSION** — the interval clears zero |
+| resolves | **208/208, 0 fallbacks** |
+| latency ms mean/p90/max | 1425.8 / 1783.8 / 1918.7 |
+| CRN null (off vs off) | **+0.00 [+0.00, +0.00]** |
+
+So two independent instruments agree: external probing opponent −35.89 (P=0.962)
+and internal paired duel **−58.61 (significant)**. This is not a reliability
+failure — every resolve succeeded and it still lost ~59 bb/100.
+
+The §3.2 duels (+17.82 / +54.45 / +28.12) all predate the CRN fix and were
+uncoupled. Adding proper pairing did not merely tighten the interval, it
+**flipped the sign**.
+
+**A serving-truth correction: at 200bb only the RIVER resolves.** §1 and §7 claim
+resolving is on "for flop, turn and river." The street counter reports
+`{'street3:resolved': N}` and nothing else, and latency confirms it independently —
+max 1918.8 ms cannot contain a 14.23 s flop or 6.90 s turn solve. Flop and turn are
+never admitted at 200bb, almost certainly the 12,000-node budget rejecting
+deep-stack flop trees. So the measured −58.61 is the cost of **river-only**
+resolving at 200bb, and the documented three-street resolver does not exist at that
+depth.
+
+That counter could not see flop resolves at all until 2026-07-31 (it watched only
+streets 2 and 3), the same blind spot as §4.3 and §4.4. Fixed.
+
+**Also corrected: low GPU utilisation during resolving is NORMAL, not a fault.**
+A 200bb river tree is **369 nodes** and holds ~138 MiB; an instrumented probe
+confirms `VectorCFR` is constructed with `device='cuda'`. Utilisation near 0% is
+what PLAN_V2 already measured ("latency-bound, 123x above its bandwidth floor, GPU
+~5% utilized on small trees"). The resolver's cost is the **CPU-side** pipeline —
+blueprint projection, bucket computation, showdown scoring — not the GPU kernels.
+Consequence: a faster GPU buys little here, and P4 (Parallel CFR) should target the
+serial CPU pipeline rather than the card. A 10x latency inflation observed on the
+rented box was CPU contention from three concurrent LBR jobs, violating the §6 rule
+that heavy CPU evals run one at a time.
+
 ### 2026-07-29 live flop VRAM repair
 
 The exact flop resolver could saturate an RTX 3060 (11.8/12.0 GiB dedicated

@@ -95,6 +95,42 @@ serial CPU pipeline rather than the card. A 10x latency inflation observed on th
 rented box was CPU contention from three concurrent LBR jobs, violating the §6 rule
 that heavy CPU evals run one at a time.
 
+### 2026-07-31 the served configuration's honest number
+
+After depth-gating the resolver off at 200bb, the served config was re-measured
+against GTO Wizard AI. Because that benchmark plays **only 200bb**, and the gated
+config is blueprint-only at 200bb, the "resolver off everywhere" run and the
+"depth-gated" run sample the **identical policy** — so they are pooled:
+
+| config | hands | mean AIVAT | bootstrap 95% | median |
+|---|---:|---:|---|---:|
+| resolver ON at every depth | 497 | −52.89 | [−80.04, −30.18] | −14.66 |
+| run 1, off at 200bb | 500 | −17.00 | [−48.05, +21.03] | −7.50 |
+| run 2, depth-gated | 499 | −21.36 | [−51.34, −1.17] | −8.25 |
+| **pooled — what serves today** | **999** | **−19.18** | **[−40.41, +2.83]** | **−7.84** |
+
+`P(the agent is losing) = 0.961`. **Depth-gating beat resolver-ON-everywhere by
++31.53 bb/100 with P(better) = 0.954**, independently corroborating the internal
+paired duel's −58.61 [−99.85, −17.37]. Two unrelated instruments, one conclusion.
+
+Two caveats that bound the claim:
+
+- **This benchmark cannot validate the gating decision as a whole.** GTO Wizard is
+  200bb-only, so the resolver-ON choices at 20bb and 100bb rest solely on the
+  internal duel (+31.83 at 100bb, −7.11 at 20bb).
+- **Accidental replication, and it passed.** The two runs above measure the same
+  policy and read −17.00 and −21.36 — a 4.4 bb/100 spread, well inside their
+  intervals. That is a free reproducibility check on the harness.
+
+Instrument defect found and fixed in the process: `tools/gtowizard_benchmark.py`
+assigned the ROUTER's `continual_search`, whose setter fans out to every
+sub-agent, so a `--resolver on` run silently re-enabled resolving at 200bb and
+measured a configuration that is not served — nine times slower, for a number
+already known. It now defaults to `--resolver default`, which leaves the served
+config alone, and logs `resolver by depth` so every run states what actually
+plays. This is the same fan-out hazard `backend/agents/serving.py` already warns
+about beside the depth-gating pass.
+
 ### 2026-07-29 live flop VRAM repair
 
 The exact flop resolver could saturate an RTX 3060 (11.8/12.0 GiB dedicated

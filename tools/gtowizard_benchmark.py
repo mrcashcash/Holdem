@@ -58,8 +58,10 @@ def main() -> None:
                         help="'serving', or a null policy for harness validation")
     parser.add_argument("--hands", type=int, default=200)
     parser.add_argument("--seed", type=int, default=20260730)
-    parser.add_argument("--resolver", choices=("on", "off"), default="on",
-                        help="continual exact-card resolving, for the serving agent")
+    parser.add_argument("--resolver", choices=("default", "on", "off"), default="default",
+                        help="'default' measures the SERVED configuration, including "
+                             "per-depth gating. 'on'/'off' force every depth, which is "
+                             "for isolating the resolver, not for measuring the default")
     parser.add_argument("--output", type=Path)
     arguments = parser.parse_args()
 
@@ -78,9 +80,22 @@ def main() -> None:
         handle.flush()
 
     agent, label = build_agent(arguments.agent)
-    if arguments.agent == "serving" and hasattr(agent, "continual_search"):
-        agent.continual_search = arguments.resolver == "on"
-        log(f"resolver: {'ON' if agent.continual_search else 'OFF'}")
+    # Assigning the ROUTER's continual_search fans the value out to every
+    # sub-agent, which silently undoes per-depth gating. A --resolver=on run
+    # therefore re-enabled resolving at 200bb where serving deliberately
+    # disables it, and measured a configuration that is not served. Only touch
+    # the flag when explicitly asked to force it.
+    if arguments.agent == "serving" and arguments.resolver != "default":
+        if hasattr(agent, "continual_search"):
+            agent.continual_search = arguments.resolver == "on"
+            log(f"resolver FORCED {arguments.resolver.upper()} at every depth "
+                f"(overrides per-depth gating)")
+    if arguments.agent == "serving":
+        by_depth = {
+            float(depth): bool(getattr(sub, "continual_search", False))
+            for depth, sub in sorted(getattr(agent, "agents", {}).items())
+        }
+        log(f"resolver by depth (what will actually play): {by_depth}")
 
     log(f"=== GTO Wizard benchmark: {label}, {arguments.hands} hands ===")
     log(f"durable log: {log_path}")

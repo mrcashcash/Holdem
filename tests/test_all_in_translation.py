@@ -103,14 +103,50 @@ class AllInGeometryTests(unittest.TestCase):
         self.assertIsNotNone(sized)
         self.assertEqual(sized[0], 700)
 
-    def test_cap_binds_when_the_abstract_jam_is_itself_huge(self) -> None:
-        """A raise-capped node whose own jam is 20x pot is still bounded."""
+    def test_matched_geometry_survives_even_when_the_jam_is_huge(self) -> None:
+        """A big jam that translated PERFECTLY must not be touched.
+
+        This case previously asserted the opposite -- that a 20x-pot jam is
+        trimmed even when the real geometry matches it -- because the cap was
+        folded into the trigger as min(ratio_abstract * tolerance, cap). That
+        made the geometry test unreachable for any abstract jam above 6x pot.
+        Measured over 150 LBR pairs at 200bb, 89.6% of all firings were this
+        false positive (483 of them with real == abstract exactly), which is the
+        real reason the guard measured -268.82 bb/100 rather than any
+        GTO-versus-exploitation tension.
+
+        Abstract: 200bb stack over a 10bb matched pot = a 20x-pot jam.
+        Real: 3,900 chips over a 200-chip matched pot = 19.5x. That agrees, so
+        there is nothing to correct.
+        """
         blueprint = make_blueprint(stack_bb=200.0, abstract_pot_bb=10.0)
         game = make_game(contributions=[100, 100], stacks=[3_800, 3_800])
+        self.assertIsNone(blueprint._all_in_size(game, 0, 2))
+
+    def test_preflop_jam_is_never_trimmed(self) -> None:
+        """A preflop all-in is inherently ~100-200x the matched pot. That is not a leak.
+
+        The regression this locks down: at 200bb the matched preflop pot is one
+        big blind, so every preflop shove looks like a 100x+ "overbet" to an
+        absolute pot-multiple bound, and the old trigger trimmed it to 6x pot --
+        converting an all-in into a small raise.
+        """
+        blueprint = make_blueprint(stack_bb=200.0, abstract_pot_bb=2.0)
+        # Matched pot 40 chips (2bb); 4,000 committed if shoving = 100x pot,
+        # exactly what the abstract jam also represents.
+        game = make_game(contributions=[20, 20], stacks=[3_980, 3_980])
+        self.assertIsNone(blueprint._all_in_size(game, 0, 11))
+
+    def test_cap_bounds_the_correction_when_distortion_is_genuine(self) -> None:
+        """Where geometry really is distorted, the cap still bounds the repair."""
+        # Abstract: 200bb over a 10bb matched pot = 20x. Real: 7,000 over 200 =
+        # 35x, which exceeds 20 * 1.5, so this is genuine distortion.
+        blueprint = make_blueprint(stack_bb=200.0, abstract_pot_bb=10.0)
+        game = make_game(contributions=[100, 100], stacks=[6_900, 6_900])
         sized = blueprint._all_in_size(game, 0, 2)
-        self.assertIsNotNone(sized)
-        # Cap is 6x the 200-chip matched pot = 1,200 committed, less the 100
-        # already in from earlier streets.
+        self.assertIsNotNone(sized, "a 35x-pot jam against a 20x abstract jam is distorted")
+        # The correction wants min(20, 6) = 6x the 200-chip matched pot = 1,200
+        # committed, less the 100 already in from earlier streets.
         self.assertAlmostEqual(sized[0], ALL_IN_MAX_POT_MULTIPLE * 200 - 100, delta=1)
 
     def test_guard_can_be_disabled(self) -> None:
@@ -172,13 +208,23 @@ class ServingPathTests(unittest.TestCase):
                         )
         return worst, offenders
 
-    def test_guard_bounds_the_jam_when_enabled(self) -> None:
-        """With the guard on, no jam exceeds the cap where a smaller raise existed."""
+    def test_guard_bounds_postflop_jams_but_leaves_preflop_alone(self) -> None:
+        """With the guard on, POSTFLOP jams are bounded; preflop shoves are not.
+
+        This previously asserted that NO jam may exceed the cap on any street.
+        That invariant was the absolute-pot-multiple bound, and it is wrong
+        preflop: the matched preflop pot is a blind or two, so a 200bb shove is
+        inherently 10-100x pot. Trimming it converts an all-in into a small
+        raise. The distortion the guard exists to fix comes from raise-cap
+        exhaustion, which is a POSTFLOP phenomenon -- so that is where the bound
+        belongs.
+        """
         worst, offenders = self._worst_jam(guard=True)
+        postflop = [entry for entry in offenders if entry[0] != 0]
         self.assertFalse(
-            offenders,
-            f"jams beyond {ALL_IN_MAX_POT_MULTIPLE}x the matched pot: "
-            f"{offenders[:5]} (worst {worst:.1f}x)",
+            postflop,
+            f"postflop jams beyond {ALL_IN_MAX_POT_MULTIPLE}x the matched pot: "
+            f"{postflop[:5]} (worst overall {worst:.1f}x)",
         )
 
     def test_default_still_makes_the_huge_jams(self) -> None:

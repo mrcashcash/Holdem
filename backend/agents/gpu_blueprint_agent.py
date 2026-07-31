@@ -839,7 +839,16 @@ class GpuBlueprintAgent:
         # never more than the absolute bound.
         tolerance = float(getattr(self, "all_in_geometry_tolerance", ALL_IN_GEOMETRY_TOLERANCE))
         cap = float(getattr(self, "all_in_max_pot_multiple", ALL_IN_MAX_POT_MULTIPLE))
-        allowed = min(ratio_abstract * tolerance, cap)
+        # The cap bounds the CORRECTION, never the TRIGGER.  Folding it into the
+        # trigger as min(ratio_abstract * tolerance, cap) made the geometry test
+        # unreachable whenever the abstract jam was itself larger than the cap --
+        # and a preflop jam is inherently ~200x the 1bb matched pot at 200bb.
+        # Measured over 150 LBR pairs at 200bb: the guard fired 642 times, and
+        # 575 (89.6%) were cap-only firings where geometry was fine, 483 of them
+        # with real == abstract EXACTLY.  Trimming a perfectly translated jam is
+        # not a translation fix, it is a strategy change, and it is why the guard
+        # measured -268.82 bb/100.  Only genuine distortion may fire.
+        allowed = ratio_abstract * tolerance
         if ratio_real <= allowed:
             return None  # the jam still means roughly what it was trained to mean
 

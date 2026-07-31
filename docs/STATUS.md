@@ -79,8 +79,18 @@ quality: scripted opponents do not probe. See
 | instrument | 200bb scalar@118k | 100bb histogram@30k |
 |---|---:|---:|
 | **LBR exploitability** (400 pairs, multi-size probe) | **+291.23 bb/100** [+79.10, +503.36] | **+137.58 bb/100** [−3.57, +278.73] |
-| LBR probe fallback rate | 1.11% | 0.58% |
+| **LBR, 20,000 pairs** (2026-07-30, supersedes the row above at 200bb) | **+252.45 bb/100** [+223.34, +281.55] | not re-run |
+| LBR probe fallback rate | 1.11% (400 pairs) / 1.36% (20,000) | 0.58% |
 | **Slumbot, 20,000 hands** (real API, search off) | **−18.33 bb/100** [−40.41, +3.74] | not run (Slumbot is 200bb native) |
+
+**The 400-pair LBR figures are imprecise and should not be quoted as headline
+numbers.** At 400 pairs the 200bb interval was [+79.10, +503.36] — a width of 424
+bb/100. Re-measured at 20,000 pairs it is **+252.45 [+223.34, +281.55]**, a 7.3x
+narrower interval, and the point estimate moved 39 bb/100. Every other LBR number
+in this document is still a 400-pair reading and carries the same imprecision;
+treat their point estimates as indicative, not settled. This does not change the
+qualitative conclusion — LBR still wins ~2,500 mbb/hand, so the agent remains in
+the 2016-ACPC class, not the resolving-agent class.
 
 Historical shallow-depth LBR with the 100bb champion was **20bb +130.31**
 [+95.22,+165.40] and **50bb +85.05** [−12.80,+182.90]. The promoted native
@@ -216,13 +226,63 @@ Everything below survived NULL-tested, timing-sane instruments (§5).
    only the translation is wrong. Measured rate (`tools/overbet_audit.py`, 200bb):
    8 overbets in 640 decisions vs a min-raiser (worst 15.4x), **zero** vs a
    calling station or in self-play; **four of the eight were preflop**, which no
-   postflop resolving can reach. A translation-matching guard cuts the worst case
-   to 4.6x but measured **−268.82 bb/100** (200bb) and **−124.00** (100bb) against
-   that opponent, because a station calls any jam and shoving into it is correct
-   exploitation. Guard implemented, tested, **shipped off**. The real fix is the
+   postflop resolving can reach. The real fix is the
    resolver (0.16% on all-in at that spot, since its tree uses the real geometry)
    and, for preflop, a richer menu or preflop resolving — not a sizing heuristic.
-   The deciding measurement, LBR guard-on vs guard-off, has **not** been taken.
+
+   **The guard's −268.82 bb/100 was a DEFECT, not a GTO-versus-exploitation
+   tradeoff (corrected 2026-07-30).** The earlier reading was attributed to "a
+   station calls any jam, so shoving into it is correct exploitation." That
+   explanation was wrong. The trigger was
+   `allowed = min(ratio_abstract * tolerance, cap)`, so whenever the abstract jam
+   was itself larger than the 6.0x cap, `allowed` collapsed to the cap and the
+   geometry test became **unreachable** — the guard fired on jams that had
+   translated perfectly. Measured over 150 LBR pairs at 200bb with the guard on:
+
+   | firing cause | count | share |
+   |---|---:|---:|
+   | genuine mismatch (the intended trigger) | 67 | 10.4% |
+   | **cap-only — geometry fine, only the absolute bound objected** | **575** | **89.6%** |
+
+   483 of the 575 had `real == abstract` **exactly**. At 200bb the matched preflop
+   pot is one big blind, so *every* preflop shove reads as a ~200x overbet to an
+   absolute pot-multiple bound, and the guard trimmed it to 6x pot — turning an
+   all-in into a small raise. That is a strategy change, not a translation fix.
+
+   Fixed by making the cap bound the **correction** and never the **trigger**
+   (`backend/agents/gpu_blueprint_agent.py`). Firings fell 642 → 67 with every
+   intended trigger preserved and **zero** false positives. Two tests had encoded
+   the defect as intended behaviour (`test_cap_binds_when_the_abstract_jam_is_itself_huge`
+   asserted that a *matched* 19.5x jam be trimmed; the end-to-end test asserted no
+   jam may exceed the cap on **any** street) and were replaced with
+   matched-geometry, preflop, and genuine-distortion regressions —
+   `tests/test_all_in_translation.py`, 10 tests, all passing.
+
+   **The deciding measurement was taken (2026-07-30): the fixed guard is
+   near-neutral on exploitability.** `tools/lbr_guard_gate.py`, paired and
+   chunk-checkpointed, 20,000 duplicate pairs per arm at 200bb, blueprint only:
+
+   | arm | LBR bb/100 | 95% CI | fallback |
+   |---|---:|---|---:|
+   | guard OFF | +252.45 | [+223.34, +281.55] | 1.36% |
+   | guard ON | +247.70 | [+218.13, +277.27] | 1.44% |
+   | **paired delta (ON − OFF)** | **−4.74** | **[−10.63, +1.14]** | — |
+
+   Negative means less exploitable. The interval still spans zero, so the verdict
+   is formally INCONCLUSIVE — but it now *bounds* the effect: the guard costs at
+   most **+1.14 bb/100** and may gain up to **−10.63**. That is a different
+   statement from the −268.82 that originally condemned it, which was the defect
+   above rather than the mechanism.
+
+   Only **69 of 20,000 pairs (0.345%)** differed at all. The guard fires often
+   (~67 genuine mismatches per 150 pairs) but rarely changes the *outcome*,
+   because a best responder answers a 5.6x-pot bet and an 11x-pot bet the same
+   way. An earlier 400-pair attempt read −26.50 [−78.44, +25.44] with 399/400
+   pairs identical — effective sample size 1, which is why it resolved nothing.
+
+   Still open: the head-to-head A/B has **not** been re-run with the fixed guard,
+   so whether the −268.82 / −124.00 costs disappear is unmeasured. That is the
+   remaining input to a ship/no-ship decision.
 
 ## 4. The great eval corrections (why numbers before 2026-07-24 are suspect)
 
@@ -285,6 +345,24 @@ does NOT hide GPUs on this Windows/torch — never rely on it.
 - **Slumbot harness**: `backend/eval/slumbot.py` — real external opponent, uses the
   AGENT's own action mapping rather than a reimplementation, anchored by
   always-fold-from-the-button reading exactly −50.0000 bb/100 with zero variance.
+- **GTO Wizard AI harness** (NEW 2026-07-30): `backend/eval/gtowizard.py` +
+  `tools/gtowizard_benchmark.py`. The first external opponent here that both
+  **probes** (it resolves in real time, unlike Slumbot) and returns
+  **AIVAT-adjusted** results, which the paper reports reaches equal significance
+  with ten times fewer hands. 200bb, arbitrary bet sizes accepted, 100k hands per
+  month. Mirrors each hand into a real `HeadsUpHoldem` and lets the agent's own
+  `select()`/`execute()` choose, exactly as the Slumbot harness does.
+  Null-validated against the published anchors: always-fold measured
+  **−69.74 bb/100 [−80.82, −58.65]** over 493 hands versus the published
+  **−64.6 ± 3.3** (overlaps), with raw **−64.30** and **zero board desyncs**, and
+  the harness's own arithmetic agreed with the server's AIVAT tally to
+  **0.01 bb/100**. Protocol facts that silently corrupt a run if guessed:
+  `blinds` is **[big, small]**, the **SB is the button**, `action_history` is a
+  list using `"_"` as an end-of-round marker, stacks reset every hand, and
+  Cloudflare rejects the default urllib User-Agent with HTTP 403 code 1010.
+  Hero identification must use the registered bot name, not visible hole cards —
+  the villain's cards are revealed once a hand is decided, which dropped 5.6% of
+  hands before it was fixed.
 - **Monitors**: training runs get 10k gates + stop-on-plateau + VRAM/RAM guards.
 - **Exact-card resolvers**: flop / turn / river, identity 1,326 buckets, one
   bucket per private combo — `backend/search/exact_{flop,turn,river}.py` plus

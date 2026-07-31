@@ -13,4 +13,5 @@ frontend/node_modules/
 frontend/dist/
 artifacts/
 tmp/
+logs/
 .DS_Store

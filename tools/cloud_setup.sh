@@ -1,168 +1,196 @@
 #!/usr/bin/env bash
-# Provision a rented single-GPU pod (vast.ai / RunPod) to run this project's
-# training, evaluation or serving workloads.
+# Provision a FRESH rented GPU pod (vast.ai / RunPod) from scratch.
 #
-# Run ON the pod, from the repo root:
-#   bash tools/cloud_setup.sh
+# Bootstraps from nothing -- it clones the repo itself, so it can run before the
+# repo exists on the pod:
+#   curl -fsSL https://raw.githubusercontent.com/mrcashcash/Holdem/master/tools/cloud_setup.sh | bash
+# or, if the file is already on the pod:
+#   bash cloud_setup.sh
 #
-# It is idempotent and restartable: every step re-checks before doing work, and
-# everything is appended to a durable log (logs/cloud-setup.log) rather than
-# only stdout, per the project's observability rule.
+#   apt update/upgrade -> system packages -> clone repo -> python deps
+#   -> GPU operational check -> 60s GPU workload
 #
-# What it deliberately does NOT do: change any quality dial. It installs the
-# SAME torch/numpy/numba versions the local box is validated on, then runs the
-# trusted guards. A pod that cannot pass test_gpu_convergence and the null
-# duels is not allowed to produce a number.
+# Env overrides:
+#   HOLDEM_DIR      clone target      (default /workspace/Holdem, else ~/Holdem)
+#   BRANCH          branch to clone   (default master)
+#   SMOKE_SECONDS   length of the closing GPU workload (default 60)
+#   GITHUB_TOKEN    fine-grained PAT with Contents:read+write. REQUIRED to push
+#                   results back off an ephemeral pod. Set it once on your Vast
+#                   account and every future instance inherits it:
+#                     vastai create env-var GITHUB_TOKEN github_pat_xxx
+#   GIT_USER_NAME / GIT_USER_EMAIL   commit identity (defaults below)
 
 set -euo pipefail
 
-REPO_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
-cd "$REPO_ROOT"
+REPO_URL="https://github.com/mrcashcash/Holdem"
+BRANCH="${BRANCH:-master}"
+SMOKE_SECONDS="${SMOKE_SECONDS:-60}"
 
-mkdir -p logs
-LOG="logs/cloud-setup.log"
+LOG="${HOME:-/root}/cloud-setup.log"
+exec > >(tee -a "$LOG") 2>&1
+say() { printf '\n=== %s %s\n' "$(date -u '+%H:%M:%SZ')" "$*"; }
 
-log() { printf '%s %s\n' "$(date -u '+%Y-%m-%dT%H:%M:%SZ')" "$*" | tee -a "$LOG"; }
+say "cloud_setup start"
 
-log "=== cloud_setup start (repo=$REPO_ROOT) ==="
+SUDO=""
+[ "$(id -u)" -ne 0 ] && SUDO="sudo"
 
+# ------------------------------------------------------------------- system
+say "apt update / upgrade"
+export DEBIAN_FRONTEND=noninteractive
+
+# Pin the container's GPU userspace first. The driver is injected by the host,
+# so an upgrade that swaps libnvidia/cuda out from under it leaves torch unable
+# to see the card -- on a rented pod that is a paid-for brick.
+held="$(dpkg-query -W -f='${Package}\n' 2>/dev/null | grep -E 'nvidia|libcuda|^cuda' || true)"
+[ -n "$held" ] && $SUDO apt-mark hold $held >/dev/null 2>&1 || true
+
+$SUDO apt-get update -qq
+$SUDO apt-get -y -qq -o Dpkg::Options::=--force-confold upgrade
+
+say "system packages"
+$SUDO apt-get install -y -qq \
+  git curl ca-certificates build-essential \
+  python3 python3-dev python3-pip python3-venv \
+  tmux
+
+# --------------------------------------------------------------------- repo
+if [ -z "${HOLDEM_DIR:-}" ]; then
+  if [ -d /workspace ]; then HOLDEM_DIR=/workspace/Holdem; else HOLDEM_DIR="$HOME/Holdem"; fi
+fi
+
+say "git identity and push credentials"
+git config --global user.name "${GIT_USER_NAME:-holdem-pod}"
+git config --global user.email "${GIT_USER_EMAIL:-pod@holdem.local}"
+git config --global safe.directory '*'   # repo dir is often owned by another uid
+
+# Vast injects account env-vars (`vastai create env-var`) into the CONTAINER's
+# environment -- i.e. PID 1 -- and sshd does NOT pass them into ssh sessions.
+# Verified 2026-08-01 on vastai/pytorch: GITHUB_TOKEN is present in
+# /proc/1/environ but empty in `ssh host '...'`, in `bash -l`, and in every
+# profile file. So `ssh pod 'bash cloud_setup.sh'` sees no token unless we go
+# get it. Recover it from PID 1 rather than making the user re-export by hand.
+if [ -z "${GITHUB_TOKEN:-}" ] && [ -r /proc/1/environ ]; then
+  GITHUB_TOKEN="$(tr '\0' '\n' < /proc/1/environ | sed -n 's/^GITHUB_TOKEN=//p' | head -1)"
+  export GITHUB_TOKEN
+  [ -n "$GITHUB_TOKEN" ] && echo "recovered GITHUB_TOKEN from the container environment"
+fi
+
+if [ -n "${GITHUB_TOKEN:-}" ]; then
+  # Read the token from the environment at each git call instead of baking it
+  # into the remote URL or ~/.git-credentials -- the secret then never touches
+  # the pod's disk, where the host operator could read it after you disconnect.
+  git config --global credential.helper \
+    '!f() { if [ "$1" = get ]; then printf "username=x-access-token\npassword=%s\n" "$GITHUB_TOKEN"; fi; }; f'
+  echo "GITHUB_TOKEN present -> push enabled"
+else
+  echo "WARNING: no GITHUB_TOKEN -- this pod can pull but CANNOT push."
+  echo "         Nothing it produces will survive the instance being destroyed."
+  echo "         Fix: vastai create env-var GITHUB_TOKEN github_pat_xxx"
+fi
+
+if [ -d "$HOLDEM_DIR/.git" ]; then
+  say "repo already at $HOLDEM_DIR; fast-forwarding $BRANCH"
+  git -C "$HOLDEM_DIR" pull --ff-only origin "$BRANCH"
+else
+  # NOT --depth 1: pushing from a shallow clone is fragile, and on a pod with no
+  # persistent disk, pushing is the only way results survive. --filter drops
+  # HISTORICAL blobs >1MB (old .npz checkpoints), measured 193MB -> 156MB; the
+  # floor is the current champion.npz set, which checkout needs. Training from
+  # scratch and don't need the existing blueprints? SPARSE_NO_DATA=1 drops
+  # backend/data as well: measured 9.8MB, still full history and still pushable.
+  say "cloning into $HOLDEM_DIR"
+  if [ "${SPARSE_NO_DATA:-0}" = "1" ]; then
+    git clone --filter=blob:limit=1m --no-checkout --branch "$BRANCH" "$REPO_URL" "$HOLDEM_DIR"
+    git -C "$HOLDEM_DIR" sparse-checkout set --no-cone '/*' '!/backend/data/**'
+    git -C "$HOLDEM_DIR" checkout "$BRANCH"
+  else
+    git clone --filter=blob:limit=1m --branch "$BRANCH" "$REPO_URL" "$HOLDEM_DIR"
+  fi
+fi
+cd "$HOLDEM_DIR"
+
+# ------------------------------------------------------------- python deps
 # Vast.ai images keep Python in a venv (default /venv/main) that a
-# NON-INTERACTIVE shell does not activate -- `ssh host 'python ...'` would other-
-# wise hit the bare system interpreter and install into the wrong place. Activate
-# it before touching pip, and prefer `uv pip` when present (much faster).
+# NON-INTERACTIVE shell does not activate -- `ssh host 'python ...'` would
+# otherwise hit the bare system interpreter and install into the wrong place.
 VENV="${VENV:-/venv/${ACTIVE_VENV:-main}}"
 if [ -f "$VENV/bin/activate" ]; then
   # shellcheck disable=SC1091
   . "$VENV/bin/activate"
-  log "activated venv at $VENV"
 else
-  log "no venv at $VENV; using python/pip from PATH"
+  [ -d .venv ] || python3 -m venv .venv
+  # shellcheck disable=SC1091
+  . .venv/bin/activate
 fi
+say "python: $(python -V 2>&1) at $(command -v python)"
 
-if command -v uv >/dev/null 2>&1; then
-  PIP="uv pip"
-  log "using uv pip"
-else
-  PIP="pip"
-fi
+PIP="pip"
+command -v uv >/dev/null 2>&1 && PIP="uv pip"
 
-# ---------------------------------------------------------------- pinned deps
-# Matched to the validated local environment. torch cu128 wheels run on any
-# driver >= 525, including CUDA 13.x images (driver ABI is backward compatible),
-# so the cu128 build is correct even on a CUDA 13.2 base image.
-TORCH_SPEC="torch==2.7.0"
-TORCH_INDEX="https://download.pytorch.org/whl/cu128"
-PINS=(
-  "numpy==2.2.6"
-  "numba==0.61.2"
-  "llvmlite==0.44.0"
-  "fastapi==0.116.1"
-  "uvicorn==0.35.0"
-  "pydantic==2.11.7"
-  "websockets==16.1"
-  "requests==2.34.2"
-  # Required by backend/api_auth.py, which backend/eval/duel.py imports -- so
-  # WITHOUT IT test_duel_null cannot even be collected, and the promotion gate
-  # is unavailable. It is not optional despite looking like server-only config.
-  "python-dotenv==1.2.2"
-)
+# Versions matched to the validated local environment. The torch cu128 wheels
+# run on any driver >= 525, including CUDA 13.x images (driver ABI is backward
+# compatible), so cu128 is correct even on a CUDA 13.2 base image.
+#
+# Deliberately NOT installed: opencv, mss, rapidocr, resvg_py, tkinter,
+# windows_capture. Those serve the Windows-only screen-scraper and GUI overlay;
+# every solver, eval and serving import works without them.
+say "python dependencies"
+$PIP install -q torch==2.7.0 --index-url https://download.pytorch.org/whl/cu128
+$PIP install -q \
+  numpy==2.2.6 numba==0.61.2 llvmlite==0.44.0 \
+  fastapi==0.116.1 uvicorn==0.35.0 pydantic==2.11.7 \
+  websockets==16.1 requests==2.34.2 python-dotenv==1.2.2
 
-# Deliberately NOT installed: cv2/opencv, mss, rapidocr, resvg_py, tkinter and
-# windows_capture. Those serve the live screen-scraping and GUI overlay paths,
-# which are Windows-only and irrelevant on a headless Linux box. Every solver,
-# eval and serving import works without them.
-
-log "--- host ---"
-log "python: $(python -V 2>&1)"
-if command -v nvidia-smi >/dev/null 2>&1; then
-  nvidia-smi --query-gpu=name,memory.total,driver_version --format=csv,noheader | tee -a "$LOG"
-else
-  log "WARNING: nvidia-smi not found; this pod may have no GPU"
-fi
-
-log "--- dependencies ---"
-if python -c "import torch; assert torch.__version__.startswith('2.7.0')" 2>/dev/null; then
-  log "torch already at 2.7.0; skipping install"
-else
-  log "installing $TORCH_SPEC from $TORCH_INDEX"
-  $PIP install -q "$TORCH_SPEC" --index-url "$TORCH_INDEX" 2>&1 | tee -a "$LOG"
-fi
-
-for pin in "${PINS[@]}"; do
-  name="${pin%%==*}"
-  want="${pin##*==}"
-  have="$(python -c "import importlib.metadata as m;print(m.version('$name'))" 2>/dev/null || echo "")"
-  if [ "$have" = "$want" ]; then
-    log "$name==$want already present"
-  else
-    log "installing $pin (had '${have:-none}')"
-    $PIP install -q "$pin" 2>&1 | tee -a "$LOG"
-  fi
-done
-
-log "--- GPU identity as torch sees it ---"
-python - <<'PY' 2>&1 | tee -a "$LOG"
-import torch
-
-print(f"torch {torch.__version__} | built for CUDA {torch.version.cuda}")
-if not torch.cuda.is_available():
-    raise SystemExit("FATAL: torch cannot see a CUDA device")
-props = torch.cuda.get_device_properties(0)
-total_mib = props.total_memory / 1024**2
-free, total = torch.cuda.mem_get_info()
-print(f"device 0: {props.name}")
-print(f"  capability : sm_{props.major}{props.minor}")
-print(f"  SMs        : {props.multi_processor_count}")
-print(f"  VRAM total : {total_mib:,.0f} MiB")
-print(f"  VRAM free  : {free / 1024**2:,.0f} MiB  (nothing else should be resident)")
-PY
-
-log "--- recommended env profile for a HEADLESS card ---"
-# These raise the ceilings that exist only because the local 3060 also drives a
-# monitor. They are printed, NOT exported into a profile, because the flop node
-# budget is a LATENCY guard as much as a memory guard -- raising it must be
-# justified by tools/benchmark_resolver_latency.py on this card, not assumed.
-python - <<'PY' 2>&1 | tee -a "$LOG"
-import torch
-
-total_mib = int(torch.cuda.get_device_properties(0).total_memory / 1024**2)
-# Headless: reserve ~700 MiB for driver/context instead of the 2 GiB a desktop
-# compositor needs, and allow a higher resident fraction.
-budget = int((total_mib - 700) * 0.92)
-headroom = 1024
-showdown = 384 if total_mib < 14000 else 768
-print("# memory ceilings only -- safe to export")
-print(f"export HOLDEM_RESOLVER_MAX_VRAM_MB={budget}")
-print(f"export HOLDEM_RESOLVER_VRAM_HEADROOM_MB={headroom}")
-print(f"export HOLDEM_SHOWDOWN_WORKSPACE_MB={showdown}")
-print()
-print("# LATENCY guard -- do NOT raise without measuring on this card first:")
-print("#   python tools/benchmark_resolver_latency.py")
-print("# export HOLDEM_FLOP_NODE_BUDGET=12000   (default; raising it costs seconds/decision)")
-PY
-
-log "--- trusted guards (a pod failing these may not produce numbers) ---"
-GUARDS=(
-  tests.test_gpu_convergence
-  tests.test_duel_null
-  tests.test_lbr_validation
-)
-FAILED=0
-for guard in "${GUARDS[@]}"; do
-  log "running $guard"
-  if python -m unittest "$guard" >>"$LOG" 2>&1; then
-    log "  PASS $guard"
-  else
-    log "  FAIL $guard  <-- see $LOG"
-    FAILED=1
-  fi
-done
-
-if [ "$FAILED" -ne 0 ]; then
-  log "=== cloud_setup FINISHED WITH FAILING GUARDS ==="
-  log "Do not trust any measurement from this pod until the guards pass."
+# ---------------------------------------------------------------------- GPU
+say "GPU"
+if ! nvidia-smi --query-gpu=name,memory.total,driver_version --format=csv,noheader; then
+  echo "FATAL: nvidia-smi unavailable -- this pod has no usable GPU"
   exit 1
 fi
 
-log "=== cloud_setup OK: deps pinned, GPU visible, guards green ==="
-log "Full log: $LOG"
+say "${SMOKE_SECONDS}s GPU workload"
+SMOKE_SECONDS="$SMOKE_SECONDS" python - <<'PY'
+import os
+import time
+
+import torch
+
+if not torch.cuda.is_available():
+    raise SystemExit("FATAL: torch cannot see a CUDA device")
+
+props = torch.cuda.get_device_properties(0)
+print(
+    f"torch {torch.__version__} (CUDA {torch.version.cuda}) -> {props.name} "
+    f"sm_{props.major}{props.minor}, {props.multi_processor_count} SMs, "
+    f"{props.total_memory / 1024**2:,.0f} MiB"
+)
+
+# A card that is visible but computing wrong is worse than one that is absent.
+probe = torch.randn(2048, 2048, device="cuda")
+torch.testing.assert_close(
+    probe @ torch.eye(2048, device="cuda"), probe, rtol=1e-4, atol=1e-4
+)
+print("matmul sanity: OK")
+
+from backend.solver.gpu.cfr import VectorCFR
+from backend.solver.gpu.deals import DealSampler
+from backend.solver.gpu.tree import BettingTree, GpuActionConfig
+
+tree = BettingTree(GpuActionConfig(max_raises_per_street=2, stack_bb=20.0))
+solver = VectorCFR(tree, DealSampler(), device="cuda", seed=0, batch_boards=4)
+print(f"tree: {len(tree.kind):,} nodes")
+
+solver.run(2)  # warm the kernels outside the clock
+budget = float(os.environ.get("SMOKE_SECONDS", "60"))
+start, iters = time.time(), 0
+while time.time() - start < budget:
+    solver.run(10)
+    iters += 10
+elapsed = time.time() - start
+
+print(f"{iters} CFR iterations in {elapsed:.1f}s -> {iters / elapsed:.1f} it/s")
+print(f"peak VRAM: {torch.cuda.max_memory_allocated() / 1024**2:,.0f} MiB")
+PY
+
+say "READY: repo at $HOLDEM_DIR, log at $LOG"

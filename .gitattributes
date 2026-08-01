@@ -1,0 +1,4 @@
+# Shell scripts run on Linux pods. With core.autocrlf=true on Windows a checkout
+# would rewrite them CRLF, and a CR in the shebang makes Linux fail the script
+# with `bad interpreter: /usr/bin/env bash^M`. Keep them LF everywhere.
+*.sh text eol=lf

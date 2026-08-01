@@ -672,56 +672,60 @@ it. A host-RAM OOM then came from refitting histogram centroids from scratch;
 `--sampler-init` avoids it, and is also the better experiment because it holds the
 card abstraction fixed across runs.
 
-### 2026-08-02 TRAINING HAS PLATEAUED, AND SIBLING DUELS CANNOT SEE IT
+### 2026-08-02 THE GATE'S DUEL BUDGETS WERE TOO SMALL TO SEE REAL GAINS
 
-The 40,000-iteration 200bb histogram run finished, closing the question §above left
-open ("training continues toward 40,000 to test whether histogram keeps improving").
-It does not. Three duels at 60,000 seat-swapped CRN pairs each, null exactly +0.00,
-every one verified bit-identical against a serial control:
+Four duels at 60,000 seat-swapped CRN pairs each, null exactly +0.00, every one
+verified bit-identical against a serial control (`tools/duel_sharded.py`):
 
 | duel | result |
 |---|---|
-| histogram@40k − histogram@20k | **−0.36 [−5.42, +4.70]** |
-| histogram@20k − scalar@118k | −0.06 [−6.76, +6.64] |
-| histogram@40k − scalar@118k | +4.71 [−1.93, +11.34] |
+| **20bb** histogram@50k − histogram@5k | **+5.01 [+3.03, +6.99]** |
+| 200bb histogram@40k − histogram@20k | −0.36 [−5.42, +4.70] |
+| 200bb histogram@20k − scalar@118k | −0.06 [−6.76, +6.64] |
+| 200bb histogram@40k − scalar@118k | +4.71 [−1.93, +11.34] |
 
-The three are mutually consistent (−0.36 + −0.06 ≈ −0.42 against +4.71 measured,
-well inside the intervals), which is a useful internal check on the harness.
+The three 200bb rows are mutually consistent (−0.36 + −0.06 ≈ −0.42 against +4.71
+measured, well inside the intervals) — a useful internal check on the harness.
 
-**Doubling the iterations changed nothing, at ±5 bb/100.** That is a bound, not a
-shrug. And it is the second depth to say so: the 20bb gate history shows the same
-thing at 10x the iteration ratio, against champion@5000 —
+**More training does help, modestly, and the gate could not see it.** A 10x
+iteration increase at 20bb is worth **+5.01 bb/100** with the interval well clear of
+zero. The 2026-07-30 gate had measured the same comparison and returned
++0.32 [−10.28, +10.91] — an interval **five times wider than the effect**, which
+could never have resolved it. Its whole history is under-powered the same way:
 
-| iterations | vs 5,000 | pairs |
-|---:|---|---:|
-| 10,000 | −3.65 [−25.94, +18.63] | 750 |
-| 20,000 | −18.22 [−39.47, +3.03] | 750 |
-| **30,000** | **+0.48 [−10.20, +11.17]** | 3,000 |
-| 40,000 | −24.68 [−46.23, −3.13] | 750 |
-| **50,000** | **+0.32 [−10.28, +10.91]** | 3,000 |
+| iterations | vs 5,000 | pairs | reading |
+|---:|---|---:|---|
+| 10,000 | −3.65 [−25.94, +18.63] | 750 | uninformative |
+| 20,000 | −18.22 [−39.47, +3.03] | 750 | uninformative |
+| 30,000 | +0.48 [−10.20, +11.17] | 3,000 | uninformative |
+| 40,000 | −24.68 [−46.23, −3.13] | 750 | **false REGRESSION** |
+| 50,000 | +0.32 [−10.28, +10.91] | 3,000 | uninformative |
 
-Only the two 3,000-pair confirms are worth reading; both are flat. The 750-pair
-"REGRESSION" at 40,000 is contradicted by its own neighbours at 30,000 and 50,000
-and is noise. **A 750-pair screen carries ±22–46 bb/100 and should not be allowed to
-produce a verdict** — it is the weakest instrument still wired into the gate.
+The 750-pair "REGRESSION" at 40,000 is contradicted by its neighbours and by the
+60,000-pair result, and is noise. **A 750-pair screen carries ±22–46 bb/100 and a
+3,000-pair confirm ±10.6; neither should produce a verdict on effects of this size.**
+Sharding makes 60,000 pairs cost ~30 min, so there is no longer a reason to accept
+those budgets. This directly cost strength: iteration 50,000 sat unpromoted for
+three days over a gate failure that was an artifact of sample size. It is now
+promoted (see §1).
 
-A correction to §above's framing while reading this: the 20bb `champion_meta` line
+A correction picked up on the way in: the 20bb `champion_meta` line
 "head-to-head vs 30000 (+32.08)" does **not** mean iteration 5,000 beat iteration
 30,000 of the same run. The incumbent there was the **100bb bootstrap champion**,
-which happens to sit at iteration 30,000. Nothing in the 20bb history shows more
-training winning.
+which happens to sit at iteration 30,000.
 
-**The real conclusion is about the instrument, not the models.** LBR puts 200bb at
-+252.45 and 20bb at +13.34 — a factor of nineteen. So every 200bb variant here is
-badly broken, and they all tie each other because they are broken **the same way**.
-A head-to-head duel between siblings measures only where two agents differ, and
-these differ almost nowhere that an opponent can punish. Neither more iterations nor
-a **7.5x finer card abstraction** (150/150/30 against 20/20/20) moved the duel
-needle at all. Whatever limits deep-stack strength is upstream of both.
+**What still does not move at 200bb.** Doubling iterations (20k→40k) and a **7.5x
+finer card abstraction** (150/150/30 against 20/20/20) both changed nothing, the
+latter even at 40,000 iterations. Note the 20bb win came from a **10x** ratio while
+the 200bb test was only **2x**, so these are not in conflict — a +5-sized effect is
+right at the 200bb bound (+4.70) and a bigger ratio has not been tried there.
 
-That reframes the search: stop asking duels to rank near-identical blueprints, and
-spend the measurement budget on LBR and the external GTO Wizard benchmark, which are
-the two instruments that have actually detected something.
+The deeper caution is about what a duel can see at all. LBR puts 200bb at +252.45
+against +13.34 at 20bb, so every 200bb variant is badly broken and they tie each
+other because they are broken **the same way** — a duel measures only where two
+agents differ. Sibling duels are worth running (they found the +5.01), but they
+cannot certify that a shared defect is absent. LBR and the external GTO Wizard
+benchmark remain the instruments for that.
 
 ### 2026-08-02 idle VRAM cannot be spent on card buckets
 

@@ -15,3 +15,10 @@ artifacts/
 tmp/
 logs/
 .DS_Store
+
+# Machine-written agent-harness state: rewritten every session, conflicts on
+# every merge, and useless to anyone else. Checked-in agent CONFIG is wanted
+# (.claude/skills/, .claude/settings.json) -- accumulated STATE is not.
+.claude-flow/
+.claude/proven-config.json
+.claude/.proven-config-version

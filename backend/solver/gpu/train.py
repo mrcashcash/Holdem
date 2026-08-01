@@ -29,21 +29,62 @@ CHECKPOINT_PATH = DATA_DIR / "checkpoint.npz"
 TELEMETRY_PATH = DATA_DIR / "telemetry.json"
 SAMPLER_INIT_PATH: Path | None = None
 
+# ============================ THE CANONICAL BET MENU ==========================
+# ONE sizing menu for every depth, every model, training and serving alike
+# (user directive, 2026-08-01). Do not add a per-depth variant: the whole point is
+# that a hand does not change meaning when it routes to a different blueprint.
+#
+#   preflop  0.75, 1.00  -> opens of 2.5bb and 3bb
+#            (a preflop open of fraction f commits 1 + 2f bb: the small blind
+#             calls to 1bb, then raises f x the 2bb pot-after-call)
+#   postflop 0.40, 0.70, 1.20  x pot
+#   cap      2 raises per street, preflop included
+#
+# Measured tree sizes with this menu (2026-08-01, 64 KB/node observed peak):
+#
+#     depth      nodes  decisions   VRAM
+#      20bb     19,997      7,408   1.2 GB
+#      50bb     83,865     30,112   5.1 GB
+#     100bb    188,053     65,928  11.5 GB
+#     200bb    378,671    130,424  23.1 GB   <- needs a 24 GB card
+#
+# Why one menu matters beyond consistency: routing sends 50bb to the 20bb
+# blueprint and every depth boundary to its nearest neighbour, so differing menus
+# meant a hand crossed into a tree whose sizes it had never seen. Translation
+# drift measured 3.33x median at the river with mismatched menus
+# (tools/translation_drift_audit.py); a shared menu removes that source entirely.
+#
+# Every champion trained before this date used a different menu and is therefore
+# incompatible: 20bb had 4 postflop sizes, 100bb and 200bb had (0.5, 1.0) with
+# cap 3. All four depths need retraining from scratch.
+CANONICAL_PREFLOP_FRACTIONS = (0.75, 1.0)
+CANONICAL_POSTFLOP_FRACTIONS = (0.4, 0.7, 1.2)
+CANONICAL_RAISE_CAP = 2
+
 DEFAULT_CONFIG = GpuActionConfig(
-    preflop_fractions=(0.75, 1.5),
-    postflop_fractions=(0.5, 1.0),
-    max_raises_per_street=3,
+    preflop_fractions=CANONICAL_PREFLOP_FRACTIONS,
+    postflop_fractions=CANONICAL_POSTFLOP_FRACTIONS,
+    max_raises_per_street=CANONICAL_RAISE_CAP,
     stack_bb=100.0,  # matches the serving game: 2000 chips at a 20-chip big blind
 )
-# Native shallow-stack blueprint.  Menu sizing on 2026-07-29 measured 36,906
-# nodes / 13,706 decision nodes / ~176 MiB of v3-sized CFR tables at 20bb, well
-# below the documented training ceilings.  Shallow trees can afford this richer
-# menu; using DEFAULT_CONFIG here would preserve the exact 100bb mismatch this
-# blueprint is intended to remove.
+# Native shallow-stack blueprint. Now the CANONICAL menu at 20bb rather than a
+# depth-specific one.
+#
+# This is a deliberate resolution TRADE-OFF, recorded so nobody "fixes" it back:
+# the previous 20bb menu had four postflop sizes (0.33/0.66/1.0/1.5) and produced
+# 36,906 nodes / 13,706 decisions, whereas the canonical menu gives 19,997 nodes /
+# 7,408 decisions — 0.54x the resolution. Shallow trees could afford the richer
+# menu. It was dropped anyway because a hand that routes 50bb -> 20bb, or crosses
+# any depth boundary, previously landed in a tree whose bet sizes it had never
+# seen, and that mismatch is a measured source of translation drift. One menu
+# everywhere is worth more than per-depth resolution.
+#
+# no_donk_srp is kept: it is a structural house rule about WHO may bet, not a
+# sizing choice, so it does not conflict with a shared sizing menu.
 BLUEPRINT_CONFIG_20 = GpuActionConfig(
-    preflop_fractions=(0.5, 0.75),
-    postflop_fractions=(0.33, 0.66, 1.0, 1.5),
-    max_raises_per_street=2,
+    preflop_fractions=CANONICAL_PREFLOP_FRACTIONS,
+    postflop_fractions=CANONICAL_POSTFLOP_FRACTIONS,
+    max_raises_per_street=CANONICAL_RAISE_CAP,
     stack_bb=20.0,
     no_donk_srp=True,
 )

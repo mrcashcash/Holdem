@@ -46,7 +46,19 @@ held="$(dpkg-query -W -f='${Package}\n' 2>/dev/null | grep -E 'nvidia|libcuda|^c
 [ -n "$held" ] && $SUDO apt-mark hold $held >/dev/null 2>&1 || true
 
 $SUDO apt-get update -qq
-$SUDO apt-get -y -qq -o Dpkg::Options::=--force-confold upgrade
+
+# The full upgrade is OPT-IN. Measured 2026-08-01: it spent 3-5 min upgrading ~18
+# packages the job never touches (vim, rsyslog, libxml2), and because the set
+# included openssh-server it RESTARTED sshd and killed the live SSH session
+# mid-provision -- which looks exactly like a dead pod. The base image is already
+# current enough to build and run this project. Set FULL_UPGRADE=1 if a CVE or a
+# broken system package actually requires it.
+if [ "${FULL_UPGRADE:-0}" = "1" ]; then
+  say "apt full upgrade (FULL_UPGRADE=1; may restart sshd and drop your session)"
+  $SUDO apt-get -y -qq -o Dpkg::Options::=--force-confold upgrade
+else
+  echo "skipping full apt upgrade (set FULL_UPGRADE=1 to force)"
+fi
 
 say "system packages"
 $SUDO apt-get install -y -qq \
@@ -94,18 +106,31 @@ if [ -d "$HOLDEM_DIR/.git" ]; then
   git -C "$HOLDEM_DIR" pull --ff-only origin "$BRANCH"
 else
   # NOT --depth 1: pushing from a shallow clone is fragile, and on a pod with no
-  # persistent disk, pushing is the only way results survive. --filter drops
-  # HISTORICAL blobs >1MB (old .npz checkpoints), measured 193MB -> 156MB; the
-  # floor is the current champion.npz set, which checkout needs. Training from
-  # scratch and don't need the existing blueprints? SPARSE_NO_DATA=1 drops
-  # backend/data as well: measured 9.8MB, still full history and still pushable.
-  say "cloning into $HOLDEM_DIR"
+  # persistent disk, pushing is the only way results survive.
+  #
+  # NOT --filter either, by default. MEASURED 2026-08-01 on a 3090 pod:
+  # --filter=blob:limit=1m saved 193MB -> 156MB (19%) but the clone took
+  # **26 minutes at ~1 Mbps**, while torch pulled 2.5GB in 11 min (~30 Mbps) over
+  # the same link. The link is fine; a filtered clone makes GitHub compute a
+  # custom pack server-side, off the cached path, and that is what crawls. The
+  # same filter then made every PUSH re-send ~77MB and take ~11 min even for a
+  # one-line file, because thin-pack negotiation against a promisor remote cannot
+  # tell what the remote already has. A plain clone hits GitHub's cached pack and
+  # pushes normally. Set FILTER_BLOBS=1 to restore the old behaviour on a pod
+  # where disk, not time, is the binding constraint.
+  FILTER_ARGS=""
+  [ "${FILTER_BLOBS:-0}" = "1" ] && FILTER_ARGS="--filter=blob:limit=1m"
+
+  say "cloning into $HOLDEM_DIR${FILTER_ARGS:+ (filtered)}"
   if [ "${SPARSE_NO_DATA:-0}" = "1" ]; then
-    git clone --filter=blob:limit=1m --no-checkout --branch "$BRANCH" "$REPO_URL" "$HOLDEM_DIR"
+    # Training from scratch and not evaluating against existing blueprints:
+    # skips backend/data entirely. Note --sampler-init needs a champion.npz, so
+    # do not combine this with a histogram run unless you fetch one separately.
+    git clone $FILTER_ARGS --no-checkout --branch "$BRANCH" "$REPO_URL" "$HOLDEM_DIR"
     git -C "$HOLDEM_DIR" sparse-checkout set --no-cone '/*' '!/backend/data/**'
     git -C "$HOLDEM_DIR" checkout "$BRANCH"
   else
-    git clone --filter=blob:limit=1m --branch "$BRANCH" "$REPO_URL" "$HOLDEM_DIR"
+    git clone $FILTER_ARGS --branch "$BRANCH" "$REPO_URL" "$HOLDEM_DIR"
   fi
 fi
 cd "$HOLDEM_DIR"
@@ -136,7 +161,26 @@ command -v uv >/dev/null 2>&1 && PIP="uv pip"
 # windows_capture. Those serve the Windows-only screen-scraper and GUI overlay;
 # every solver, eval and serving import works without them.
 say "python dependencies"
-$PIP install -q torch==2.7.0 --index-url https://download.pytorch.org/whl/cu128
+
+# Skip the ~2.5GB torch download when the image already satisfies the pin. The
+# vastai/pytorch images usually ship a recent torch, and reinstalling cost 11 min
+# of measured provision time on 2026-08-01 for no change. Match on the version
+# prefix AND on CUDA support, since a CPU-only wheel of the right version would
+# pass a naive check and then fail at the first kernel launch.
+if python - <<'PY' 2>/dev/null
+import sys
+try:
+    import torch
+except Exception:
+    sys.exit(1)
+sys.exit(0 if torch.__version__.startswith("2.7.0") and torch.version.cuda else 1)
+PY
+then
+  echo "torch already satisfies the pin ($(python -c 'import torch;print(torch.__version__)')); skipping download"
+else
+  $PIP install -q torch==2.7.0 --index-url https://download.pytorch.org/whl/cu128
+fi
+
 $PIP install -q \
   numpy==2.2.6 numba==0.61.2 llvmlite==0.44.0 \
   fastapi==0.116.1 uvicorn==0.35.0 pydantic==2.11.7 \

@@ -99,9 +99,22 @@ ssh $SSHOPTS root@$IP 'cat > /root/cloud_setup.sh' < tools/cloud_setup.sh
 ssh $SSHOPTS root@$IP 'bash /root/cloud_setup.sh'
 ```
 
-Expect ~9 minutes: apt upgrade ~3m, torch pin ~4m, clone 15s, 60s GPU workload.
-Useful overrides: `SPARSE_NO_DATA=1` (9.8 MB clone instead of 156 MB — use when
-training from scratch and not evaluating against existing blueprints),
+Expect **~3–4 minutes** with the current defaults: apt update ~20s, system packages
+~30s, unfiltered clone ~1–2m, torch skipped when the image already satisfies the
+pin, 60s GPU workload. Budget ~14m if the image ships an incompatible torch.
+
+That is after three fixes made on 2026-08-01, when a run took **40 minutes**:
+
+- the blob filter is now **off** by default (it made the clone take 26m at ~1 Mbps
+  and every push re-send ~77 MB) — `FILTER_BLOBS=1` restores it
+- the full `apt upgrade` is now **opt-in** (3–5m of irrelevant packages, and it
+  restarted sshd mid-provision, dropping the live session) — `FULL_UPGRADE=1`
+- torch is **skipped** when the installed version already matches the pin *and*
+  has CUDA support (11m saved; the CUDA check matters because a CPU-only wheel of
+  the right version passes a naive version test and fails at the first kernel)
+
+Other overrides: `SPARSE_NO_DATA=1` (skips `backend/data` entirely — do **not**
+combine with a `--sampler-init` run, which needs a `champion.npz`),
 `SMOKE_SECONDS=5`, `HOLDEM_DIR`, `BRANCH`.
 
 It must print `GITHUB_TOKEN present -> push enabled`. If it prints the

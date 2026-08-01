@@ -9,40 +9,35 @@ from backend.solver.gpu.tree import CHECK_CALL, BettingTree
 
 
 class Blueprint20bbTests(unittest.TestCase):
-    def test_native_config_uses_the_canonical_menu(self) -> None:
-        """20bb must use the SAME sizing menu as every other depth.
+    def test_native_config_keeps_its_own_richer_menu(self) -> None:
+        """20bb is a DELIBERATE exception to the canonical menu.
 
-        This previously asserted a depth-specific richer menu — preflop
-        (0.5, 0.75), postflop (0.33, 0.66, 1.0, 1.5), 36,906 nodes / 13,706
-        decisions. That was dropped on 2026-08-01 for one canonical menu across
-        20/50/100/200bb, at a real cost: 16,214 nodes / 6,010 decisions is 0.44x
-        the old tree. The trade is deliberate. Routing sends 50bb to this
-        blueprint and every depth boundary to its nearest neighbour, so a
-        depth-specific menu meant a hand crossing into a tree whose bet sizes it
-        had never seen — a measured source of translation drift (3.33x median at
-        the river, tools/translation_drift_audit.py).
+        50/100/200bb share one menu so a hand does not change meaning when it
+        routes between them. 20bb does not join: a shallow stack runs out of chips
+        before the tree can branch, so it affords four postflop sizes at 36,906
+        nodes / 13,706 decisions, versus 16,214 / 6,010 under canonical -- 2.3x the
+        resolution for 2.4 GB instead of 1.0 GB. Resolution is the scarcer resource
+        at depth, not shallow.
 
-        If this test fails, the menu has diverged from canonical. Fix the config,
-        not the test.
+        If someone "unifies" this later, they trade away 2.3x resolution at the
+        depth where the agent is already strongest (LBR +13.34 vs +252.45 at
+        200bb). Change it only with a measurement that says uniformity won.
         """
         config = train.BLUEPRINT_CONFIG_20
         self.assertEqual(config.stack_bb, 20.0)
-        self.assertEqual(config.preflop_fractions, train.CANONICAL_PREFLOP_FRACTIONS)
-        self.assertEqual(config.postflop_fractions, train.CANONICAL_POSTFLOP_FRACTIONS)
-        self.assertEqual(config.max_raises_per_street, train.CANONICAL_RAISE_CAP)
-        # A structural house rule about WHO may bet, not a sizing choice, so it
-        # survives the move to a shared sizing menu.
+        self.assertEqual(config.preflop_fractions, (0.5, 0.75))
+        self.assertEqual(config.postflop_fractions, (0.33, 0.66, 1.0, 1.5))
+        self.assertEqual(config.max_raises_per_street, 2)
         self.assertTrue(config.no_donk_srp)
+        # And it must NOT have silently drifted into canonical.
+        self.assertNotEqual(config.postflop_fractions, train.CANONICAL_POSTFLOP_FRACTIONS)
 
-    def test_canonical_menu_is_identical_at_every_depth(self) -> None:
-        """The point of the canonical menu: no depth may quietly differ."""
+    def test_canonical_menu_is_identical_across_50_100_200(self) -> None:
+        """No depth in the canonical set may quietly differ."""
         from dataclasses import replace
 
-        for depth, base in ((20.0, train.BLUEPRINT_CONFIG_20),
-                            (50.0, train.DEFAULT_CONFIG),
-                            (100.0, train.DEFAULT_CONFIG),
-                            (200.0, train.DEFAULT_CONFIG)):
-            config = replace(base, stack_bb=depth)
+        for depth in (50.0, 100.0, 200.0):
+            config = replace(train.DEFAULT_CONFIG, stack_bb=depth)
             with self.subTest(depth=depth):
                 self.assertEqual(config.preflop_fractions, train.CANONICAL_PREFLOP_FRACTIONS)
                 self.assertEqual(config.postflop_fractions, train.CANONICAL_POSTFLOP_FRACTIONS)
@@ -62,9 +57,7 @@ class Blueprint20bbTests(unittest.TestCase):
     def test_native_tree_stays_inside_sizing_ceiling(self) -> None:
         tree = BettingTree(train.BLUEPRINT_CONFIG_20)
         self.assertLessEqual(len(tree), 200_000)
-        # Canonical menu at 20bb with no_donk_srp. Was 36,906 under the retired
-        # depth-specific menu; see test_native_config_uses_the_canonical_menu.
-        self.assertEqual(len(tree), 16_214)
+        self.assertEqual(len(tree), 36_906)
 
     def test_out_of_position_caller_cannot_donk_in_single_raised_pot(self) -> None:
         tree = BettingTree(train.BLUEPRINT_CONFIG_20)

@@ -29,10 +29,10 @@ CHECKPOINT_PATH = DATA_DIR / "checkpoint.npz"
 TELEMETRY_PATH = DATA_DIR / "telemetry.json"
 SAMPLER_INIT_PATH: Path | None = None
 
-# ============================ THE CANONICAL BET MENU ==========================
-# ONE sizing menu for every depth, every model, training and serving alike
-# (user directive, 2026-08-01). Do not add a per-depth variant: the whole point is
-# that a hand does not change meaning when it routes to a different blueprint.
+# ===================== THE CANONICAL BET MENU (50/100/200bb) ===================
+# One sizing menu for 50bb, 100bb and 200bb -- training and serving alike -- so a
+# hand does not change meaning when it routes between those depths
+# (user directive, 2026-08-01).
 #
 #   preflop  0.75, 1.00  -> opens of 2.5bb and 3bb
 #            (a preflop open of fraction f commits 1 + 2f bb: the small blind
@@ -40,23 +40,28 @@ SAMPLER_INIT_PATH: Path | None = None
 #   postflop 0.40, 0.70, 1.20  x pot
 #   cap      2 raises per street, preflop included
 #
-# Measured tree sizes with this menu (2026-08-01, 64 KB/node observed peak):
+# **20bb is a deliberate exception** and keeps its own richer menu -- see
+# BLUEPRINT_CONFIG_20 below for why (shallow trees can afford four postflop sizes
+# at 2.3x the resolution, and resolution is scarcer at depth than shallow).
+#
+# Measured tree sizes with the canonical menu (2026-08-01, 64 KB/node observed):
 #
 #     depth      nodes  decisions   VRAM
-#      20bb     19,997      7,408   1.2 GB
 #      50bb     83,865     30,112   5.1 GB
 #     100bb    188,053     65,928  11.5 GB
 #     200bb    378,671    130,424  23.1 GB   <- needs a 24 GB card
 #
-# Why one menu matters beyond consistency: routing sends 50bb to the 20bb
-# blueprint and every depth boundary to its nearest neighbour, so differing menus
-# meant a hand crossed into a tree whose sizes it had never seen. Translation
-# drift measured 3.33x median at the river with mismatched menus
-# (tools/translation_drift_audit.py); a shared menu removes that source entirely.
+# Why a shared menu matters: routing sends every depth boundary to its nearest
+# blueprint, so differing menus meant a hand crossed into a tree whose bet sizes
+# it had never seen. Translation drift measured 3.33x median at the river under
+# mismatched menus (tools/translation_drift_audit.py). Keeping 20bb separate
+# leaves that one boundary exposed; the other two are now clean.
 #
 # Every champion trained before this date used a different menu and is therefore
-# incompatible: 20bb had 4 postflop sizes, 100bb and 200bb had (0.5, 1.0) with
-# cap 3. All four depths need retraining from scratch.
+# incompatible -- 100bb and 200bb had (0.5, 1.0) with cap 3, i.e. a 4bb open and a
+# third raise level, both outside the canonical set. There is no transfer path
+# (the trainer refuses a mismatched config, correctly: strategy rows are indexed
+# against one specific tree), so 50/100/200bb retrain from scratch.
 CANONICAL_PREFLOP_FRACTIONS = (0.75, 1.0)
 CANONICAL_POSTFLOP_FRACTIONS = (0.4, 0.7, 1.2)
 CANONICAL_RAISE_CAP = 2
@@ -67,24 +72,25 @@ DEFAULT_CONFIG = GpuActionConfig(
     max_raises_per_street=CANONICAL_RAISE_CAP,
     stack_bb=100.0,  # matches the serving game: 2000 chips at a 20-chip big blind
 )
-# Native shallow-stack blueprint. Now the CANONICAL menu at 20bb rather than a
-# depth-specific one.
+# Native shallow-stack blueprint. DELIBERATE EXCEPTION to the canonical menu
+# (user directive, 2026-08-01): 20bb keeps its own richer sizing.
 #
-# This is a deliberate resolution TRADE-OFF, recorded so nobody "fixes" it back:
-# the previous 20bb menu had four postflop sizes (0.33/0.66/1.0/1.5) and produced
-# 36,906 nodes / 13,706 decisions, whereas the canonical menu gives 19,997 nodes /
-# 7,408 decisions — 0.54x the resolution. Shallow trees could afford the richer
-# menu. It was dropped anyway because a hand that routes 50bb -> 20bb, or crosses
-# any depth boundary, previously landed in a tree whose bet sizes it had never
-# seen, and that mismatch is a measured source of translation drift. One menu
-# everywhere is worth more than per-depth resolution.
+# The reason is resolution. At 20bb the canonical menu yields only 16,214 nodes /
+# 6,010 decisions, while this menu gives 36,906 / 13,706 -- 2.3x the strategic
+# resolution -- because a shallow stack runs out of chips before the tree can
+# branch, so it can afford four postflop sizes where 200bb cannot afford three.
+# Forcing canonical here would throw away resolution that costs nothing in memory
+# (1.0 GB vs 2.4 GB) purely for uniformity.
 #
-# no_donk_srp is kept: it is a structural house rule about WHO may bet, not a
-# sizing choice, so it does not conflict with a shared sizing menu.
+# The cost is real and worth stating: 50bb routes to whichever blueprint is
+# nearer, so a hand crossing the 20/50 boundary meets a different sizing menu,
+# which is a measured source of translation drift. That is accepted here because
+# 20bb is the depth where the agent is already strongest (LBR +13.34 versus
+# +252.45 at 200bb) and resolution is the scarcer resource at depth, not shallow.
 BLUEPRINT_CONFIG_20 = GpuActionConfig(
-    preflop_fractions=CANONICAL_PREFLOP_FRACTIONS,
-    postflop_fractions=CANONICAL_POSTFLOP_FRACTIONS,
-    max_raises_per_street=CANONICAL_RAISE_CAP,
+    preflop_fractions=(0.5, 0.75),
+    postflop_fractions=(0.33, 0.66, 1.0, 1.5),
+    max_raises_per_street=2,
     stack_bb=20.0,
     no_donk_srp=True,
 )
@@ -423,6 +429,23 @@ def main() -> None:
     # compounds to 3.3x geometry drift by the river
     # (tools/translation_drift_audit.py, tools/menu_drift_probe.py). Overriding
     # the fractions is how a lower-drift menu gets trained and duelled.
+    # Card-abstraction resolution. HISTOGRAM_SAMPLER is 150/150/30, chosen when
+    # 200bb trees were the binding constraint. At 50bb and 100bb the canonical
+    # menu leaves most of a 24 GB card idle (5.1 GB and 11.5 GB), and spare VRAM
+    # is better spent on finer buckets than left unused. River is the weakest
+    # link at 30 -- five times coarser than flop/turn, on the street with the
+    # worst measured translation drift.
+    #
+    # WARNING: any change here refits histogram centroids from scratch, which is
+    # the step that exhausted 32 GB of host RAM locally. It also makes the
+    # checkpoint incompatible with --sampler-init from a differently-bucketed
+    # model, so a fresh fit is mandatory rather than optional.
+    parser.add_argument("--flop-buckets", type=int, default=None,
+                        help="override histogram flop buckets (default 150)")
+    parser.add_argument("--turn-buckets", type=int, default=None,
+                        help="override histogram turn buckets (default 150)")
+    parser.add_argument("--river-buckets", type=int, default=None,
+                        help="override histogram river buckets (default 30)")
     parser.add_argument("--preflop-fractions", type=str, default=None,
                         help="comma-separated override, e.g. 0.75,1.5")
     parser.add_argument("--postflop-fractions", type=str, default=None,
@@ -442,7 +465,17 @@ def main() -> None:
     if arguments.histogram and arguments.abstraction not in ("legacy", "histogram"):
         parser.error("--histogram cannot be combined with --abstraction v3")
     if arguments.histogram or arguments.abstraction == "histogram":
-        ACTIVE_SAMPLER = HISTOGRAM_SAMPLER
+        ACTIVE_SAMPLER = dict(HISTOGRAM_SAMPLER)
+        for name, value in (("flop_buckets", arguments.flop_buckets),
+                            ("turn_buckets", arguments.turn_buckets),
+                            ("river_buckets", arguments.river_buckets)):
+            if value is not None:
+                ACTIVE_SAMPLER[name] = int(value)
+        if ACTIVE_SAMPLER != HISTOGRAM_SAMPLER:
+            print(f"bucket override -> flop={ACTIVE_SAMPLER['flop_buckets']} "
+                  f"turn={ACTIVE_SAMPLER['turn_buckets']} "
+                  f"river={ACTIVE_SAMPLER['river_buckets']} "
+                  f"(centroids will be refit; --sampler-init is incompatible)")
     elif arguments.abstraction == "v3":
         ACTIVE_SAMPLER = V3_SAMPLER
     if arguments.phase3_actions and not (

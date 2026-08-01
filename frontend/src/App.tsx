@@ -111,7 +111,52 @@ const boardCountAtStep = (entries: string[]) => {
   return count;
 };
 const HAND_HISTORY_STORAGE_KEY = "holdem.handHistory.v1";
+const GAME_SETTINGS_STORAGE_KEY = "holdem.gameSettings.v1";
 const MAX_STORED_HANDS = 200;
+const validGameSettings = (value: unknown): value is GameSettings => {
+  if (!value || typeof value !== "object") return false;
+  const settings = value as Partial<GameSettings>;
+  return (
+    Number.isSafeInteger(settings.initial_stack) &&
+    Number.isSafeInteger(settings.small_blind) &&
+    Number.isSafeInteger(settings.big_blind) &&
+    (settings.initial_stack ?? 0) >= (settings.big_blind ?? 0) &&
+    (settings.small_blind ?? 0) >= 1 &&
+    (settings.big_blind ?? 0) === (settings.small_blind ?? 0) * 2 &&
+    Math.max(
+      settings.initial_stack ?? 0,
+      settings.small_blind ?? 0,
+      settings.big_blind ?? 0,
+    ) <= 1_000_000_000
+  );
+};
+const loadStoredGameSettings = (): GameSettings | null => {
+  try {
+    const raw = window.localStorage.getItem(GAME_SETTINGS_STORAGE_KEY);
+    if (!raw) return null;
+    const parsed: unknown = JSON.parse(raw);
+    return validGameSettings(parsed) ? parsed : null;
+  } catch {
+    return null;
+  }
+};
+const storeGameSettings = (settings: GameSettings) => {
+  try {
+    window.localStorage.setItem(
+      GAME_SETTINGS_STORAGE_KEY,
+      JSON.stringify(settings),
+    );
+  } catch {
+    /* storage unavailable — settings remain active for this server session */
+  }
+};
+const sameGameSettings = (
+  current: GameSettings | undefined,
+  saved: GameSettings,
+) =>
+  current?.initial_stack === saved.initial_stack &&
+  current.small_blind === saved.small_blind &&
+  current.big_blind === saved.big_blind;
 const loadStoredHands = (): HandHistory[] => {
   try {
     const raw = window.localStorage.getItem(HAND_HISTORY_STORAGE_KEY);
@@ -553,6 +598,7 @@ function App() {
   const autoDealTimer = useRef<number | null>(null);
   const agentDelayTimer = useRef<number | null>(null);
   const agentTurnRunning = useRef(false);
+  const restoredGameSettings = useRef(false);
   const betControlsRef = useRef<HTMLDivElement | null>(null);
 
   const cancelAutoDeal = useCallback(() => {
@@ -739,19 +785,35 @@ function App() {
         api.getGame(),
         api.trainingStatus(),
       ]);
-      acceptGame(currentGame);
+      let activeGame = currentGame;
+      let restored = false;
+      if (!restoredGameSettings.current) {
+        restoredGameSettings.current = true;
+        const savedSettings = loadStoredGameSettings();
+        if (
+          savedSettings &&
+          !sameGameSettings(currentGame.settings, savedSettings)
+        ) {
+          activeGame = await api.updateGameSettings(savedSettings);
+          restored = true;
+        }
+      }
+      acceptGame(activeGame, restored);
       setTraining(currentTraining);
       if (
-        !currentGame.complete &&
-        currentGame.current_player === 1 &&
+        !activeGame.complete &&
+        activeGame.current_player === 1 &&
         !agentTurnRunning.current
       ) {
         setBusy(true);
         try {
-          await playAgentTurns(currentGame);
+          await playAgentTurns(activeGame);
         } finally {
           setBusy(false);
         }
+      }
+      if (restored) {
+        setMessage("Restored your saved table settings.");
       }
     } catch (error) {
       setMessage(
@@ -817,6 +879,7 @@ function App() {
     setBusy(true);
     try {
       const next = await api.updateGameSettings(settings);
+      storeGameSettings(settings);
       acceptGame(next, true);
       await playAgentTurns(next);
       setMessage(
@@ -833,7 +896,15 @@ function App() {
     setBusy(true);
     try {
       acceptGame(await api.reloadCash(reload));
-      setMessage("Cash reloaded. Deal the next hand when ready.");
+      const target =
+        reload.player === 0
+          ? "your stack"
+          : reload.player === 1
+            ? "the agent stack"
+            : "both stacks";
+      setMessage(
+        `Added ${reload.amount.toLocaleString()} chips to ${target} immediately.`,
+      );
     } finally {
       setBusy(false);
     }

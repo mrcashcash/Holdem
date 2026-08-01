@@ -231,9 +231,7 @@ class HeadsUpHoldem:
         self.current_player = self.button
 
     def reload_cash(self, players: list[int], amount: int) -> None:
-        """Add chips between hands without changing the table configuration."""
-        if not self.hand_complete:
-            raise InvalidAction("Cash can only be reloaded after the current hand is complete.")
+        """Add chips immediately without changing the table configuration."""
         if amount <= 0:
             raise ValueError("Reload amount must be greater than zero.")
         if not players or any(player not in (0, 1) for player in players):

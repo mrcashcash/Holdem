@@ -184,7 +184,7 @@ export default function GameSettingsDialog({
             </div>
 
             <div className="game-settings-presets" aria-label="Stack depth presets">
-              {[50, 100, 200].map((stackBb) => (
+              {[20, 50, 100, 200].map((stackBb) => (
                 <button
                   type="button"
                   key={stackBb}
@@ -232,7 +232,7 @@ export default function GameSettingsDialog({
                   const value = event.target.value;
                   setReloadPlayer(value === "both" ? "both" : value === "1" ? 1 : 0);
                 }}
-                disabled={unavailable || !game.complete}
+                disabled={unavailable}
               >
                 <option value="0">You</option>
                 <option value="1">Agent</option>
@@ -248,20 +248,18 @@ export default function GameSettingsDialog({
                 step="1"
                 value={reloadAmount}
                 onChange={(event) => setReloadAmount(Number(event.target.value))}
-                disabled={unavailable || !game.complete}
+                disabled={unavailable}
               />
             </label>
             <button
               type="button"
               onClick={() => void reloadCash()}
-              disabled={unavailable || !game.complete}
+              disabled={unavailable}
             >
               {submitting ? "Reloading…" : "Add cash"}
             </button>
             <p className="game-settings-explainer">
-              {game.complete
-                ? "Reloading adds chips and preserves this match's results and winnings."
-                : "Finish the current hand before adding chips."}
+              Added chips are available immediately, including during the current hand. The pot, results, and winnings are preserved.
             </p>
           </section>
         </div>

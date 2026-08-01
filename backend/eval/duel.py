@@ -307,6 +307,9 @@ def head_to_head(
     seed: int = 4242,
     collect_diagnostics: bool = False,
     common_random_numbers: bool = False,
+    pair_start: int = 0,
+    pair_stop: int | None = None,
+    return_samples: bool = False,
 ) -> dict:
     """Challenger's edge over the champion in bb/100 with a 95% CI.
 
@@ -323,11 +326,22 @@ def head_to_head(
     agents can report a spurious "significant" result — a 100bb null read
     +34.91 [+12.27, +57.55]. Default stays False so existing gate numbers remain
     comparable; new comparisons of stochastic agents should set it True.
+
+    ``pair_start``/``pair_stop`` play only a slice of the pair range, and
+    ``return_samples`` adds the raw per-pair samples to the report. Together they
+    let a parent process shard one duel across cores and reassemble it: every
+    pair's deal seed is ``seed * 1_000_003 + pair``, a pure function of the pair
+    index, so a sharded run is **bit-identical** to the serial one rather than
+    merely statistically equivalent. tools/duel_sharded.py asserts exactly that
+    against a serial control before it trusts the sharded total.
     """
     if stack_bb <= 0:
         raise ValueError("stack_bb must be positive")
     if pairs <= 0:
         raise ValueError("pairs must be positive")
+    stop = pairs if pair_stop is None else min(pair_stop, pairs)
+    if not 0 <= pair_start <= stop:
+        raise ValueError(f"bad pair range: [{pair_start}, {stop}) of {pairs}")
     samples: list[float] = []
     diagnostics = _empty_diagnostics() if collect_diagnostics else None
 
@@ -339,14 +353,14 @@ def head_to_head(
             if hasattr(target, "_rng"):
                 target._rng = random.Random(hand_seed * 31 + 5)
 
-    for pair in range(pairs):
+    for pair in range(pair_start, stop):
         deal_seed = seed * 1_000_003 + pair
         couple(deal_seed)
         first = _play_hand(challenger, champion, 0, deal_seed, stack_bb, diagnostics)
         couple(deal_seed)
         second = _play_hand(challenger, champion, 1, deal_seed, stack_bb, diagnostics)
         samples.append((first + second) / 2.0)
-    mean = statistics.fmean(samples)
+    mean = statistics.fmean(samples) if samples else 0.0
     margin = 1.96 * statistics.stdev(samples) / math.sqrt(len(samples)) if len(samples) > 1 else 0.0
     low, high = (mean - margin) * 100.0, (mean + margin) * 100.0
     verdict = "PROMOTE" if low > 0 else ("REGRESSION" if high < 0 else "KEEP")
@@ -354,13 +368,17 @@ def head_to_head(
         "mean_bb_per_100": round(mean * 100.0, 2),
         "ci_low_bb_per_100": round(low, 2),
         "ci_high_bb_per_100": round(high, 2),
-        "hands": pairs * 2,
-        "pairs": pairs,
+        "hands": len(samples) * 2,
+        "pairs": len(samples),
         "seed": seed,
         "verdict": verdict,
     }
     if diagnostics is not None:
         report["diagnostics"] = _finalize_diagnostics(diagnostics)
+    if return_samples:
+        report["samples"] = samples
+        report["pair_start"] = pair_start
+        report["pair_stop"] = stop
     return report
 
 

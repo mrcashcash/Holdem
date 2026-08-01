@@ -614,11 +614,48 @@ spans zero. §2.3 already records histogram "reaching parity with a 3.3x-trained
 scalar model"; this is the same effect at seven times the deficit, which is
 consistent with the abstraction being materially better rather than worthless.
 
-So the read is undertraining, not a dead end, and training was continued from 5,000
-toward 20,000 iterations (~10.4h at the measured 0.40 iters/s). Gate again at 10k
-and 20k. Promotion still needs a positive disjoint confirmatory interval, LBR at
-20,000 pairs against the frozen +252.45 [+223.34, +281.55], and the mapping and
-fallback checks — a duel win alone is necessary, not sufficient.
+Training continued to 20,000 iterations and the duel was re-run at rising precision.
+**The answer is a dead-on tie, and the intermediate readings were noise:**
+
+| duel pairs | histogram@20k − scalar@118k |
+|---:|---|
+| 3,000 | −8.98 [−41.26, +23.30] |
+| 20,000 | +8.53 [−2.89, +19.96] |
+| **60,000** | **−0.06 [−6.76, +6.64]** |
+
+At ±6.7 the difference is zero. Both the −8.98 and the +8.53 were sampling noise,
+and the +8.53 was written up here as "88% of the interval positive", which was
+over-reading a wide interval — the same error this document warns about repeatedly.
+
+**So histogram@20k equals scalar@118k head-to-head using 5.9x less training**, which
+matches §2.3's recorded "parity with a 3.3x-trained scalar model" and is evidence
+the abstraction is more sample-efficient. Parity is not improvement, so **no
+promotion**.
+
+Independent LBR at 20,000 pairs each, same seed:
+
+| model | LBR | probe fallback |
+|---|---|---:|
+| scalar@118k (deployed) | +252.45 [+223.34, +281.55] | 1.36% |
+| histogram@20k | **+223.34** [+192.01, +254.66] | **1.06%** |
+
+29.1 bb/100 less exploitable with a cleaner mapping, but the intervals overlap
+heavily, so this is suggestive and not decisive. Note the pattern is exactly what §5
+warns about — head-to-head parity alongside a possible difference in distance from
+equilibrium — and for an opponent-agnostic player the LBR side is what matters more.
+
+Training continues toward 40,000 to test whether histogram keeps improving where
+scalar has plateaued (§1 records 200bb scalar 47k ≈ 118k, −6 [−34, +22]).
+
+**A methodological rule this produced.** A paired-LBR gate
+(`tools/lbr_checkpoint_gate.py`) was built to sharpen the LBR comparison the way
+pairing sharpened the all-in guard question, and a smoke run showed it would make
+the interval WORSE — roughly ±39 against the duel's ±11.4. The reason is general:
+pairing cancels variance only in proportion to how similarly the two arms play. The
+guard changed 0.3% of decisions, so its paired delta was razor-sharp; two different
+card abstractions diverge on **62%** of hands, so differencing adds variance rather
+than removing it. **Paired designs for small perturbations, head-to-head duels for
+genuinely different agents.**
 
 Measured training cost at this tree size, for planning: **0.385–0.405 iterations/s**,
 flat across fourteen 500-iteration chunks, i.e. ~21 min per 500. Progress is

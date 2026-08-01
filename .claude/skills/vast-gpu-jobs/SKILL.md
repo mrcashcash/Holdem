@@ -8,16 +8,29 @@ description: Run this project's training, solver, eval, benchmark or test worklo
 ## The one rule
 
 **A Vast pod has no persistent disk. `vastai destroy` erases everything on it.**
-A run that produced numbers but did not push them produced nothing. Treat "results
-are on GitHub and I verified it" as the definition of a finished job — not "the
-job exited 0".
+A run that produced numbers you never copied off produced nothing. Treat "the
+results are on my workstation and I looked at them" as the definition of a finished
+job — not "the job exited 0".
 
-Two independent ways this silently fails, both of which have actually happened here:
+**As of 2026-08-02 the default route home is `scp`, not `git push`.** The default
+clone is shallow and partial because that took provisioning from 636s to 11s, and
+you cannot push from it. Pull results toward you:
+
+```bash
+scp -P <HostPort> root@<ip>:/root/Holdem/backend/data/evaluations/*.json ./
+```
+
+`FULL_CLONE=1` restores a pushable clone if you genuinely need `cloud_push.sh`.
+Either way, pulling is usually the better direction: a pod's *upload* was measured
+at ~0.5 Mbps, so shipping a 30 MB checkpoint out of one costs ~8 minutes.
+
+Three independent ways this silently fails, all of which have actually happened:
 
 1. The output path is in `.gitignore`, so `git add` skips it and the commit is empty.
 2. The push fails auth, and the failure is noticed after the pod is gone.
+3. The clone was partial, so the push could never have worked at all.
 
-Steps 5–6 below exist entirely to close those two holes. Do not skip them.
+Steps 5–6 below exist to close these. Do not skip them.
 
 Use the `vastai` skill for CLI syntax and instance-state semantics. This skill is
 the project-specific procedure layered on top of it.
@@ -48,17 +61,26 @@ vastai search offers 'num_gpus=1 compute_cap>=750 direct_port_count>=1 disk_spac
   wheels have no kernels for older cards, and the failure is a runtime
   `no kernel image is available`, not a clean install error.
 - `inet_down>=200` matters more than it looks — provisioning pulls ~2–3 GB of torch.
-- **`inet_down` does NOT predict GitHub speed, and the repo clone is the real cost.**
-  Measured on a 3090 advertising 533 Mbps down: the `git clone` ran at **~1 Mbps**
-  (interface RX, 30 s sample) and took **>15 min** for the 156 MB filtered clone,
-  while torch pulled at full speed. `--filter=blob:limit=1m` makes GitHub compute
-  the pack server-side and that path is throttled; the advertised figure is a
-  benchmark against Vast's own endpoints. Budget provisioning at ~20 min, not 9,
-  unless you use `SPARSE_NO_DATA=1`.
-- **If the job needs only one or two artifacts from `backend/data`, prefer
-  `SPARSE_NO_DATA=1` plus `scp`.** A 9.8 MB clone finishes in seconds; copying the
-  single 32 MB `champion.npz` a `--sampler-init` run needs beats waiting 15 min for
-  all 156 MB.
+- **`inet_down` does NOT predict GitHub speed** — but as of 2026-08-02 the clone is
+  no longer the bottleneck, because `cloud_setup.sh` stopped asking git for the
+  blueprints. Three strategies timed on one 3090, same link:
+
+  | clone | time | size |
+  |---|---|---|
+  | full (the old default) | **636 s** | 332 MB |
+  | `--depth 1` | 79 s | 330 MB |
+  | `--depth 1 --filter=blob:none` + sparse | **4 s** | 18 MB |
+
+  The link was never the problem: the same pod pulls a 32 MB `champion.npz` from
+  `raw.githubusercontent.com` in **7 s (33 Mbps)**. Git was slow because the repo
+  carries ~166 MB of tracked `.npz` blueprints and a full clone drags every
+  historical version across. The default is now the 4 s clone plus a CDN fetch of
+  whatever `FETCH_CHAMPIONS` lists — **11 s total**.
+- **That clone is shallow AND partial, so the pod cannot push.** Bring results back
+  with `scp`. Set `FULL_CLONE=1` for a pushable clone and pay the 636 s.
+- Note `SPARSE_NO_DATA=1` only trimmed the *checkout*, never the transfer — without
+  a `--filter` the pack still contains every blob. It was not the speedup it looked
+  like.
 - Cheap 8 GB cards are fine for 20bb/50bb work; check VRAM against the profile first.
 
 ### 2. Launch
@@ -69,7 +91,7 @@ vastai create instance <OFFER_ID> --image vastai/pytorch:@vastai-automatic-tag \
 ```
 
 Returns `"new_contract": <INSTANCE_ID>`. `--disk 40` fits image + torch + a
-156 MB clone with room for checkpoints; raise it for long checkpoint sweeps.
+small clone with room for checkpoints; raise it for long checkpoint sweeps.
 
 ### 3. Connect — use the direct path, not the proxy
 
@@ -99,21 +121,31 @@ ssh $SSHOPTS root@$IP 'cat > /root/cloud_setup.sh' < tools/cloud_setup.sh
 ssh $SSHOPTS root@$IP 'bash /root/cloud_setup.sh'
 ```
 
-Expect **~3–4 minutes** with the current defaults: apt update ~20s, system packages
-~30s, unfiltered clone ~1–2m, torch skipped when the image already satisfies the
-pin, 60s GPU workload. Budget ~14m if the image ships an incompatible torch.
+**Run it detached.** `setsid nohup bash /root/cloud_setup.sh > /root/provision.log
+2>&1 < /dev/null &`, then poll the log. Run in the SSH foreground it dies with the
+connection, and a dropped session mid-clone leaves a half-written repo that the
+next attempt's `rm -rf` will collide with — both happened on 2026-08-02 and cost
+11 minutes.
 
-That is after three fixes made on 2026-08-01, when a run took **40 minutes**:
+Expect **~2 minutes** on a warm `vastai/pytorch` image (measured 2026-08-02): apt
+~1m, clone + champion 11s, python deps ~0s, GPU check 16s.
 
-- the blob filter is now **off** by default (it made the clone take 26m at ~1 Mbps
-  and every push re-send ~77 MB) — `FILTER_BLOBS=1` restores it
-- the full `apt upgrade` is now **opt-in** (3–5m of irrelevant packages, and it
+That is after five fixes. On 2026-08-01 the same script took **40 minutes**, and
+on 2026-08-02 it still took 20:
+
+- the clone no longer pulls blueprints through git — `--depth 1 --filter=blob:none`
+  plus a CDN fetch, **636s → 11s** (see §1). `FULL_CLONE=1` to opt out
+- the dependency install is **skipped when every pin is already exact**. A measured
+  run spent **9m12s installing nothing**: all nine packages already matched
+- the full `apt upgrade` is **opt-in** (3–5m of irrelevant packages, and it
   restarted sshd mid-provision, dropping the live session) — `FULL_UPGRADE=1`
 - torch is **skipped** when the installed version already matches the pin *and*
   has CUDA support (11m saved; the CUDA check matters because a CPU-only wheel of
   the right version passes a naive version test and fails at the first kernel)
+- `logs/` is gitignored and therefore absent from a fresh clone; `mkdir -p logs`
+  before launching anything that redirects into it, or the launch dies silently
 
-Other overrides: `SPARSE_NO_DATA=1` (skips `backend/data` entirely — do **not**
+Other overrides: `FETCH_CHAMPIONS=""` (skip blueprint fetch entirely — do **not**
 combine with a `--sampler-init` run, which needs a `champion.npz`),
 `SMOKE_SECONDS=5`, `HOLDEM_DIR`, `BRANCH`.
 

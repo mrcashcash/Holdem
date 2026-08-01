@@ -14,6 +14,10 @@
 #   HOLDEM_DIR      clone target      (default /workspace/Holdem, else ~/Holdem)
 #   BRANCH          branch to clone   (default master)
 #   SMOKE_SECONDS   length of the closing GPU workload (default 60)
+#   FULL_CLONE=1    pushable full clone (~10 min) instead of the default
+#                   shallow+partial code-only clone (~4s). See the clone block.
+#   FETCH_CHAMPIONS blueprint dirs whose champion.npz to pull from the CDN after a
+#                   sparse clone (default "gpu_blueprint"; "" to skip)
 #   GITHUB_TOKEN    fine-grained PAT with Contents:read+write. REQUIRED to push
 #                   results back off an ephemeral pod. Set it once on your Vast
 #                   account and every future instance inherits it:
@@ -105,33 +109,61 @@ if [ -d "$HOLDEM_DIR/.git" ]; then
   say "repo already at $HOLDEM_DIR; fast-forwarding $BRANCH"
   git -C "$HOLDEM_DIR" pull --ff-only origin "$BRANCH"
 else
-  # NOT --depth 1: pushing from a shallow clone is fragile, and on a pod with no
-  # persistent disk, pushing is the only way results survive.
+  # CLONE STRATEGY. All three timed on one 3090 pod, 2026-08-02, same link:
   #
-  # NOT --filter either, by default. MEASURED 2026-08-01 on a 3090 pod:
-  # --filter=blob:limit=1m saved 193MB -> 156MB (19%) but the clone took
-  # **26 minutes at ~1 Mbps**, while torch pulled 2.5GB in 11 min (~30 Mbps) over
-  # the same link. The link is fine; a filtered clone makes GitHub compute a
-  # custom pack server-side, off the cached path, and that is what crawls. The
-  # same filter then made every PUSH re-send ~77MB and take ~11 min even for a
-  # one-line file, because thin-pack negotiation against a promisor remote cannot
-  # tell what the remote already has. A plain clone hits GitHub's cached pack and
-  # pushes normally. Set FILTER_BLOBS=1 to restore the old behaviour on a pod
-  # where disk, not time, is the binding constraint.
-  FILTER_ARGS=""
-  [ "${FILTER_BLOBS:-0}" = "1" ] && FILTER_ARGS="--filter=blob:limit=1m"
-
-  say "cloning into $HOLDEM_DIR${FILTER_ARGS:+ (filtered)}"
-  if [ "${SPARSE_NO_DATA:-0}" = "1" ]; then
-    # Training from scratch and not evaluating against existing blueprints:
-    # skips backend/data entirely. Note --sampler-init needs a champion.npz, so
-    # do not combine this with a histogram run unless you fetch one separately.
-    git clone $FILTER_ARGS --no-checkout --branch "$BRANCH" "$REPO_URL" "$HOLDEM_DIR"
+  #   full clone (was the default)             636s   332MB
+  #   --depth 1                                 79s   330MB
+  #   --depth 1 --filter=blob:none + sparse      4s    18MB   <- default now
+  #
+  # 159x. The repo carries ~166MB of tracked .npz blueprints (a 32MB champion, a
+  # 26MB champion, six 18MB 20bb checkpoints), and a full clone drags every
+  # historical version of them across. The link is not the problem: the same pod
+  # pulls a 32MB champion from raw.githubusercontent.com in 7s (33 Mbps), and
+  # torch at ~30 Mbps. Git is slow here because of what it is asked to send.
+  #
+  # THE TRADE: this clone is shallow AND partial (promisor remote), so it is for
+  # pods that COMPUTE and hand results back out of band -- scp, or curl from the
+  # CDN. Do not push from it. A previous measurement of --filter=blob:limit=1m
+  # recorded pushes re-sending ~77MB and taking ~11 min even for a one-line
+  # change, because thin-pack negotiation against a promisor remote cannot tell
+  # what the remote already has; --depth 1 makes it worse. Set FULL_CLONE=1 for a
+  # pushable clone and pay the 636s.
+  if [ "${FULL_CLONE:-0}" = "1" ]; then
+    say "cloning into $HOLDEM_DIR (full, pushable, ~10 min)"
+    git clone --branch "$BRANCH" "$REPO_URL" "$HOLDEM_DIR"
+  else
+    say "cloning into $HOLDEM_DIR (shallow+partial, code only)"
+    git clone --depth 1 --filter=blob:none --no-checkout \
+      --branch "$BRANCH" "$REPO_URL" "$HOLDEM_DIR"
     git -C "$HOLDEM_DIR" sparse-checkout set --no-cone '/*' '!/backend/data/**'
     git -C "$HOLDEM_DIR" checkout "$BRANCH"
-  else
-    git clone $FILTER_ARGS --branch "$BRANCH" "$REPO_URL" "$HOLDEM_DIR"
+    echo "NOTE: shallow+partial clone -- this pod CANNOT push. Bring results back"
+    echo "      with scp, or set FULL_CLONE=1 if you need to push from here."
   fi
+fi
+
+# Blueprints the job needs, pulled from the CDN instead of through git. A
+# histogram run needs --sampler-init to import fitted centroids, and the sparse
+# clone deliberately omits backend/data. Space-separated blueprint directory
+# names; set FETCH_CHAMPIONS="" to skip.
+if [ "${FULL_CLONE:-0}" != "1" ]; then
+  RAW="https://raw.githubusercontent.com/mrcashcash/Holdem/${BRANCH}"
+  for name in ${FETCH_CHAMPIONS-gpu_blueprint}; do
+    target="$HOLDEM_DIR/backend/data/$name/champion.npz"
+    if [ -s "$target" ]; then
+      echo "champion already present: $name"
+      continue
+    fi
+    mkdir -p "$(dirname "$target")"
+    say "fetching $name/champion.npz from the CDN"
+    if curl -fsSL -o "$target" "$RAW/backend/data/$name/champion.npz"; then
+      echo "  $(du -h "$target" | cut -f1)"
+    else
+      rm -f "$target"
+      echo "  WARNING: could not fetch $name/champion.npz -- a run using"
+      echo "  --sampler-init $name/champion.npz will fail. Check the name."
+    fi
+  done
 fi
 cd "$HOLDEM_DIR"
 
@@ -181,10 +213,36 @@ else
   $PIP install -q torch==2.7.0 --index-url https://download.pytorch.org/whl/cu128
 fi
 
-$PIP install -q \
-  numpy==2.2.6 numba==0.61.2 llvmlite==0.44.0 \
-  fastapi==0.116.1 uvicorn==0.35.0 pydantic==2.11.7 \
-  websockets==16.1 requests==2.34.2 python-dotenv==1.2.2
+PINS="numpy==2.2.6 numba==0.61.2 llvmlite==0.44.0
+fastapi==0.116.1 uvicorn==0.35.0 pydantic==2.11.7
+websockets==16.1 requests==2.34.2 python-dotenv==1.2.2"
+
+# Skip the install when every pin is already exact. MEASURED 2026-08-02 on a
+# vastai/pytorch pod: this step took 9m12s and installed NOTHING -- all nine
+# packages were already at the pinned version, and the time went entirely to
+# resolution. Verifying first costs well under a second.
+if printf '%s\n' "$PINS" | tr ' ' '\n' | grep -v '^$' | python -c '
+import sys
+import importlib.metadata as md
+
+missing = []
+for pin in (line.strip() for line in sys.stdin if line.strip()):
+    name, _, want = pin.partition("==")
+    try:
+        got = md.version(name)
+    except md.PackageNotFoundError:
+        got = None
+    if got != want:
+        missing.append(name + " want " + want + " got " + (got or "absent"))
+sys.stderr.write("\n".join(missing))
+sys.exit(1 if missing else 0)
+' 2>/tmp/holdem_pin_gap; then
+  echo "all python pins already satisfied; skipping install"
+else
+  echo "installing (gap: $(tr '\n' '; ' < /tmp/holdem_pin_gap))"
+  # shellcheck disable=SC2086
+  $PIP install -q $(printf '%s' "$PINS" | tr '\n' ' ')
+fi
 
 # ---------------------------------------------------------------------- GPU
 say "GPU"

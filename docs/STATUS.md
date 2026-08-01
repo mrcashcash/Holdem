@@ -672,6 +672,92 @@ it. A host-RAM OOM then came from refitting histogram centroids from scratch;
 `--sampler-init` avoids it, and is also the better experiment because it holds the
 card abstraction fixed across runs.
 
+### 2026-08-02 TRAINING HAS PLATEAUED, AND SIBLING DUELS CANNOT SEE IT
+
+The 40,000-iteration 200bb histogram run finished, closing the question §above left
+open ("training continues toward 40,000 to test whether histogram keeps improving").
+It does not. Three duels at 60,000 seat-swapped CRN pairs each, null exactly +0.00,
+every one verified bit-identical against a serial control:
+
+| duel | result |
+|---|---|
+| histogram@40k − histogram@20k | **−0.36 [−5.42, +4.70]** |
+| histogram@20k − scalar@118k | −0.06 [−6.76, +6.64] |
+| histogram@40k − scalar@118k | +4.71 [−1.93, +11.34] |
+
+The three are mutually consistent (−0.36 + −0.06 ≈ −0.42 against +4.71 measured,
+well inside the intervals), which is a useful internal check on the harness.
+
+**Doubling the iterations changed nothing, at ±5 bb/100.** That is a bound, not a
+shrug. And it is the second depth to say so: the 20bb gate history shows the same
+thing at 10x the iteration ratio, against champion@5000 —
+
+| iterations | vs 5,000 | pairs |
+|---:|---|---:|
+| 10,000 | −3.65 [−25.94, +18.63] | 750 |
+| 20,000 | −18.22 [−39.47, +3.03] | 750 |
+| **30,000** | **+0.48 [−10.20, +11.17]** | 3,000 |
+| 40,000 | −24.68 [−46.23, −3.13] | 750 |
+| **50,000** | **+0.32 [−10.28, +10.91]** | 3,000 |
+
+Only the two 3,000-pair confirms are worth reading; both are flat. The 750-pair
+"REGRESSION" at 40,000 is contradicted by its own neighbours at 30,000 and 50,000
+and is noise. **A 750-pair screen carries ±22–46 bb/100 and should not be allowed to
+produce a verdict** — it is the weakest instrument still wired into the gate.
+
+A correction to §above's framing while reading this: the 20bb `champion_meta` line
+"head-to-head vs 30000 (+32.08)" does **not** mean iteration 5,000 beat iteration
+30,000 of the same run. The incumbent there was the **100bb bootstrap champion**,
+which happens to sit at iteration 30,000. Nothing in the 20bb history shows more
+training winning.
+
+**The real conclusion is about the instrument, not the models.** LBR puts 200bb at
++252.45 and 20bb at +13.34 — a factor of nineteen. So every 200bb variant here is
+badly broken, and they all tie each other because they are broken **the same way**.
+A head-to-head duel between siblings measures only where two agents differ, and
+these differ almost nowhere that an opponent can punish. Neither more iterations nor
+a **7.5x finer card abstraction** (150/150/30 against 20/20/20) moved the duel
+needle at all. Whatever limits deep-stack strength is upstream of both.
+
+That reframes the search: stop asking duels to rank near-identical blueprints, and
+spend the measurement budget on LBR and the external GTO Wizard benchmark, which are
+the two instruments that have actually detected something.
+
+### 2026-08-02 idle VRAM cannot be spent on card buckets
+
+50bb and 100bb leave 18 GB and 10 GB of a 24 GB card unused, so "raise the bucket
+counts until the card is full" is the obvious move. It does not work, and the reason
+is structural rather than empirical.
+
+Two separate memory terms, and buckets only touch the small one:
+
+| term | scales with | size at canonical 200bb |
+|---|---|---|
+| working set | nodes × NUM_COMBOS × batch_boards | **23.1 GB** |
+| regret + strategy tables | **buckets** | **253.3 MiB** |
+
+`tools/bucket_sizing_probe.py` computes the table term exactly on CPU from the real
+`CompactTableLayout` — and validates itself by reproducing the running 200bb job's
+own reported `5,534,212 rows, 253.3 MiB` byte for byte, then predicting 50bb's
+`1,561,012 rows, 71.5 MiB` before that job printed it. Even **1024/1024/768**, seven
+times the current flop/turn resolution, costs 1.1 GB at 50bb and still leaves 17 GB
+idle. No bucket count reaches the spare memory.
+
+The only lever that does is `--batch-boards`, which multiplies the working set
+directly. `tools/batch_boards_vram_probe.py` confirms VRAM is exactly linear in B
+(56–58 KB/node/board, flat over B = 1..4). **But throughput falls as ~1/B**
+(1.37, 0.73, 0.49, 0.37 it/s), so batching buys no extra board throughput — it only
+trades more-and-noisier iterations for fewer-and-cleaner ones at equal cost. That
+contradicts `cfr.py:59`'s latency-bound model, which predicts ~14 ms/iteration
+against ~730 ms measured; that profiling evidently described a different tree.
+**Not fully settled**: the first run was taken with six duel shards holding six of
+eight cores, and a starved deal producer (`cfr.py:311` samples B boards on one
+thread) fakes the same 1/B curve. The probe now samples GPU utilization to separate
+the two — re-measure on an idle host before acting on it.
+
+Taken with the plateau above: spare VRAM is not convertible into strength by any
+knob currently exposed. Buckets are too cheap to matter and batching is not free.
+
 ### 2026-07-31 river-net gate rebuilt, and the failure is BIMODAL not uniform
 
 `tools/river_net_gate_v2.py` replaces the retired v1 criterion. It computes the

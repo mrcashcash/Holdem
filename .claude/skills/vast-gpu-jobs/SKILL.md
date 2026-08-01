@@ -48,6 +48,17 @@ vastai search offers 'num_gpus=1 compute_cap>=750 direct_port_count>=1 disk_spac
   wheels have no kernels for older cards, and the failure is a runtime
   `no kernel image is available`, not a clean install error.
 - `inet_down>=200` matters more than it looks — provisioning pulls ~2–3 GB of torch.
+- **`inet_down` does NOT predict GitHub speed, and the repo clone is the real cost.**
+  Measured on a 3090 advertising 533 Mbps down: the `git clone` ran at **~1 Mbps**
+  (interface RX, 30 s sample) and took **>15 min** for the 156 MB filtered clone,
+  while torch pulled at full speed. `--filter=blob:limit=1m` makes GitHub compute
+  the pack server-side and that path is throttled; the advertised figure is a
+  benchmark against Vast's own endpoints. Budget provisioning at ~20 min, not 9,
+  unless you use `SPARSE_NO_DATA=1`.
+- **If the job needs only one or two artifacts from `backend/data`, prefer
+  `SPARSE_NO_DATA=1` plus `scp`.** A 9.8 MB clone finishes in seconds; copying the
+  single 32 MB `champion.npz` a `--sampler-init` run needs beats waiting 15 min for
+  all 156 MB.
 - Cheap 8 GB cards are fine for 20bb/50bb work; check VRAM against the profile first.
 
 ### 2. Launch
@@ -165,7 +176,51 @@ bloats the repo permanently. `cloud_push.sh` excludes them by default on purpose
 - GitHub hard-rejects any file >100 MB and the rejection kills the whole push;
   `cloud_push.sh` pre-checks at 90 MB so this fails locally, cheaply.
 
+## Knowing when a remote phase has finished
+
+Do not poll. A `for i in $(seq 1 10); do ...; sleep 90; done` loop always outlives
+the tool's foreground timeout, so every attempt leaves a lingering background shell,
+and it still cannot tell you the moment the thing finished. Nine stray shells
+accumulated this way in one session.
+
+Wait on a **condition** with an explicit failure branch, backgrounded once, so the
+harness notifies you the instant it resolves:
+
+```bash
+ssh $SSHOPTS -p $PORT root@$IP '
+while true; do
+  if grep -q "READY:" /root/provision.out 2>/dev/null; then echo "COMPLETE"; break; fi
+  if ! pgrep -f cloud_setup.sh >/dev/null 2>&1; then echo "DIED (no process, no READY)"; break; fi
+  sleep 20
+done
+grep -E "^=== " /root/provision.out
+grep -E "GITHUB_TOKEN present|WARNING: no GITHUB_TOKEN" /root/provision.out'
+```
+
+The second branch is the point: a poll loop spins happily against a script that
+already died. Exit on failure too, or the notification never fires.
+
+Three usable completion signals for the clone specifically, strongest first:
+the next `=== <time> <phase>` line appearing after `cloning into`; `tmp_pack_*`
+being replaced by `pack-<sha>.pack`; and `READY:` for the whole script.
+
 ## Gotchas (all measured on real pods, 2026-08-01)
+
+**`du -sk .git` shows zero growth during a healthy clone.** Git streams into
+`.git/objects/pack/tmp_pack_XXXXXX` and only renames at the end, and `du`'s
+rounding hides it. A frozen `du` number plus a frozen log is NOT evidence of a
+hang — this looked exactly like a stall for several minutes while the transfer was
+fine. Check the real signals instead: `ls -l .git/objects/pack/tmp_pack_*` growing,
+and `/sys/class/net/eth0/statistics/rx_bytes` differenced over 30 s.
+
+**Measure CPU on the child, not the wrapper.** `ps -o cputime= -p $(pgrep -f
+cloud_setup.sh)` reads `00:00:00` on a perfectly busy provision, because the shell
+sleeps while `git`/`apt`/`pip` do the work. Look at the child process or at
+filesystem/network counters.
+
+**"Template not found" in the web UI is cosmetic.** Launching with `--image` leaves
+`template_id: None`, so the panel has no template record to name. Confirm health
+from `actual_status: running` and `status_msg: success, running <image>` instead.
 
 **Env-vars do not reach SSH sessions.** Vast puts account env-vars in the
 container's PID 1 environment only. `GITHUB_TOKEN` is empty in
@@ -193,8 +248,25 @@ Do not compare a pod number against a local baseline without noting this.
 ## Cost reference
 
 Measured: a full provision + 60s workload + a push-verification pod cost **$0.09
-total**. Cheapest suitable single-GPU offers run $0.05–0.09/hr; `--disk 40` adds
-roughly $0.02/hr on top of the offer's quoted `dph_total`.
+total**. Cheapest suitable single-GPU offers run $0.05–0.09/hr.
+
+**`--disk 40` costs more than it looks. Read `dph_total` back after launch.**
+Measured on a 3090: the offer quoted **$0.113/hr**, and the created instance
+reported `dph_total` **$0.155/hr** — the disk added **$0.042/hr**, i.e. **+37%**,
+not the ~$0.02 assumed earlier. Storage is priced per host, so the multiplier
+varies; always confirm with `vastai show instance <ID> --raw` and cost the run off
+that figure rather than the search result.
+
+Rough per-workload costs at ~$0.155/hr (measured throughput, RTX 3090):
+
+| job | time | cost |
+|---|---|---|
+| provision only (throttled clone) | ~20 min | ~$0.05 |
+| 200bb blueprint, 20k iterations, 147k-node tree | ~11 h | ~$1.70 |
+| 200bb blueprint, 40k iterations | ~23 h | ~$3.60 |
+
+A 40k run therefore consumes an entire $3.60 balance. Check credit **before**
+launching a sweep, not after.
 
 Check headroom before a long run — credit is credit-only here, with no card on
 file, so a run that outlives the balance just dies:

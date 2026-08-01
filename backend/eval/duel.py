@@ -38,7 +38,6 @@ import statistics
 import time
 from pathlib import Path
 
-from backend.api_auth import api_authorization_headers
 from backend.poker import HeadsUpHoldem
 
 
@@ -402,8 +401,16 @@ def promote(data_dir: Path, result: dict, challenger_iteration: int, champion_it
     }
     (data_dir / "champion_meta.json").write_text(json.dumps(meta, indent=2), encoding="utf-8")
     # Ask a live server (if any) to serve the new champion; failure is fine.
+    #
+    # Imported HERE, not at module scope: `backend.api_auth` raises at import time
+    # if HOLDEM_API_TOKEN is unset, and .env is gitignored, so a top-level import
+    # made every duel refuse to run on a fresh pod -- a measurement tool demanding a
+    # serving credential it only needs for this optional POST. Cost a 50bb gate run
+    # on 2026-08-02.
     try:
         import urllib.request
+
+        from backend.api_auth import api_authorization_headers
 
         request = urllib.request.Request(
             "http://127.0.0.1:8000/api/training/reload-last",

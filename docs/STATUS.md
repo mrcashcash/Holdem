@@ -10,6 +10,20 @@ turn and river (`tools/serve_best.ps1`; see docs/SERVING.md for the full config 
 off applied to the *retired bucketed* resolver, which stays off; exact-card
 resolving is a different mechanism and is served.
 
+**Depths loaded and what each is (2026-08-02).** Routing is nearest-depth, so the
+gaps matter as much as the entries:
+
+| depth | artifact | iteration | note |
+|---|---|---:|---|
+| 20bb | `gpu_blueprint_20bb/champion.npz` | **50,000** | promoted 2026-08-02, +5.01 bb/100 |
+| 100bb | `gpu_blueprint/champion.npz` | 30,000 | pre-canonical menu |
+| 200bb | `gpu_blueprint_200bb/champion.npz` | 118,000 | pre-canonical, **scalar** abstraction |
+
+**There is no 50bb entry, so 35–60bb stacks route to the 20bb blueprint** — and
+that is now known to cost **+14.66 bb/100** (§below). A native 50bb canonical
+blueprint exists and wins decisively; it is trained and stored but NOT yet serving,
+pending the remaining promotion gates.
+
 ### 2026-07-31 FIRST EXTERNAL PROBING MEASUREMENT — and it questions the serving default
 
 The GTO Wizard AI harness (§5) gives the first number from an opponent that both
@@ -744,6 +758,59 @@ other because they are broken **the same way** — a duel measures only where tw
 agents differ. Sibling duels are worth running (they found the +5.01), but they
 cannot certify that a shared defect is absent. LBR and the external GTO Wizard
 benchmark remain the instruments for that.
+
+### 2026-08-02 A NATIVE 50bb BLUEPRINT IS WORTH +14.66 bb/100
+
+The largest single gain measured in this whole document, and it came from filling a
+routing gap rather than from any solver improvement.
+
+Routing is nearest-depth over the loaded set {20, 100, 200}, so a 50bb stack is
+served by the **20bb** blueprint (|50−20| = 30 beats |50−100| = 50). Training a
+native 50bb blueprint on the canonical menu and duelling it against that incumbent
+at a 50bb stack, 60,000 seat-swapped CRN pairs, null exactly +0.00, first 200 pairs
+bit-identical to a serial control:
+
+| | value |
+|---|---|
+| 50bb canonical@15k − 20bb champion@50k | **+14.66 bb/100 [+9.41, +19.92]** |
+| verdict | **CHALLENGER BETTER** |
+
+The incumbent is the 20bb champion *as promoted earlier the same day* to iteration
+50,000, so this is measured against the improved baseline, not the one it replaced.
+The arms run different menus by design (20bb keeps its own richer menu); that is
+legitimate head-to-head because both play the real game, and the translation cost of
+serving 50bb from a 20bb tree is precisely part of what is being measured.
+
+**Why this dwarfs the solver work.** Every abstraction and iteration experiment in
+this document moved 0–10 bb/100 and most moved nothing. A missing depth cost 14.66.
+Worth asking the same question of the other gaps: 35bb and 75bb sit far from any
+loaded depth, and 150bb sits 50 from both 100 and 200.
+
+**Training budget for the canonical trees.** 50bb converges early — 15,000
+iterations is indistinguishable from 5,000:
+
+| 50bb canonical | ratio | result |
+|---|---:|---|
+| 15,000 − 5,000 | 3x | +0.22 [−3.14, +3.57] |
+| 10,000 − 5,000 | 2x | +1.62 [−1.45, +4.68] |
+
+At ±3.4 that is zero, so 83,865 nodes are essentially solved by 5,000 iterations and
+the 15,000 spent were 10,000 wasted. Note this does NOT generalise upward by node
+count alone: 20bb (36,906 nodes) *did* gain +5.01 over a 10x ratio, and only a 3x
+ratio was tested here. Test the ratio you intend to use.
+
+**Paired LBR, histogram@40k against @20k at 200bb** (20,000 pairs per arm):
+
+| arm | LBR |
+|---|---|
+| histogram@20k | +211.71 [+180.86, +242.55] |
+| histogram@40k | +201.78 [+170.97, +232.58] |
+| paired delta | −9.93 [−29.29, +9.42] — INCONCLUSIVE |
+
+Direction favours more training (less exploitable) but the interval spans zero. The
+diagnostic worth keeping: **15,573 of 20,000 pairs played identically**. Those two
+checkpoints are very nearly the same policy, which is why pairing was the right
+design here and why no head-to-head duel could ever separate them.
 
 ### 2026-08-02 idle VRAM cannot be spent on card buckets
 

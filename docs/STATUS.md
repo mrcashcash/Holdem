@@ -714,11 +714,29 @@ A correction picked up on the way in: the 20bb `champion_meta` line
 30,000 of the same run. The incumbent there was the **100bb bootstrap champion**,
 which happens to sit at iteration 30,000.
 
-**What still does not move at 200bb.** Doubling iterations (20k→40k) and a **7.5x
-finer card abstraction** (150/150/30 against 20/20/20) both changed nothing, the
-latter even at 40,000 iterations. Note the 20bb win came from a **10x** ratio while
-the 200bb test was only **2x**, so these are not in conflict — a +5-sized effect is
-right at the 200bb bound (+4.70) and a bigger ratio has not been tried there.
+**Training gains are real but front-loaded.** Running the 200bb comparison at a
+ratio matching 20bb's settles it:
+
+| 200bb comparison | ratio | result |
+|---|---:|---|
+| histogram@40k − histogram@**5k** | **8x** | **+9.83 [+2.60, +17.06]** |
+| histogram@40k − histogram@20k | 2x | −0.36 [−5.42, +4.70] |
+| 50bb canonical@10k − canonical@5k | 2x | +1.62 [−1.45, +4.68] |
+
+The three 200bb numbers reconcile: if 5k→40k is +9.83 and 20k→40k is −0.36, then
+**5k→20k ≈ +10.2**. The whole gain lands below 20,000 iterations and the curve is
+flat after. So "training has plateaued" — claimed in an earlier draft of this
+section on the strength of the 2x null — was **wrong**, and wrong in an avoidable
+way: a null measured in the flat part of a curve says nothing about the steep part.
+Always state the ratio alongside the result.
+
+Practical consequence: **~15,000 iterations is a reasonable budget** and pushing to
+50,000 is not obviously worth it, on this tree. The canonical 200bb tree is 2.6x
+larger (378,671 nodes against 147,349), so its flattening point may sit later;
+gate 15k against 10k and 5k when the run lands rather than assuming.
+
+**What genuinely does not move at 200bb** is the card abstraction: a **7.5x finer**
+one (150/150/30 against 20/20/20) tied even at 40,000 iterations.
 
 The deeper caution is about what a duel can see at all. LBR puts 200bb at +252.45
 against +13.34 at 20bb, so every 200bb variant is badly broken and they tie each

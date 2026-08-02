@@ -1,0 +1,28 @@
+2026-07-31T12:36:49Z === translation drift: 300 hands @ 200bb vs always-min-raise, geometry_aware=True ===
+2026-07-31T12:36:49Z durable log: backend\data\evaluations\translation-drift-geoaware.log
+2026-07-31T12:36:53Z 
+2026-07-31T12:36:53Z ALL located decisions   n=  807 median=  1.00 p90=   2.50 max=    6.25 >1.5x= 33.2%
+2026-07-31T12:36:53Z 
+2026-07-31T12:36:53Z by street:
+2026-07-31T12:36:53Z   preflop  n=  460 median=  1.00 p90=   1.00 max=    1.25 >1.5x=  0.0%
+2026-07-31T12:36:53Z      flop  n=  153 median=  1.25 p90=   1.67 max=    3.47 >1.5x= 48.4%
+2026-07-31T12:36:53Z      turn  n=  105 median=  1.84 p90=   2.50 max=    4.17 >1.5x=100.0%
+2026-07-31T12:36:53Z     river  n=   89 median=  3.33 p90=   4.17 max=    6.25 >1.5x=100.0%
+2026-07-31T12:36:53Z 
+2026-07-31T12:36:53Z by number of translated actions accumulated (the compounding test):
+2026-07-31T12:36:53Z      0 actions  n=  150 median=  1.00 p90=   1.00 max=    1.00 >1.5x=  0.0%
+2026-07-31T12:36:53Z      1 actions  n=  150 median=  1.00 p90=   1.00 max=    1.00 >1.5x=  0.0%
+2026-07-31T12:36:53Z      2 actions  n=  138 median=  1.00 p90=   1.00 max=    1.00 >1.5x=  0.0%
+2026-07-31T12:36:53Z      3 actions  n=   22 median=  1.25 p90=   1.25 max=    1.25 >1.5x=  0.0%
+2026-07-31T12:36:53Z      4 actions  n=  134 median=  1.25 p90=   1.56 max=    1.56 >1.5x= 41.0%
+2026-07-31T12:36:53Z      6 actions  n=   52 median=  2.50 p90=   2.50 max=    2.50 >1.5x=100.0%
+2026-07-31T12:36:53Z      7 actions  n=   41 median=  1.67 p90=   1.67 max=    1.67 >1.5x=100.0%
+2026-07-31T12:36:53Z      8 actions  n=   62 median=  2.50 p90=   4.17 max=    4.17 >1.5x=100.0%
+2026-07-31T12:36:53Z      9 actions  n=   11 median=  2.50 p90=   3.33 max=    3.47 >1.5x=100.0%
+2026-07-31T12:36:53Z    10+ actions  n=   47 median=  3.33 p90=   4.00 max=    6.25 >1.5x=100.0%
+2026-07-31T12:36:53Z 
+2026-07-31T12:36:53Z median drift, <=3 translated actions : 1.000 (n=460)
+2026-07-31T12:36:53Z median drift, >=6 translated actions : 2.500 (n=213)
+2026-07-31T12:36:53Z -> drift GROWS with translated depth: compounding confirmed, and a
+2026-07-31T12:36:53Z    geometry-aware _locate has something real to correct.
+2026-07-31T12:36:53Z written to backend\data\evaluations\translation-drift-geoaware.json

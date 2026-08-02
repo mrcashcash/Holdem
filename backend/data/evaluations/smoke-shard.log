@@ -1,0 +1,20 @@
+2026-08-01T21:04:09Z === smoke-shard: 400 pairs @ 200bb, CRN, 4 workers ===
+2026-08-01T21:04:09Z challenger: iter=40,000 histogram=True buckets=[169, 150, 150, 30] preflop=[0.75, 1.5] postflop=[0.5, 1.0] cap=3
+2026-08-01T21:04:09Z incumbent : iter=20,000 histogram=True buckets=[169, 150, 150, 30] preflop=[0.75, 1.5] postflop=[0.5, 1.0] cap=3
+2026-08-01T21:04:09Z durable log: backend\data\evaluations\smoke-shard.log
+2026-08-01T21:04:09Z 
+2026-08-01T21:04:09Z -- NULL: incumbent vs itself, 100 pairs, must be exactly +0.00 --
+2026-08-01T21:04:38Z    null: +0.00 bb/100
+2026-08-01T21:04:38Z 
+2026-08-01T21:04:38Z -- launching 4 shards: [0,100), [100,200), [200,300), [300,400)
+2026-08-01T21:04:38Z -- serial control: replaying pairs [0,100) in-process --
+2026-08-01T21:05:20Z    shard 0 [0,100) done
+2026-08-01T21:05:20Z    shard 1 [100,200) done
+2026-08-01T21:05:20Z    shard 2 [200,300) done
+2026-08-01T21:05:20Z    shard 3 [300,400) done
+2026-08-01T21:05:20Z    exactness: first 100 pairs match the serial control bit for bit
+2026-08-01T21:05:20Z 
+2026-08-01T21:05:20Z    challenger minus incumbent: +26.02 bb/100 [-61.34,+113.39]
+2026-08-01T21:05:20Z    400 pairs in 42.0s -> 9.52 pairs/s across 4 shards
+2026-08-01T21:05:20Z    VERDICT: INCONCLUSIVE
+2026-08-01T21:05:20Z written to backend\data\evaluations\smoke-shard.json

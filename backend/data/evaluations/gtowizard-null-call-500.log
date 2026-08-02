@@ -1,0 +1,34 @@
+2026-07-30T19:34:43Z === GTO Wizard benchmark: null:always-call, 500 hands ===
+2026-07-30T19:34:43Z durable log: backend\data\evaluations\gtowizard-null-call-500.log
+2026-07-30T19:34:44Z server tally before: 518 hands, -63.22 bb/100
+2026-07-30T19:37:36Z   25/500 hands | AIVAT -65.33 [-118.50,-12.15] | raw -78.84 | 0.15 hands/s | ETA 54.4 min
+2026-07-30T19:40:06Z   50/500 hands | AIVAT -115.20 [-202.91,-27.48] | raw +72.98 | 0.16 hands/s | ETA 48.4 min
+2026-07-30T19:42:39Z   75/500 hands | AIVAT -84.34 [-145.00,-23.67] | raw -106.85 | 0.16 hands/s | ETA 44.9 min
+2026-07-30T19:45:24Z   100/500 hands | AIVAT -93.01 [-149.26,-36.76] | raw -150.84 | 0.16 hands/s | ETA 42.7 min
+2026-07-30T19:48:15Z   125/500 hands | AIVAT -311.37 [-597.08,-25.65] | raw -145.22 | 0.15 hands/s | ETA 40.6 min
+2026-07-30T19:51:04Z   150/500 hands | AIVAT -298.45 [-538.87,-58.04] | raw -44.83 | 0.15 hands/s | ETA 38.1 min
+2026-07-30T19:53:25Z   175/500 hands | AIVAT -286.46 [-495.19,-77.72] | raw -21.64 | 0.16 hands/s | ETA 34.7 min
+2026-07-30T19:56:08Z   200/500 hands | AIVAT -266.89 [-450.09,-83.69] | raw -24.07 | 0.16 hands/s | ETA 32.1 min
+2026-07-30T19:58:37Z   225/500 hands | AIVAT -252.37 [-415.62,-89.12] | raw +18.89 | 0.16 hands/s | ETA 29.2 min
+2026-07-30T20:01:17Z   250/500 hands | AIVAT -245.14 [-392.79,-97.49] | raw +21.21 | 0.16 hands/s | ETA 26.5 min
+2026-07-30T20:03:57Z   275/500 hands | AIVAT -230.50 [-364.91,-96.08] | raw +66.38 | 0.16 hands/s | ETA 23.9 min
+2026-07-30T20:06:26Z   300/500 hands | AIVAT -245.73 [-377.68,-113.78] | raw +0.37 | 0.16 hands/s | ETA 21.1 min
+2026-07-30T20:09:07Z   325/500 hands | AIVAT -240.62 [-364.39,-116.85] | raw -10.96 | 0.16 hands/s | ETA 18.5 min
+2026-07-30T20:11:26Z   350/500 hands | AIVAT -231.59 [-346.75,-116.42] | raw -25.11 | 0.16 hands/s | ETA 15.7 min
+2026-07-30T20:14:10Z   375/500 hands | AIVAT -227.87 [-336.00,-119.74] | raw -36.46 | 0.16 hands/s | ETA 13.1 min
+2026-07-30T20:16:37Z   400/500 hands | AIVAT -223.38 [-325.23,-121.54] | raw -28.44 | 0.16 hands/s | ETA 10.5 min
+2026-07-30T20:19:08Z   425/500 hands | AIVAT -220.93 [-317.29,-124.56] | raw -56.32 | 0.16 hands/s | ETA 7.8 min
+2026-07-30T20:21:43Z   450/500 hands | AIVAT -223.42 [-314.86,-131.98] | raw -59.06 | 0.16 hands/s | ETA 5.2 min
+2026-07-30T20:24:13Z   475/500 hands | AIVAT -233.83 [-324.21,-143.45] | raw -79.30 | 0.16 hands/s | ETA 2.6 min
+2026-07-30T20:26:37Z   500/500 hands | AIVAT -242.46 [-330.58,-154.34] | raw -60.21 | 0.16 hands/s | ETA 0.0 min
+2026-07-30T20:26:37Z 
+2026-07-30T20:26:37Z AIVAT : -242.46 bb/100 [-330.58, -154.34] over 500 hands
+2026-07-30T20:26:37Z raw   : -60.21 bb/100 [-266.35, +145.92]
+2026-07-30T20:26:37Z excluded=0 board_desyncs=0 positions={'hero=SB': 250, 'hero=BB': 250}
+2026-07-30T20:26:37Z timing: {'api_s': 3111.7, 'agent_s': 0.4, 'mirror_s': 0.8}
+2026-07-30T20:26:37Z server tally after : 1018 hands, -61.74 bb/100, aivat -154.57 bb/100
+2026-07-30T20:26:37Z 
+2026-07-30T20:26:37Z NULL ANCHOR: published -241.1 +- 26.2 bb/100
+2026-07-30T20:26:37Z   measured  -242.46 [-330.58,-154.34]
+2026-07-30T20:26:37Z   PASS - intervals overlap
+2026-07-30T20:26:37Z written to backend\data\evaluations\gtowizard-null-call-500.json

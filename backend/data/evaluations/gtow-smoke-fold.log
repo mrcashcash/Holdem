@@ -1,0 +1,17 @@
+2026-07-30T18:50:28Z === GTO Wizard benchmark: null:always-fold, 10 hands ===
+2026-07-30T18:50:28Z durable log: backend\data\evaluations\gtow-smoke-fold.log
+2026-07-30T18:51:12Z === GTO Wizard benchmark: null:always-fold, 10 hands ===
+2026-07-30T18:51:12Z durable log: backend\data\evaluations\gtow-smoke-fold.log
+2026-07-30T18:51:13Z server tally before: 1 hands, -100.00 bb/100
+2026-07-30T18:51:21Z   10/10 hands | AIVAT -141.72 [-332.22,+48.78] | raw -75.00 | 1.27 hands/s | ETA 0.0 min
+2026-07-30T18:51:21Z 
+2026-07-30T18:51:21Z AIVAT : -141.72 bb/100 [-332.22, +48.78] over 10 hands
+2026-07-30T18:51:21Z raw   : -75.00 bb/100 [-91.33, -58.67]
+2026-07-30T18:51:21Z excluded=0 board_desyncs=0 positions={'hero=SB': 5, 'hero=BB': 5}
+2026-07-30T18:51:21Z timing: {'api_s': 7.9, 'agent_s': 0.0, 'mirror_s': 0.0}
+2026-07-30T18:51:21Z server tally after : 11 hands, -77.27 bb/100, aivat -130.17 bb/100
+2026-07-30T18:51:21Z 
+2026-07-30T18:51:21Z NULL ANCHOR: published -64.6 +- 3.3 bb/100
+2026-07-30T18:51:21Z   measured  -141.72 [-332.22,+48.78]
+2026-07-30T18:51:21Z   PASS - intervals overlap
+2026-07-30T18:51:21Z written to backend\data\evaluations\gtow-smoke-fold.json

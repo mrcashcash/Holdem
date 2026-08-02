@@ -1,0 +1,32 @@
+[
+  {
+    "iterations": 1000,
+    "seed": 23,
+    "arm": "dcfr",
+    "mbb": 1.919631607101803e-07,
+    "elapsed_s": 43.7
+  },
+  {
+    "iterations": 1000,
+    "seed": 23,
+    "arm": "dcfr_plus_d100",
+    "mbb": 1.8056481963796574e-07,
+    "elapsed_s": 39.8,
+    "delta_vs_dcfr": -0.0
+  },
+  {
+    "iterations": 4000,
+    "seed": 23,
+    "arm": "dcfr",
+    "mbb": 3.364685487118637e-08,
+    "elapsed_s": 181.2
+  },
+  {
+    "iterations": 4000,
+    "seed": 23,
+    "arm": "dcfr_plus_d100",
+    "mbb": 2.4590591334728227e-08,
+    "elapsed_s": 182.3,
+    "delta_vs_dcfr": -0.0
+  }
+]

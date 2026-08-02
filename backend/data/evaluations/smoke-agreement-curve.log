@@ -1,0 +1,15 @@
+2026-07-31T07:23:56Z === agreement-vs-ratio curve: 76,411 rows available, fractions [0.1], 2 epochs each ===
+2026-07-31T07:23:56Z gate: 2 situations x 40 iterations
+2026-07-31T07:23:56Z durable log: backend\data\evaluations\smoke-agreement-curve.log
+2026-07-31T07:23:56Z -- fraction 0.1: training on <= 7,641 rows
+2026-07-31T07:24:02Z    trained in 6.0s: val_mae=0.6828 baseline=0.7149 ratio=0.9551 (best of 2 epochs)
+2026-07-31T07:24:02Z    running acceptance gate ...
+2026-07-31T07:24:37Z    ratio=0.9551206253404131 -> agreement=0.8041 policy_l1=0.5976
+2026-07-31T07:24:37Z 
+2026-07-31T07:24:37Z --- curve (lower ratio = more accurate net) ---
+2026-07-31T07:24:37Z       rows    ratio  agreement  policy L1
+2026-07-31T07:24:37Z      7,641   0.9551     0.8041     0.5976
+2026-07-31T07:24:37Z     76,411   0.4864     0.3766     1.1474
+2026-07-31T07:24:37Z 
+2026-07-31T07:24:37Z fewer than two usable points; cannot fit a trend
+2026-07-31T07:24:37Z written to backend\data\evaluations\smoke-agreement-curve.json

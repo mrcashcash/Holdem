@@ -1,0 +1,62 @@
+{
+  "gate": "native50-vs-20bb-routed",
+  "generated_utc": "2026-08-02T04:58:54+00:00",
+  "challenger": {
+    "path": "backend\\data\\gpu_blueprint_50bb_canon50\\checkpoint-15000.npz",
+    "iteration": 15000,
+    "histogram": true,
+    "buckets": [
+      169,
+      150,
+      150,
+      30
+    ],
+    "preflop": [
+      0.75,
+      1.0
+    ],
+    "postflop": [
+      0.4,
+      0.7,
+      1.2
+    ],
+    "raise_cap": 2,
+    "stack_bb": 50.0
+  },
+  "incumbent": {
+    "path": "backend\\data\\gpu_blueprint_20bb\\champion.npz",
+    "iteration": 50000,
+    "histogram": true,
+    "buckets": [
+      169,
+      150,
+      150,
+      30
+    ],
+    "preflop": [
+      0.5,
+      0.75
+    ],
+    "postflop": [
+      0.33,
+      0.66,
+      1.0,
+      1.5
+    ],
+    "raise_cap": 2,
+    "stack_bb": 20.0
+  },
+  "stack_bb": 50.0,
+  "seed": 4242,
+  "workers": 6,
+  "null_bb_per_100": 0.0,
+  "exactness_verified_pairs": 200,
+  "challenger_minus_incumbent_bb_per_100": 14.66,
+  "ci_low": 9.41,
+  "ci_high": 19.92,
+  "verdict": "CHALLENGER BETTER",
+  "elapsed_s": 1960.0,
+  "pairs_per_s": 30.61,
+  "pairs": 60000,
+  "hands": 120000
+}

@@ -1,0 +1,627 @@
+[
+  {
+    "preflop": [
+      0.75,
+      1.5
+    ],
+    "postflop": [
+      0.5,
+      1.0
+    ],
+    "postflop_raise_cap": 2,
+    "preflop_raise_cap": null,
+    "nodes": 69973,
+    "decisions": 25104,
+    "table_mib": 212.4,
+    "num_actions": 5,
+    "fits": true,
+    "build_s": 0.32
+  },
+  {
+    "preflop": [
+      0.75,
+      1.5
+    ],
+    "postflop": [
+      0.5,
+      1.0
+    ],
+    "postflop_raise_cap": 2,
+    "preflop_raise_cap": 3,
+    "nodes": 81829,
+    "decisions": 29680,
+    "table_mib": 257.1,
+    "num_actions": 5,
+    "fits": true,
+    "build_s": 0.35
+  },
+  {
+    "preflop": [
+      0.75,
+      1.5
+    ],
+    "postflop": [
+      0.5,
+      1.0
+    ],
+    "postflop_raise_cap": 2,
+    "preflop_raise_cap": 4,
+    "nodes": 85015,
+    "decisions": 30972,
+    "table_mib": 271.0,
+    "num_actions": 5,
+    "fits": true,
+    "build_s": 0.35
+  },
+  {
+    "preflop": [
+      0.75,
+      1.5
+    ],
+    "postflop": [
+      0.5,
+      1.0
+    ],
+    "postflop_raise_cap": 3,
+    "preflop_raise_cap": null,
+    "nodes": 147349,
+    "decisions": 53472,
+    "table_mib": 462.9,
+    "num_actions": 5,
+    "fits": true,
+    "build_s": 0.7,
+    "selected": true
+  },
+  {
+    "preflop": [
+      0.75,
+      1.5
+    ],
+    "postflop": [
+      0.33,
+      0.75,
+      1.5
+    ],
+    "postflop_raise_cap": 2,
+    "preflop_raise_cap": null,
+    "nodes": 310433,
+    "decisions": 107776,
+    "table_mib": 1046.6,
+    "num_actions": 6,
+    "fits": false,
+    "build_s": 1.45
+  },
+  {
+    "preflop": [
+      0.75,
+      1.5
+    ],
+    "postflop": [
+      0.33,
+      0.75,
+      1.5
+    ],
+    "postflop_raise_cap": 2,
+    "preflop_raise_cap": 3,
+    "nodes": 346965,
+    "decisions": 121432,
+    "table_mib": 1197.6,
+    "num_actions": 6,
+    "fits": false,
+    "build_s": 1.7
+  },
+  {
+    "preflop": [
+      0.75,
+      1.5
+    ],
+    "postflop": [
+      0.33,
+      0.75,
+      1.5
+    ],
+    "postflop_raise_cap": 2,
+    "preflop_raise_cap": 4,
+    "nodes": 354315,
+    "decisions": 124332,
+    "table_mib": 1233.1,
+    "num_actions": 6,
+    "fits": false,
+    "build_s": 1.58
+  },
+  {
+    "preflop": [
+      0.75,
+      1.5
+    ],
+    "postflop": [
+      0.33,
+      0.75,
+      1.5
+    ],
+    "postflop_raise_cap": 3,
+    "preflop_raise_cap": null,
+    "nodes": 929675,
+    "decisions": 322216,
+    "table_mib": 3178.2,
+    "num_actions": 6,
+    "fits": false,
+    "build_s": 5.04
+  },
+  {
+    "preflop": [
+      0.5,
+      1.0,
+      1.5
+    ],
+    "postflop": [
+      0.5,
+      1.0
+    ],
+    "postflop_raise_cap": 2,
+    "preflop_raise_cap": null,
+    "nodes": 129001,
+    "decisions": 46408,
+    "table_mib": 473.4,
+    "num_actions": 6,
+    "fits": true,
+    "build_s": 0.57
+  },
+  {
+    "preflop": [
+      0.5,
+      1.0,
+      1.5
+    ],
+    "postflop": [
+      0.5,
+      1.0
+    ],
+    "postflop_raise_cap": 2,
+    "preflop_raise_cap": 3,
+    "nodes": 195751,
+    "decisions": 71692,
+    "table_mib": 759.0,
+    "num_actions": 6,
+    "fits": false,
+    "build_s": 0.92
+  },
+  {
+    "preflop": [
+      0.5,
+      1.0,
+      1.5
+    ],
+    "postflop": [
+      0.5,
+      1.0
+    ],
+    "postflop_raise_cap": 2,
+    "preflop_raise_cap": 4,
+    "nodes": 241291,
+    "decisions": 89588,
+    "table_mib": 976.7,
+    "num_actions": 6,
+    "fits": false,
+    "build_s": 1.13
+  },
+  {
+    "preflop": [
+      0.5,
+      1.0,
+      1.5
+    ],
+    "postflop": [
+      0.5,
+      1.0
+    ],
+    "postflop_raise_cap": 3,
+    "preflop_raise_cap": null,
+    "nodes": 312427,
+    "decisions": 114532,
+    "table_mib": 1213.7,
+    "num_actions": 6,
+    "fits": false,
+    "build_s": 1.53
+  },
+  {
+    "preflop": [
+      0.5,
+      1.0,
+      1.5
+    ],
+    "postflop": [
+      0.33,
+      0.75,
+      1.5
+    ],
+    "postflop_raise_cap": 2,
+    "preflop_raise_cap": null,
+    "nodes": 537733,
+    "decisions": 187016,
+    "table_mib": 1830.8,
+    "num_actions": 6,
+    "fits": false,
+    "build_s": 2.54
+  },
+  {
+    "preflop": [
+      0.5,
+      1.0,
+      1.5
+    ],
+    "postflop": [
+      0.33,
+      0.75,
+      1.5
+    ],
+    "postflop_raise_cap": 2,
+    "preflop_raise_cap": 3,
+    "nodes": 729903,
+    "decisions": 257628,
+    "table_mib": 2594.5,
+    "num_actions": 6,
+    "fits": false,
+    "build_s": 3.78
+  },
+  {
+    "preflop": [
+      0.5,
+      1.0,
+      1.5
+    ],
+    "postflop": [
+      0.33,
+      0.75,
+      1.5
+    ],
+    "postflop_raise_cap": 2,
+    "preflop_raise_cap": 4,
+    "nodes": 832111,
+    "decisions": 296828,
+    "table_mib": 3051.9,
+    "num_actions": 6,
+    "fits": false,
+    "build_s": 4.3
+  },
+  {
+    "preflop": [
+      0.5,
+      1.0,
+      1.5
+    ],
+    "postflop": [
+      0.33,
+      0.75,
+      1.5
+    ],
+    "postflop_raise_cap": 3,
+    "preflop_raise_cap": null,
+    "nodes": 1642441,
+    "decisions": 573140,
+    "table_mib": 5768.6,
+    "num_actions": 6,
+    "fits": false,
+    "build_s": 9.24
+  },
+  {
+    "preflop": [
+      0.5,
+      0.75,
+      1.5
+    ],
+    "postflop": [
+      0.5,
+      1.0
+    ],
+    "postflop_raise_cap": 2,
+    "preflop_raise_cap": null,
+    "nodes": 143641,
+    "decisions": 51528,
+    "table_mib": 522.6,
+    "num_actions": 6,
+    "fits": true,
+    "build_s": 0.71
+  },
+  {
+    "preflop": [
+      0.5,
+      0.75,
+      1.5
+    ],
+    "postflop": [
+      0.5,
+      1.0
+    ],
+    "postflop_raise_cap": 2,
+    "preflop_raise_cap": 3,
+    "nodes": 227155,
+    "decisions": 83012,
+    "table_mib": 874.3,
+    "num_actions": 6,
+    "fits": false,
+    "build_s": 1.07
+  },
+  {
+    "preflop": [
+      0.5,
+      0.75,
+      1.5
+    ],
+    "postflop": [
+      0.5,
+      1.0
+    ],
+    "postflop_raise_cap": 2,
+    "preflop_raise_cap": 4,
+    "nodes": 287959,
+    "decisions": 106828,
+    "table_mib": 1162.2,
+    "num_actions": 6,
+    "fits": false,
+    "build_s": 1.55
+  },
+  {
+    "preflop": [
+      0.5,
+      0.75,
+      1.5
+    ],
+    "postflop": [
+      0.5,
+      1.0
+    ],
+    "postflop_raise_cap": 3,
+    "preflop_raise_cap": null,
+    "nodes": 363163,
+    "decisions": 133060,
+    "table_mib": 1407.9,
+    "num_actions": 6,
+    "fits": false,
+    "build_s": 2.15
+  },
+  {
+    "preflop": [
+      0.5,
+      0.75,
+      1.5
+    ],
+    "postflop": [
+      0.33,
+      0.75,
+      1.5
+    ],
+    "postflop_raise_cap": 2,
+    "preflop_raise_cap": null,
+    "nodes": 585037,
+    "decisions": 203048,
+    "table_mib": 1979.6,
+    "num_actions": 6,
+    "fits": false,
+    "build_s": 3.57
+  },
+  {
+    "preflop": [
+      0.5,
+      0.75,
+      1.5
+    ],
+    "postflop": [
+      0.33,
+      0.75,
+      1.5
+    ],
+    "postflop_raise_cap": 2,
+    "preflop_raise_cap": 3,
+    "nodes": 825583,
+    "decisions": 290804,
+    "table_mib": 2912.8,
+    "num_actions": 6,
+    "fits": false,
+    "build_s": 4.59
+  },
+  {
+    "preflop": [
+      0.5,
+      0.75,
+      1.5
+    ],
+    "postflop": [
+      0.33,
+      0.75,
+      1.5
+    ],
+    "postflop_raise_cap": 2,
+    "preflop_raise_cap": 4,
+    "nodes": 966851,
+    "decisions": 344556,
+    "table_mib": 3528.9,
+    "num_actions": 6,
+    "fits": false,
+    "build_s": 5.55
+  },
+  {
+    "preflop": [
+      0.5,
+      0.75,
+      1.5
+    ],
+    "postflop": [
+      0.33,
+      0.75,
+      1.5
+    ],
+    "postflop_raise_cap": 3,
+    "preflop_raise_cap": null,
+    "nodes": 1895677,
+    "decisions": 660892,
+    "table_mib": 6631.4,
+    "num_actions": 6,
+    "fits": false,
+    "build_s": 11.85
+  },
+  {
+    "preflop": [
+      0.5,
+      1.0,
+      1.5,
+      2.5
+    ],
+    "postflop": [
+      0.5,
+      1.0
+    ],
+    "postflop_raise_cap": 2,
+    "preflop_raise_cap": null,
+    "nodes": 157477,
+    "decisions": 57056,
+    "table_mib": 689.0,
+    "num_actions": 7,
+    "fits": false,
+    "build_s": 0.88
+  },
+  {
+    "preflop": [
+      0.5,
+      1.0,
+      1.5,
+      2.5
+    ],
+    "postflop": [
+      0.5,
+      1.0
+    ],
+    "postflop_raise_cap": 2,
+    "preflop_raise_cap": 3,
+    "nodes": 245143,
+    "decisions": 90572,
+    "table_mib": 1139.4,
+    "num_actions": 7,
+    "fits": false,
+    "build_s": 1.64
+  },
+  {
+    "preflop": [
+      0.5,
+      1.0,
+      1.5,
+      2.5
+    ],
+    "postflop": [
+      0.5,
+      1.0
+    ],
+    "postflop_raise_cap": 2,
+    "preflop_raise_cap": 4,
+    "nodes": 303703,
+    "decisions": 113788,
+    "table_mib": 1474.1,
+    "num_actions": 7,
+    "fits": false,
+    "build_s": 1.86
+  },
+  {
+    "preflop": [
+      0.5,
+      1.0,
+      1.5,
+      2.5
+    ],
+    "postflop": [
+      0.5,
+      1.0
+    ],
+    "postflop_raise_cap": 3,
+    "preflop_raise_cap": null,
+    "nodes": 369703,
+    "decisions": 136444,
+    "table_mib": 1711.1,
+    "num_actions": 7,
+    "fits": false,
+    "build_s": 2.08
+  },
+  {
+    "preflop": [
+      0.5,
+      1.0,
+      1.5,
+      2.5
+    ],
+    "postflop": [
+      0.33,
+      0.75,
+      1.5
+    ],
+    "postflop_raise_cap": 2,
+    "preflop_raise_cap": null,
+    "nodes": 640617,
+    "decisions": 224104,
+    "table_mib": 2588.6,
+    "num_actions": 7,
+    "fits": false,
+    "build_s": 3.68
+  },
+  {
+    "preflop": [
+      0.5,
+      1.0,
+      1.5,
+      2.5
+    ],
+    "postflop": [
+      0.33,
+      0.75,
+      1.5
+    ],
+    "postflop_raise_cap": 2,
+    "preflop_raise_cap": 3,
+    "nodes": 886079,
+    "decisions": 315140,
+    "table_mib": 3758.1,
+    "num_actions": 7,
+    "fits": false,
+    "build_s": 5.36
+  },
+  {
+    "preflop": [
+      0.5,
+      1.0,
+      1.5,
+      2.5
+    ],
+    "postflop": [
+      0.33,
+      0.75,
+      1.5
+    ],
+    "postflop_raise_cap": 2,
+    "preflop_raise_cap": 4,
+    "nodes": 1014267,
+    "decisions": 364716,
+    "table_mib": 4443.3,
+    "num_actions": 7,
+    "fits": false,
+    "build_s": 6.2
+  },
+  {
+    "preflop": [
+      0.5,
+      1.0,
+      1.5,
+      2.5
+    ],
+    "postflop": [
+      0.33,
+      0.75,
+      1.5
+    ],
+    "postflop_raise_cap": 3,
+    "preflop_raise_cap": null,
+    "nodes": 1861241,
+    "decisions": 653236,
+    "table_mib": 7749.7,
+    "num_actions": 7,
+    "fits": false,
+    "build_s": 13.68
+  }
+]

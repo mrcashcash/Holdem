@@ -1,0 +1,45 @@
+{
+  "gate": "all-in-geometry-guard-head-to-head",
+  "generated_utc": "2026-07-31T03:21:49+00:00",
+  "checkpoint": "backend\\data\\gpu_blueprint_200bb\\champion.npz",
+  "stack_bb": 200.0,
+  "pairs": 3000,
+  "seed": 20260731,
+  "search": "blueprint only, CRN coupled",
+  "opponents": {
+    "always-min-raise": {
+      "off": {
+        "bb_per_100": 339.48,
+        "ci_low": 230.05,
+        "ci_high": 448.92,
+        "elapsed_s": 101.3
+      },
+      "on": {
+        "bb_per_100": 95.34,
+        "ci_low": 12.67,
+        "ci_high": 178.01,
+        "elapsed_s": 93.0
+      },
+      "delta_on_minus_off": -244.14
+    },
+    "always-call": {
+      "off": {
+        "bb_per_100": 188.65,
+        "ci_low": 157.81,
+        "ci_high": 219.49,
+        "elapsed_s": 204.2
+      },
+      "on": {
+        "bb_per_100": 188.65,
+        "ci_low": 157.81,
+        "ci_high": 219.49,
+        "elapsed_s": 159.0
+      },
+      "delta_on_minus_off": 0.0
+    }
+  },
+  "prior_measurement_before_fix": {
+    "200bb_always_min_raise_delta": -268.82,
+    "100bb_always_min_raise_delta": -124.0
+  }
+}

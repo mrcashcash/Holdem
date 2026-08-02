@@ -1,0 +1,34 @@
+{
+  "gate": "continual-exact-resolving-on-vs-off",
+  "null_run": false,
+  "checkpoint": "backend\\data\\gpu_blueprint_20bb\\champion.npz",
+  "checkpoint_iteration": 5000,
+  "stack_bb": 20.0,
+  "resolve_iterations": 120,
+  "budget_ms": 20000,
+  "common_random_numbers": true,
+  "elapsed_s": 208.7,
+  "duel": {
+    "mean_bb_per_100": -7.11,
+    "ci_low_bb_per_100": -16.46,
+    "ci_high_bb_per_100": 2.24,
+    "hands": 600,
+    "pairs": 300,
+    "seed": 51009,
+    "verdict": "KEEP"
+  },
+  "resolver": {
+    "attempts": 131,
+    "resolved": 131,
+    "fallbacks": 0,
+    "resolve_rate": 1.0,
+    "by_street": {
+      "street3:resolved": 131
+    },
+    "errors": {},
+    "latency_ms_mean": 1327.8,
+    "latency_ms_p90": 1776.2,
+    "latency_ms_max": 2340.7
+  },
+  "eligible": false
+}

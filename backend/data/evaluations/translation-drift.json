@@ -1,0 +1,5660 @@
+{
+  "hands": 300,
+  "stack_bb": 200.0,
+  "opponent": "always-min-raise",
+  "decisions": 807,
+  "drift_median": 1.0,
+  "drift_max": 6.25,
+  "share_above_1_5": 0.3321,
+  "records": [
+    {
+      "street": "preflop",
+      "translated_actions": 1,
+      "ratio_abstract": 100.0,
+      "ratio_real": 100.0,
+      "drift": 1.0
+    },
+    {
+      "street": "preflop",
+      "translated_actions": 0,
+      "ratio_abstract": 200.0,
+      "ratio_real": 200.0,
+      "drift": 1.0
+    },
+    {
+      "street": "preflop",
+      "translated_actions": 2,
+      "ratio_abstract": 40.0,
+      "ratio_real": 40.0,
+      "drift": 1.0
+    },
+    {
+      "street": "preflop",
+      "translated_actions": 1,
+      "ratio_abstract": 100.0,
+      "ratio_real": 100.0,
+      "drift": 1.0
+    },
+    {
+      "street": "preflop",
+      "translated_actions": 3,
+      "ratio_abstract": 16.0,
+      "ratio_real": 20.0,
+      "drift": 1.25
+    },
+    {
+      "street": "preflop",
+      "translated_actions": 0,
+      "ratio_abstract": 200.0,
+      "ratio_real": 200.0,
+      "drift": 1.0
+    },
+    {
+      "street": "preflop",
+      "translated_actions": 1,
+      "ratio_abstract": 100.0,
+      "ratio_real": 100.0,
+      "drift": 1.0
+    },
+    {
+      "street": "flop",
+      "translated_actions": 4,
+      "ratio_abstract": 40.0,
+      "ratio_real": 50.0,
+      "drift": 1.25
+    },
+    {
+      "street": "turn",
+      "translated_actions": 7,
+      "ratio_abstract": 20.0,
+      "ratio_real": 33.3333,
+      "drift": 1.6667
+    },
+    {
+      "street": "preflop",
+      "translated_actions": 0,
+      "ratio_abstract": 200.0,
+      "ratio_real": 200.0,
+      "drift": 1.0
+    },
+    {
+      "street": "preflop",
+      "translated_actions": 2,
+      "ratio_abstract": 40.0,
+      "ratio_real": 40.0,
+      "drift": 1.0
+    },
+    {
+      "street": "flop",
+      "translated_actions": 4,
+      "ratio_abstract": 16.0,
+      "ratio_real": 25.0,
+      "drift": 1.5625
+    },
+    {
+      "street": "turn",
+      "translated_actions": 6,
+      "ratio_abstract": 8.0,
+      "ratio_real": 20.0,
+      "drift": 2.5
+    },
+    {
+      "street": "preflop",
+      "translated_actions": 1,
+      "ratio_abstract": 100.0,
+      "ratio_real": 100.0,
+      "drift": 1.0
+    },
+    {
+      "street": "flop",
+      "translated_actions": 4,
+      "ratio_abstract": 40.0,
+      "ratio_real": 50.0,
+      "drift": 1.25
+    },
+    {
+      "street": "flop",
+      "translated_actions": 6,
+      "ratio_abstract": 10.0,
+      "ratio_real": 16.6667,
+      "drift": 1.6667
+    },
+    {
+      "street": "turn",
+      "translated_actions": 9,
+      "ratio_abstract": 5.0,
+      "ratio_real": 11.1111,
+      "drift": 2.2222
+    },
+    {
+      "street": "river",
+      "translated_actions": 10,
+      "ratio_abstract": 2.5,
+      "ratio_real": 10.0,
+      "drift": 4.0
+    },
+    {
+      "street": "river",
+      "translated_actions": 12,
+      "ratio_abstract": 2.5,
+      "ratio_real": 10.0,
+      "drift": 4.0
+    },
+    {
+      "street": "preflop",
+      "translated_actions": 0,
+      "ratio_abstract": 200.0,
+      "ratio_real": 200.0,
+      "drift": 1.0
+    },
+    {
+      "street": "preflop",
+      "translated_actions": 2,
+      "ratio_abstract": 40.0,
+      "ratio_real": 40.0,
+      "drift": 1.0
+    },
+    {
+      "street": "flop",
+      "translated_actions": 4,
+      "ratio_abstract": 16.0,
+      "ratio_real": 25.0,
+      "drift": 1.5625
+    },
+    {
+      "street": "turn",
+      "translated_actions": 6,
+      "ratio_abstract": 8.0,
+      "ratio_real": 20.0,
+      "drift": 2.5
+    },
+    {
+      "street": "preflop",
+      "translated_actions": 1,
+      "ratio_abstract": 100.0,
+      "ratio_real": 100.0,
+      "drift": 1.0
+    },
+    {
+      "street": "preflop",
+      "translated_actions": 0,
+      "ratio_abstract": 200.0,
+      "ratio_real": 200.0,
+      "drift": 1.0
+    },
+    {
+      "street": "preflop",
+      "translated_actions": 2,
+      "ratio_abstract": 40.0,
+      "ratio_real": 40.0,
+      "drift": 1.0
+    },
+    {
+      "street": "turn",
+      "translated_actions": 8,
+      "ratio_abstract": 3.2,
+      "ratio_real": 5.8824,
+      "drift": 1.8382
+    },
+    {
+      "street": "preflop",
+      "translated_actions": 1,
+      "ratio_abstract": 100.0,
+      "ratio_real": 100.0,
+      "drift": 1.0
+    },
+    {
+      "street": "flop",
+      "translated_actions": 4,
+      "ratio_abstract": 40.0,
+      "ratio_real": 50.0,
+      "drift": 1.25
+    },
+    {
+      "street": "turn",
+      "translated_actions": 7,
+      "ratio_abstract": 20.0,
+      "ratio_real": 33.3333,
+      "drift": 1.6667
+    },
+    {
+      "street": "river",
+      "translated_actions": 8,
+      "ratio_abstract": 10.0,
+      "ratio_real": 25.0,
+      "drift": 2.5
+    },
+    {
+      "street": "river",
+      "translated_actions": 10,
+      "ratio_abstract": 10.0,
+      "ratio_real": 25.0,
+      "drift": 2.5
+    },
+    {
+      "street": "preflop",
+      "translated_actions": 0,
+      "ratio_abstract": 200.0,
+      "ratio_real": 200.0,
+      "drift": 1.0
+    },
+    {
+      "street": "preflop",
+      "translated_actions": 2,
+      "ratio_abstract": 40.0,
+      "ratio_real": 40.0,
+      "drift": 1.0
+    },
+    {
+      "street": "preflop",
+      "translated_actions": 1,
+      "ratio_abstract": 100.0,
+      "ratio_real": 100.0,
+      "drift": 1.0
+    },
+    {
+      "street": "flop",
+      "translated_actions": 4,
+      "ratio_abstract": 40.0,
+      "ratio_real": 50.0,
+      "drift": 1.25
+    },
+    {
+      "street": "flop",
+      "translated_actions": 6,
+      "ratio_abstract": 10.0,
+      "ratio_real": 16.6667,
+      "drift": 1.6667
+    },
+    {
+      "street": "turn",
+      "translated_actions": 9,
+      "ratio_abstract": 5.0,
+      "ratio_real": 11.1111,
+      "drift": 2.2222
+    },
+    {
+      "street": "river",
+      "translated_actions": 10,
+      "ratio_abstract": 2.5,
+      "ratio_real": 10.0,
+      "drift": 4.0
+    },
+    {
+      "street": "river",
+      "translated_actions": 12,
+      "ratio_abstract": 2.5,
+      "ratio_real": 10.0,
+      "drift": 4.0
+    },
+    {
+      "street": "preflop",
+      "translated_actions": 0,
+      "ratio_abstract": 200.0,
+      "ratio_real": 200.0,
+      "drift": 1.0
+    },
+    {
+      "street": "preflop",
+      "translated_actions": 2,
+      "ratio_abstract": 40.0,
+      "ratio_real": 40.0,
+      "drift": 1.0
+    },
+    {
+      "street": "turn",
+      "translated_actions": 8,
+      "ratio_abstract": 3.2,
+      "ratio_real": 5.8824,
+      "drift": 1.8382
+    },
+    {
+      "street": "preflop",
+      "translated_actions": 1,
+      "ratio_abstract": 100.0,
+      "ratio_real": 100.0,
+      "drift": 1.0
+    },
+    {
+      "street": "preflop",
+      "translated_actions": 3,
+      "ratio_abstract": 10.0,
+      "ratio_real": 12.5,
+      "drift": 1.25
+    },
+    {
+      "street": "preflop",
+      "translated_actions": 0,
+      "ratio_abstract": 200.0,
+      "ratio_real": 200.0,
+      "drift": 1.0
+    },
+    {
+      "street": "preflop",
+      "translated_actions": 2,
+      "ratio_abstract": 40.0,
+      "ratio_real": 40.0,
+      "drift": 1.0
+    },
+    {
+      "street": "preflop",
+      "translated_actions": 1,
+      "ratio_abstract": 100.0,
+      "ratio_real": 100.0,
+      "drift": 1.0
+    },
+    {
+      "street": "preflop",
+      "translated_actions": 3,
+      "ratio_abstract": 10.0,
+      "ratio_real": 12.5,
+      "drift": 1.25
+    },
+    {
+      "street": "flop",
+      "translated_actions": 6,
+      "ratio_abstract": 4.0,
+      "ratio_real": 7.1429,
+      "drift": 1.7857
+    },
+    {
+      "street": "turn",
+      "translated_actions": 9,
+      "ratio_abstract": 2.0,
+      "ratio_real": 6.6667,
+      "drift": 3.3333
+    },
+    {
+      "street": "preflop",
+      "translated_actions": 0,
+      "ratio_abstract": 200.0,
+      "ratio_real": 200.0,
+      "drift": 1.0
+    },
+    {
+      "street": "preflop",
+      "translated_actions": 2,
+      "ratio_abstract": 40.0,
+      "ratio_real": 40.0,
+      "drift": 1.0
+    },
+    {
+      "street": "preflop",
+      "translated_actions": 1,
+      "ratio_abstract": 100.0,
+      "ratio_real": 100.0,
+      "drift": 1.0
+    },
+    {
+      "street": "flop",
+      "translated_actions": 4,
+      "ratio_abstract": 40.0,
+      "ratio_real": 50.0,
+      "drift": 1.25
+    },
+    {
+      "street": "flop",
+      "translated_actions": 6,
+      "ratio_abstract": 10.0,
+      "ratio_real": 16.6667,
+      "drift": 1.6667
+    },
+    {
+      "street": "turn",
+      "translated_actions": 9,
+      "ratio_abstract": 5.0,
+      "ratio_real": 11.1111,
+      "drift": 2.2222
+    },
+    {
+      "street": "river",
+      "translated_actions": 10,
+      "ratio_abstract": 2.5,
+      "ratio_real": 10.0,
+      "drift": 4.0
+    },
+    {
+      "street": "river",
+      "translated_actions": 12,
+      "ratio_abstract": 1.25,
+      "ratio_real": 5.0,
+      "drift": 4.0
+    },
+    {
+      "street": "preflop",
+      "translated_actions": 0,
+      "ratio_abstract": 200.0,
+      "ratio_real": 200.0,
+      "drift": 1.0
+    },
+    {
+      "street": "preflop",
+      "translated_actions": 2,
+      "ratio_abstract": 100.0,
+      "ratio_real": 100.0,
+      "drift": 1.0
+    },
+    {
+      "street": "flop",
+      "translated_actions": 4,
+      "ratio_abstract": 40.0,
+      "ratio_real": 50.0,
+      "drift": 1.25
+    },
+    {
+      "street": "preflop",
+      "translated_actions": 1,
+      "ratio_abstract": 100.0,
+      "ratio_real": 100.0,
+      "drift": 1.0
+    },
+    {
+      "street": "preflop",
+      "translated_actions": 0,
+      "ratio_abstract": 200.0,
+      "ratio_real": 200.0,
+      "drift": 1.0
+    },
+    {
+      "street": "preflop",
+      "translated_actions": 2,
+      "ratio_abstract": 40.0,
+      "ratio_real": 40.0,
+      "drift": 1.0
+    },
+    {
+      "street": "preflop",
+      "translated_actions": 1,
+      "ratio_abstract": 100.0,
+      "ratio_real": 100.0,
+      "drift": 1.0
+    },
+    {
+      "street": "preflop",
+      "translated_actions": 0,
+      "ratio_abstract": 200.0,
+      "ratio_real": 200.0,
+      "drift": 1.0
+    },
+    {
+      "street": "preflop",
+      "translated_actions": 2,
+      "ratio_abstract": 40.0,
+      "ratio_real": 40.0,
+      "drift": 1.0
+    },
+    {
+      "street": "preflop",
+      "translated_actions": 1,
+      "ratio_abstract": 100.0,
+      "ratio_real": 100.0,
+      "drift": 1.0
+    },
+    {
+      "street": "preflop",
+      "translated_actions": 0,
+      "ratio_abstract": 200.0,
+      "ratio_real": 200.0,
+      "drift": 1.0
+    },
+    {
+      "street": "preflop",
+      "translated_actions": 2,
+      "ratio_abstract": 40.0,
+      "ratio_real": 40.0,
+      "drift": 1.0
+    },
+    {
+      "street": "preflop",
+      "translated_actions": 1,
+      "ratio_abstract": 100.0,
+      "ratio_real": 100.0,
+      "drift": 1.0
+    },
+    {
+      "street": "flop",
+      "translated_actions": 4,
+      "ratio_abstract": 40.0,
+      "ratio_real": 50.0,
+      "drift": 1.25
+    },
+    {
+      "street": "preflop",
+      "translated_actions": 0,
+      "ratio_abstract": 200.0,
+      "ratio_real": 200.0,
+      "drift": 1.0
+    },
+    {
+      "street": "preflop",
+      "translated_actions": 2,
+      "ratio_abstract": 40.0,
+      "ratio_real": 40.0,
+      "drift": 1.0
+    },
+    {
+      "street": "preflop",
+      "translated_actions": 1,
+      "ratio_abstract": 100.0,
+      "ratio_real": 100.0,
+      "drift": 1.0
+    },
+    {
+      "street": "preflop",
+      "translated_actions": 0,
+      "ratio_abstract": 200.0,
+      "ratio_real": 200.0,
+      "drift": 1.0
+    },
+    {
+      "street": "preflop",
+      "translated_actions": 2,
+      "ratio_abstract": 40.0,
+      "ratio_real": 40.0,
+      "drift": 1.0
+    },
+    {
+      "street": "flop",
+      "translated_actions": 4,
+      "ratio_abstract": 16.0,
+      "ratio_real": 25.0,
+      "drift": 1.5625
+    },
+    {
+      "street": "turn",
+      "translated_actions": 6,
+      "ratio_abstract": 8.0,
+      "ratio_real": 20.0,
+      "drift": 2.5
+    },
+    {
+      "street": "preflop",
+      "translated_actions": 1,
+      "ratio_abstract": 100.0,
+      "ratio_real": 100.0,
+      "drift": 1.0
+    },
+    {
+      "street": "preflop",
+      "translated_actions": 0,
+      "ratio_abstract": 200.0,
+      "ratio_real": 200.0,
+      "drift": 1.0
+    },
+    {
+      "street": "preflop",
+      "translated_actions": 2,
+      "ratio_abstract": 40.0,
+      "ratio_real": 40.0,
+      "drift": 1.0
+    },
+    {
+      "street": "flop",
+      "translated_actions": 4,
+      "ratio_abstract": 16.0,
+      "ratio_real": 25.0,
+      "drift": 1.5625
+    },
+    {
+      "street": "preflop",
+      "translated_actions": 1,
+      "ratio_abstract": 100.0,
+      "ratio_real": 100.0,
+      "drift": 1.0
+    },
+    {
+      "street": "flop",
+      "translated_actions": 4,
+      "ratio_abstract": 40.0,
+      "ratio_real": 50.0,
+      "drift": 1.25
+    },
+    {
+      "street": "turn",
+      "translated_actions": 7,
+      "ratio_abstract": 20.0,
+      "ratio_real": 33.3333,
+      "drift": 1.6667
+    },
+    {
+      "street": "river",
+      "translated_actions": 8,
+      "ratio_abstract": 10.0,
+      "ratio_real": 25.0,
+      "drift": 2.5
+    },
+    {
+      "street": "river",
+      "translated_actions": 10,
+      "ratio_abstract": 10.0,
+      "ratio_real": 25.0,
+      "drift": 2.5
+    },
+    {
+      "street": "preflop",
+      "translated_actions": 0,
+      "ratio_abstract": 200.0,
+      "ratio_real": 200.0,
+      "drift": 1.0
+    },
+    {
+      "street": "preflop",
+      "translated_actions": 2,
+      "ratio_abstract": 100.0,
+      "ratio_real": 100.0,
+      "drift": 1.0
+    },
+    {
+      "street": "preflop",
+      "translated_actions": 1,
+      "ratio_abstract": 100.0,
+      "ratio_real": 100.0,
+      "drift": 1.0
+    },
+    {
+      "street": "flop",
+      "translated_actions": 4,
+      "ratio_abstract": 40.0,
+      "ratio_real": 50.0,
+      "drift": 1.25
+    },
+    {
+      "street": "turn",
+      "translated_actions": 7,
+      "ratio_abstract": 20.0,
+      "ratio_real": 33.3333,
+      "drift": 1.6667
+    },
+    {
+      "street": "turn",
+      "translated_actions": 9,
+      "ratio_abstract": 5.0,
+      "ratio_real": 12.5,
+      "drift": 2.5
+    },
+    {
+      "street": "river",
+      "translated_actions": 10,
+      "ratio_abstract": 2.5,
+      "ratio_real": 8.3333,
+      "drift": 3.3333
+    },
+    {
+      "street": "river",
+      "translated_actions": 12,
+      "ratio_abstract": 2.5,
+      "ratio_real": 8.3333,
+      "drift": 3.3333
+    },
+    {
+      "street": "preflop",
+      "translated_actions": 0,
+      "ratio_abstract": 200.0,
+      "ratio_real": 200.0,
+      "drift": 1.0
+    },
+    {
+      "street": "preflop",
+      "translated_actions": 2,
+      "ratio_abstract": 40.0,
+      "ratio_real": 40.0,
+      "drift": 1.0
+    },
+    {
+      "street": "preflop",
+      "translated_actions": 1,
+      "ratio_abstract": 100.0,
+      "ratio_real": 100.0,
+      "drift": 1.0
+    },
+    {
+      "street": "preflop",
+      "translated_actions": 3,
+      "ratio_abstract": 16.0,
+      "ratio_real": 20.0,
+      "drift": 1.25
+    },
+    {
+      "street": "preflop",
+      "translated_actions": 0,
+      "ratio_abstract": 200.0,
+      "ratio_real": 200.0,
+      "drift": 1.0
+    },
+    {
+      "street": "preflop",
+      "translated_actions": 2,
+      "ratio_abstract": 40.0,
+      "ratio_real": 40.0,
+      "drift": 1.0
+    },
+    {
+      "street": "preflop",
+      "translated_actions": 1,
+      "ratio_abstract": 100.0,
+      "ratio_real": 100.0,
+      "drift": 1.0
+    },
+    {
+      "street": "flop",
+      "translated_actions": 4,
+      "ratio_abstract": 40.0,
+      "ratio_real": 50.0,
+      "drift": 1.25
+    },
+    {
+      "street": "turn",
+      "translated_actions": 7,
+      "ratio_abstract": 20.0,
+      "ratio_real": 33.3333,
+      "drift": 1.6667
+    },
+    {
+      "street": "preflop",
+      "translated_actions": 0,
+      "ratio_abstract": 200.0,
+      "ratio_real": 200.0,
+      "drift": 1.0
+    },
+    {
+      "street": "preflop",
+      "translated_actions": 2,
+      "ratio_abstract": 40.0,
+      "ratio_real": 40.0,
+      "drift": 1.0
+    },
+    {
+      "street": "flop",
+      "translated_actions": 4,
+      "ratio_abstract": 16.0,
+      "ratio_real": 25.0,
+      "drift": 1.5625
+    },
+    {
+      "street": "turn",
+      "translated_actions": 6,
+      "ratio_abstract": 8.0,
+      "ratio_real": 20.0,
+      "drift": 2.5
+    },
+    {
+      "street": "turn",
+      "translated_actions": 8,
+      "ratio_abstract": 1.3333,
+      "ratio_real": 5.5556,
+      "drift": 4.1667
+    },
+    {
+      "street": "river",
+      "translated_actions": 10,
+      "ratio_abstract": 0.6667,
+      "ratio_real": 3.3333,
+      "drift": 5.0
+    },
+    {
+      "street": "preflop",
+      "translated_actions": 1,
+      "ratio_abstract": 100.0,
+      "ratio_real": 100.0,
+      "drift": 1.0
+    },
+    {
+      "street": "flop",
+      "translated_actions": 4,
+      "ratio_abstract": 40.0,
+      "ratio_real": 50.0,
+      "drift": 1.25
+    },
+    {
+      "street": "preflop",
+      "translated_actions": 0,
+      "ratio_abstract": 200.0,
+      "ratio_real": 200.0,
+      "drift": 1.0
+    },
+    {
+      "street": "preflop",
+      "translated_actions": 2,
+      "ratio_abstract": 40.0,
+      "ratio_real": 40.0,
+      "drift": 1.0
+    },
+    {
+      "street": "turn",
+      "translated_actions": 8,
+      "ratio_abstract": 3.2,
+      "ratio_real": 5.8824,
+      "drift": 1.8382
+    },
+    {
+      "street": "preflop",
+      "translated_actions": 1,
+      "ratio_abstract": 100.0,
+      "ratio_real": 100.0,
+      "drift": 1.0
+    },
+    {
+      "street": "preflop",
+      "translated_actions": 0,
+      "ratio_abstract": 200.0,
+      "ratio_real": 200.0,
+      "drift": 1.0
+    },
+    {
+      "street": "preflop",
+      "translated_actions": 2,
+      "ratio_abstract": 40.0,
+      "ratio_real": 40.0,
+      "drift": 1.0
+    },
+    {
+      "street": "preflop",
+      "translated_actions": 1,
+      "ratio_abstract": 100.0,
+      "ratio_real": 100.0,
+      "drift": 1.0
+    },
+    {
+      "street": "flop",
+      "translated_actions": 4,
+      "ratio_abstract": 40.0,
+      "ratio_real": 50.0,
+      "drift": 1.25
+    },
+    {
+      "street": "turn",
+      "translated_actions": 7,
+      "ratio_abstract": 20.0,
+      "ratio_real": 33.3333,
+      "drift": 1.6667
+    },
+    {
+      "street": "river",
+      "translated_actions": 8,
+      "ratio_abstract": 10.0,
+      "ratio_real": 25.0,
+      "drift": 2.5
+    },
+    {
+      "street": "river",
+      "translated_actions": 10,
+      "ratio_abstract": 10.0,
+      "ratio_real": 25.0,
+      "drift": 2.5
+    },
+    {
+      "street": "preflop",
+      "translated_actions": 0,
+      "ratio_abstract": 200.0,
+      "ratio_real": 200.0,
+      "drift": 1.0
+    },
+    {
+      "street": "preflop",
+      "translated_actions": 2,
+      "ratio_abstract": 40.0,
+      "ratio_real": 40.0,
+      "drift": 1.0
+    },
+    {
+      "street": "turn",
+      "translated_actions": 8,
+      "ratio_abstract": 3.2,
+      "ratio_real": 5.8824,
+      "drift": 1.8382
+    },
+    {
+      "street": "river",
+      "translated_actions": 10,
+      "ratio_abstract": 1.6,
+      "ratio_real": 5.5556,
+      "drift": 3.4722
+    },
+    {
+      "street": "preflop",
+      "translated_actions": 1,
+      "ratio_abstract": 100.0,
+      "ratio_real": 100.0,
+      "drift": 1.0
+    },
+    {
+      "street": "flop",
+      "translated_actions": 4,
+      "ratio_abstract": 40.0,
+      "ratio_real": 50.0,
+      "drift": 1.25
+    },
+    {
+      "street": "turn",
+      "translated_actions": 7,
+      "ratio_abstract": 20.0,
+      "ratio_real": 33.3333,
+      "drift": 1.6667
+    },
+    {
+      "street": "preflop",
+      "translated_actions": 0,
+      "ratio_abstract": 200.0,
+      "ratio_real": 200.0,
+      "drift": 1.0
+    },
+    {
+      "street": "preflop",
+      "translated_actions": 2,
+      "ratio_abstract": 40.0,
+      "ratio_real": 40.0,
+      "drift": 1.0
+    },
+    {
+      "street": "preflop",
+      "translated_actions": 1,
+      "ratio_abstract": 100.0,
+      "ratio_real": 100.0,
+      "drift": 1.0
+    },
+    {
+      "street": "preflop",
+      "translated_actions": 0,
+      "ratio_abstract": 200.0,
+      "ratio_real": 200.0,
+      "drift": 1.0
+    },
+    {
+      "street": "preflop",
+      "translated_actions": 2,
+      "ratio_abstract": 40.0,
+      "ratio_real": 40.0,
+      "drift": 1.0
+    },
+    {
+      "street": "flop",
+      "translated_actions": 4,
+      "ratio_abstract": 16.0,
+      "ratio_real": 25.0,
+      "drift": 1.5625
+    },
+    {
+      "street": "turn",
+      "translated_actions": 6,
+      "ratio_abstract": 8.0,
+      "ratio_real": 20.0,
+      "drift": 2.5
+    },
+    {
+      "street": "preflop",
+      "translated_actions": 1,
+      "ratio_abstract": 100.0,
+      "ratio_real": 100.0,
+      "drift": 1.0
+    },
+    {
+      "street": "preflop",
+      "translated_actions": 0,
+      "ratio_abstract": 200.0,
+      "ratio_real": 200.0,
+      "drift": 1.0
+    },
+    {
+      "street": "preflop",
+      "translated_actions": 2,
+      "ratio_abstract": 40.0,
+      "ratio_real": 40.0,
+      "drift": 1.0
+    },
+    {
+      "street": "flop",
+      "translated_actions": 4,
+      "ratio_abstract": 16.0,
+      "ratio_real": 25.0,
+      "drift": 1.5625
+    },
+    {
+      "street": "turn",
+      "translated_actions": 6,
+      "ratio_abstract": 8.0,
+      "ratio_real": 20.0,
+      "drift": 2.5
+    },
+    {
+      "street": "preflop",
+      "translated_actions": 1,
+      "ratio_abstract": 100.0,
+      "ratio_real": 100.0,
+      "drift": 1.0
+    },
+    {
+      "street": "flop",
+      "translated_actions": 4,
+      "ratio_abstract": 40.0,
+      "ratio_real": 50.0,
+      "drift": 1.25
+    },
+    {
+      "street": "turn",
+      "translated_actions": 7,
+      "ratio_abstract": 20.0,
+      "ratio_real": 33.3333,
+      "drift": 1.6667
+    },
+    {
+      "street": "river",
+      "translated_actions": 8,
+      "ratio_abstract": 10.0,
+      "ratio_real": 25.0,
+      "drift": 2.5
+    },
+    {
+      "street": "river",
+      "translated_actions": 10,
+      "ratio_abstract": 10.0,
+      "ratio_real": 25.0,
+      "drift": 2.5
+    },
+    {
+      "street": "river",
+      "translated_actions": 12,
+      "ratio_abstract": 1.6667,
+      "ratio_real": 6.6667,
+      "drift": 4.0
+    },
+    {
+      "street": "preflop",
+      "translated_actions": 0,
+      "ratio_abstract": 200.0,
+      "ratio_real": 200.0,
+      "drift": 1.0
+    },
+    {
+      "street": "preflop",
+      "translated_actions": 2,
+      "ratio_abstract": 40.0,
+      "ratio_real": 40.0,
+      "drift": 1.0
+    },
+    {
+      "street": "flop",
+      "translated_actions": 4,
+      "ratio_abstract": 16.0,
+      "ratio_real": 25.0,
+      "drift": 1.5625
+    },
+    {
+      "street": "turn",
+      "translated_actions": 6,
+      "ratio_abstract": 8.0,
+      "ratio_real": 20.0,
+      "drift": 2.5
+    },
+    {
+      "street": "river",
+      "translated_actions": 8,
+      "ratio_abstract": 4.0,
+      "ratio_real": 16.6667,
+      "drift": 4.1667
+    },
+    {
+      "street": "preflop",
+      "translated_actions": 1,
+      "ratio_abstract": 100.0,
+      "ratio_real": 100.0,
+      "drift": 1.0
+    },
+    {
+      "street": "flop",
+      "translated_actions": 4,
+      "ratio_abstract": 40.0,
+      "ratio_real": 50.0,
+      "drift": 1.25
+    },
+    {
+      "street": "preflop",
+      "translated_actions": 0,
+      "ratio_abstract": 200.0,
+      "ratio_real": 200.0,
+      "drift": 1.0
+    },
+    {
+      "street": "preflop",
+      "translated_actions": 2,
+      "ratio_abstract": 40.0,
+      "ratio_real": 40.0,
+      "drift": 1.0
+    },
+    {
+      "street": "turn",
+      "translated_actions": 8,
+      "ratio_abstract": 3.2,
+      "ratio_real": 5.8824,
+      "drift": 1.8382
+    },
+    {
+      "street": "river",
+      "translated_actions": 10,
+      "ratio_abstract": 1.6,
+      "ratio_real": 5.5556,
+      "drift": 3.4722
+    },
+    {
+      "street": "preflop",
+      "translated_actions": 1,
+      "ratio_abstract": 100.0,
+      "ratio_real": 100.0,
+      "drift": 1.0
+    },
+    {
+      "street": "preflop",
+      "translated_actions": 3,
+      "ratio_abstract": 16.0,
+      "ratio_real": 20.0,
+      "drift": 1.25
+    },
+    {
+      "street": "preflop",
+      "translated_actions": 0,
+      "ratio_abstract": 200.0,
+      "ratio_real": 200.0,
+      "drift": 1.0
+    },
+    {
+      "street": "preflop",
+      "translated_actions": 1,
+      "ratio_abstract": 100.0,
+      "ratio_real": 100.0,
+      "drift": 1.0
+    },
+    {
+      "street": "preflop",
+      "translated_actions": 3,
+      "ratio_abstract": 10.0,
+      "ratio_real": 12.5,
+      "drift": 1.25
+    },
+    {
+      "street": "preflop",
+      "translated_actions": 0,
+      "ratio_abstract": 200.0,
+      "ratio_real": 200.0,
+      "drift": 1.0
+    },
+    {
+      "street": "preflop",
+      "translated_actions": 2,
+      "ratio_abstract": 40.0,
+      "ratio_real": 40.0,
+      "drift": 1.0
+    },
+    {
+      "street": "preflop",
+      "translated_actions": 1,
+      "ratio_abstract": 100.0,
+      "ratio_real": 100.0,
+      "drift": 1.0
+    },
+    {
+      "street": "flop",
+      "translated_actions": 4,
+      "ratio_abstract": 40.0,
+      "ratio_real": 50.0,
+      "drift": 1.25
+    },
+    {
+      "street": "turn",
+      "translated_actions": 7,
+      "ratio_abstract": 20.0,
+      "ratio_real": 33.3333,
+      "drift": 1.6667
+    },
+    {
+      "street": "river",
+      "translated_actions": 8,
+      "ratio_abstract": 10.0,
+      "ratio_real": 25.0,
+      "drift": 2.5
+    },
+    {
+      "street": "river",
+      "translated_actions": 10,
+      "ratio_abstract": 10.0,
+      "ratio_real": 25.0,
+      "drift": 2.5
+    },
+    {
+      "street": "preflop",
+      "translated_actions": 0,
+      "ratio_abstract": 200.0,
+      "ratio_real": 200.0,
+      "drift": 1.0
+    },
+    {
+      "street": "preflop",
+      "translated_actions": 2,
+      "ratio_abstract": 100.0,
+      "ratio_real": 100.0,
+      "drift": 1.0
+    },
+    {
+      "street": "preflop",
+      "translated_actions": 1,
+      "ratio_abstract": 100.0,
+      "ratio_real": 100.0,
+      "drift": 1.0
+    },
+    {
+      "street": "flop",
+      "translated_actions": 4,
+      "ratio_abstract": 40.0,
+      "ratio_real": 50.0,
+      "drift": 1.25
+    },
+    {
+      "street": "turn",
+      "translated_actions": 7,
+      "ratio_abstract": 20.0,
+      "ratio_real": 33.3333,
+      "drift": 1.6667
+    },
+    {
+      "street": "turn",
+      "translated_actions": 9,
+      "ratio_abstract": 5.0,
+      "ratio_real": 12.5,
+      "drift": 2.5
+    },
+    {
+      "street": "river",
+      "translated_actions": 10,
+      "ratio_abstract": 2.5,
+      "ratio_real": 8.3333,
+      "drift": 3.3333
+    },
+    {
+      "street": "river",
+      "translated_actions": 12,
+      "ratio_abstract": 2.5,
+      "ratio_real": 8.3333,
+      "drift": 3.3333
+    },
+    {
+      "street": "preflop",
+      "translated_actions": 0,
+      "ratio_abstract": 200.0,
+      "ratio_real": 200.0,
+      "drift": 1.0
+    },
+    {
+      "street": "preflop",
+      "translated_actions": 2,
+      "ratio_abstract": 40.0,
+      "ratio_real": 40.0,
+      "drift": 1.0
+    },
+    {
+      "street": "flop",
+      "translated_actions": 4,
+      "ratio_abstract": 16.0,
+      "ratio_real": 25.0,
+      "drift": 1.5625
+    },
+    {
+      "street": "flop",
+      "translated_actions": 6,
+      "ratio_abstract": 4.0,
+      "ratio_real": 10.0,
+      "drift": 2.5
+    },
+    {
+      "street": "turn",
+      "translated_actions": 8,
+      "ratio_abstract": 2.0,
+      "ratio_real": 6.6667,
+      "drift": 3.3333
+    },
+    {
+      "street": "preflop",
+      "translated_actions": 1,
+      "ratio_abstract": 100.0,
+      "ratio_real": 100.0,
+      "drift": 1.0
+    },
+    {
+      "street": "preflop",
+      "translated_actions": 0,
+      "ratio_abstract": 200.0,
+      "ratio_real": 200.0,
+      "drift": 1.0
+    },
+    {
+      "street": "preflop",
+      "translated_actions": 2,
+      "ratio_abstract": 40.0,
+      "ratio_real": 40.0,
+      "drift": 1.0
+    },
+    {
+      "street": "flop",
+      "translated_actions": 4,
+      "ratio_abstract": 16.0,
+      "ratio_real": 25.0,
+      "drift": 1.5625
+    },
+    {
+      "street": "turn",
+      "translated_actions": 6,
+      "ratio_abstract": 8.0,
+      "ratio_real": 20.0,
+      "drift": 2.5
+    },
+    {
+      "street": "river",
+      "translated_actions": 8,
+      "ratio_abstract": 4.0,
+      "ratio_real": 16.6667,
+      "drift": 4.1667
+    },
+    {
+      "street": "preflop",
+      "translated_actions": 1,
+      "ratio_abstract": 100.0,
+      "ratio_real": 100.0,
+      "drift": 1.0
+    },
+    {
+      "street": "flop",
+      "translated_actions": 4,
+      "ratio_abstract": 40.0,
+      "ratio_real": 50.0,
+      "drift": 1.25
+    },
+    {
+      "street": "flop",
+      "translated_actions": 6,
+      "ratio_abstract": 10.0,
+      "ratio_real": 16.6667,
+      "drift": 1.6667
+    },
+    {
+      "street": "turn",
+      "translated_actions": 9,
+      "ratio_abstract": 5.0,
+      "ratio_real": 11.1111,
+      "drift": 2.2222
+    },
+    {
+      "street": "preflop",
+      "translated_actions": 0,
+      "ratio_abstract": 200.0,
+      "ratio_real": 200.0,
+      "drift": 1.0
+    },
+    {
+      "street": "preflop",
+      "translated_actions": 2,
+      "ratio_abstract": 40.0,
+      "ratio_real": 40.0,
+      "drift": 1.0
+    },
+    {
+      "street": "preflop",
+      "translated_actions": 1,
+      "ratio_abstract": 100.0,
+      "ratio_real": 100.0,
+      "drift": 1.0
+    },
+    {
+      "street": "flop",
+      "translated_actions": 4,
+      "ratio_abstract": 40.0,
+      "ratio_real": 50.0,
+      "drift": 1.25
+    },
+    {
+      "street": "preflop",
+      "translated_actions": 0,
+      "ratio_abstract": 200.0,
+      "ratio_real": 200.0,
+      "drift": 1.0
+    },
+    {
+      "street": "preflop",
+      "translated_actions": 1,
+      "ratio_abstract": 100.0,
+      "ratio_real": 100.0,
+      "drift": 1.0
+    },
+    {
+      "street": "preflop",
+      "translated_actions": 0,
+      "ratio_abstract": 200.0,
+      "ratio_real": 200.0,
+      "drift": 1.0
+    },
+    {
+      "street": "preflop",
+      "translated_actions": 2,
+      "ratio_abstract": 40.0,
+      "ratio_real": 40.0,
+      "drift": 1.0
+    },
+    {
+      "street": "flop",
+      "translated_actions": 4,
+      "ratio_abstract": 16.0,
+      "ratio_real": 25.0,
+      "drift": 1.5625
+    },
+    {
+      "street": "turn",
+      "translated_actions": 6,
+      "ratio_abstract": 8.0,
+      "ratio_real": 20.0,
+      "drift": 2.5
+    },
+    {
+      "street": "river",
+      "translated_actions": 8,
+      "ratio_abstract": 4.0,
+      "ratio_real": 16.6667,
+      "drift": 4.1667
+    },
+    {
+      "street": "preflop",
+      "translated_actions": 1,
+      "ratio_abstract": 100.0,
+      "ratio_real": 100.0,
+      "drift": 1.0
+    },
+    {
+      "street": "flop",
+      "translated_actions": 4,
+      "ratio_abstract": 40.0,
+      "ratio_real": 50.0,
+      "drift": 1.25
+    },
+    {
+      "street": "preflop",
+      "translated_actions": 0,
+      "ratio_abstract": 200.0,
+      "ratio_real": 200.0,
+      "drift": 1.0
+    },
+    {
+      "street": "preflop",
+      "translated_actions": 2,
+      "ratio_abstract": 40.0,
+      "ratio_real": 40.0,
+      "drift": 1.0
+    },
+    {
+      "street": "preflop",
+      "translated_actions": 1,
+      "ratio_abstract": 100.0,
+      "ratio_real": 100.0,
+      "drift": 1.0
+    },
+    {
+      "street": "flop",
+      "translated_actions": 4,
+      "ratio_abstract": 40.0,
+      "ratio_real": 50.0,
+      "drift": 1.25
+    },
+    {
+      "street": "flop",
+      "translated_actions": 6,
+      "ratio_abstract": 10.0,
+      "ratio_real": 16.6667,
+      "drift": 1.6667
+    },
+    {
+      "street": "preflop",
+      "translated_actions": 0,
+      "ratio_abstract": 200.0,
+      "ratio_real": 200.0,
+      "drift": 1.0
+    },
+    {
+      "street": "preflop",
+      "translated_actions": 2,
+      "ratio_abstract": 40.0,
+      "ratio_real": 40.0,
+      "drift": 1.0
+    },
+    {
+      "street": "preflop",
+      "translated_actions": 1,
+      "ratio_abstract": 100.0,
+      "ratio_real": 100.0,
+      "drift": 1.0
+    },
+    {
+      "street": "flop",
+      "translated_actions": 4,
+      "ratio_abstract": 40.0,
+      "ratio_real": 50.0,
+      "drift": 1.25
+    },
+    {
+      "street": "preflop",
+      "translated_actions": 0,
+      "ratio_abstract": 200.0,
+      "ratio_real": 200.0,
+      "drift": 1.0
+    },
+    {
+      "street": "preflop",
+      "translated_actions": 2,
+      "ratio_abstract": 40.0,
+      "ratio_real": 40.0,
+      "drift": 1.0
+    },
+    {
+      "street": "preflop",
+      "translated_actions": 1,
+      "ratio_abstract": 100.0,
+      "ratio_real": 100.0,
+      "drift": 1.0
+    },
+    {
+      "street": "preflop",
+      "translated_actions": 3,
+      "ratio_abstract": 16.0,
+      "ratio_real": 20.0,
+      "drift": 1.25
+    },
+    {
+      "street": "flop",
+      "translated_actions": 6,
+      "ratio_abstract": 6.4,
+      "ratio_real": 12.5,
+      "drift": 1.9531
+    },
+    {
+      "street": "flop",
+      "translated_actions": 8,
+      "ratio_abstract": 1.0667,
+      "ratio_real": 3.7037,
+      "drift": 3.4722
+    },
+    {
+      "street": "preflop",
+      "translated_actions": 0,
+      "ratio_abstract": 200.0,
+      "ratio_real": 200.0,
+      "drift": 1.0
+    },
+    {
+      "street": "preflop",
+      "translated_actions": 2,
+      "ratio_abstract": 40.0,
+      "ratio_real": 40.0,
+      "drift": 1.0
+    },
+    {
+      "street": "preflop",
+      "translated_actions": 1,
+      "ratio_abstract": 100.0,
+      "ratio_real": 100.0,
+      "drift": 1.0
+    },
+    {
+      "street": "preflop",
+      "translated_actions": 0,
+      "ratio_abstract": 200.0,
+      "ratio_real": 200.0,
+      "drift": 1.0
+    },
+    {
+      "street": "preflop",
+      "translated_actions": 2,
+      "ratio_abstract": 100.0,
+      "ratio_real": 100.0,
+      "drift": 1.0
+    },
+    {
+      "street": "flop",
+      "translated_actions": 4,
+      "ratio_abstract": 40.0,
+      "ratio_real": 50.0,
+      "drift": 1.25
+    },
+    {
+      "street": "preflop",
+      "translated_actions": 1,
+      "ratio_abstract": 100.0,
+      "ratio_real": 100.0,
+      "drift": 1.0
+    },
+    {
+      "street": "flop",
+      "translated_actions": 4,
+      "ratio_abstract": 40.0,
+      "ratio_real": 50.0,
+      "drift": 1.25
+    },
+    {
+      "street": "preflop",
+      "translated_actions": 0,
+      "ratio_abstract": 200.0,
+      "ratio_real": 200.0,
+      "drift": 1.0
+    },
+    {
+      "street": "preflop",
+      "translated_actions": 2,
+      "ratio_abstract": 100.0,
+      "ratio_real": 100.0,
+      "drift": 1.0
+    },
+    {
+      "street": "flop",
+      "translated_actions": 4,
+      "ratio_abstract": 40.0,
+      "ratio_real": 50.0,
+      "drift": 1.25
+    },
+    {
+      "street": "turn",
+      "translated_actions": 6,
+      "ratio_abstract": 20.0,
+      "ratio_real": 33.3333,
+      "drift": 1.6667
+    },
+    {
+      "street": "river",
+      "translated_actions": 8,
+      "ratio_abstract": 10.0,
+      "ratio_real": 25.0,
+      "drift": 2.5
+    },
+    {
+      "street": "preflop",
+      "translated_actions": 1,
+      "ratio_abstract": 100.0,
+      "ratio_real": 100.0,
+      "drift": 1.0
+    },
+    {
+      "street": "flop",
+      "translated_actions": 4,
+      "ratio_abstract": 40.0,
+      "ratio_real": 50.0,
+      "drift": 1.25
+    },
+    {
+      "street": "preflop",
+      "translated_actions": 0,
+      "ratio_abstract": 200.0,
+      "ratio_real": 200.0,
+      "drift": 1.0
+    },
+    {
+      "street": "preflop",
+      "translated_actions": 2,
+      "ratio_abstract": 40.0,
+      "ratio_real": 40.0,
+      "drift": 1.0
+    },
+    {
+      "street": "turn",
+      "translated_actions": 8,
+      "ratio_abstract": 3.2,
+      "ratio_real": 5.8824,
+      "drift": 1.8382
+    },
+    {
+      "street": "river",
+      "translated_actions": 10,
+      "ratio_abstract": 1.6,
+      "ratio_real": 5.5556,
+      "drift": 3.4722
+    },
+    {
+      "street": "preflop",
+      "translated_actions": 1,
+      "ratio_abstract": 100.0,
+      "ratio_real": 100.0,
+      "drift": 1.0
+    },
+    {
+      "street": "preflop",
+      "translated_actions": 3,
+      "ratio_abstract": 16.0,
+      "ratio_real": 20.0,
+      "drift": 1.25
+    },
+    {
+      "street": "preflop",
+      "translated_actions": 0,
+      "ratio_abstract": 200.0,
+      "ratio_real": 200.0,
+      "drift": 1.0
+    },
+    {
+      "street": "preflop",
+      "translated_actions": 2,
+      "ratio_abstract": 40.0,
+      "ratio_real": 40.0,
+      "drift": 1.0
+    },
+    {
+      "street": "turn",
+      "translated_actions": 8,
+      "ratio_abstract": 3.2,
+      "ratio_real": 5.8824,
+      "drift": 1.8382
+    },
+    {
+      "street": "river",
+      "translated_actions": 10,
+      "ratio_abstract": 1.6,
+      "ratio_real": 5.5556,
+      "drift": 3.4722
+    },
+    {
+      "street": "preflop",
+      "translated_actions": 1,
+      "ratio_abstract": 100.0,
+      "ratio_real": 100.0,
+      "drift": 1.0
+    },
+    {
+      "street": "preflop",
+      "translated_actions": 0,
+      "ratio_abstract": 200.0,
+      "ratio_real": 200.0,
+      "drift": 1.0
+    },
+    {
+      "street": "preflop",
+      "translated_actions": 2,
+      "ratio_abstract": 40.0,
+      "ratio_real": 40.0,
+      "drift": 1.0
+    },
+    {
+      "street": "flop",
+      "translated_actions": 4,
+      "ratio_abstract": 16.0,
+      "ratio_real": 25.0,
+      "drift": 1.5625
+    },
+    {
+      "street": "turn",
+      "translated_actions": 6,
+      "ratio_abstract": 8.0,
+      "ratio_real": 20.0,
+      "drift": 2.5
+    },
+    {
+      "street": "river",
+      "translated_actions": 8,
+      "ratio_abstract": 4.0,
+      "ratio_real": 16.6667,
+      "drift": 4.1667
+    },
+    {
+      "street": "preflop",
+      "translated_actions": 1,
+      "ratio_abstract": 100.0,
+      "ratio_real": 100.0,
+      "drift": 1.0
+    },
+    {
+      "street": "flop",
+      "translated_actions": 4,
+      "ratio_abstract": 40.0,
+      "ratio_real": 50.0,
+      "drift": 1.25
+    },
+    {
+      "street": "preflop",
+      "translated_actions": 0,
+      "ratio_abstract": 200.0,
+      "ratio_real": 200.0,
+      "drift": 1.0
+    },
+    {
+      "street": "preflop",
+      "translated_actions": 2,
+      "ratio_abstract": 40.0,
+      "ratio_real": 40.0,
+      "drift": 1.0
+    },
+    {
+      "street": "preflop",
+      "translated_actions": 1,
+      "ratio_abstract": 100.0,
+      "ratio_real": 100.0,
+      "drift": 1.0
+    },
+    {
+      "street": "flop",
+      "translated_actions": 4,
+      "ratio_abstract": 40.0,
+      "ratio_real": 50.0,
+      "drift": 1.25
+    },
+    {
+      "street": "preflop",
+      "translated_actions": 0,
+      "ratio_abstract": 200.0,
+      "ratio_real": 200.0,
+      "drift": 1.0
+    },
+    {
+      "street": "preflop",
+      "translated_actions": 1,
+      "ratio_abstract": 100.0,
+      "ratio_real": 100.0,
+      "drift": 1.0
+    },
+    {
+      "street": "flop",
+      "translated_actions": 4,
+      "ratio_abstract": 40.0,
+      "ratio_real": 50.0,
+      "drift": 1.25
+    },
+    {
+      "street": "turn",
+      "translated_actions": 7,
+      "ratio_abstract": 20.0,
+      "ratio_real": 33.3333,
+      "drift": 1.6667
+    },
+    {
+      "street": "river",
+      "translated_actions": 8,
+      "ratio_abstract": 10.0,
+      "ratio_real": 25.0,
+      "drift": 2.5
+    },
+    {
+      "street": "river",
+      "translated_actions": 10,
+      "ratio_abstract": 10.0,
+      "ratio_real": 25.0,
+      "drift": 2.5
+    },
+    {
+      "street": "river",
+      "translated_actions": 12,
+      "ratio_abstract": 2.5,
+      "ratio_real": 10.0,
+      "drift": 4.0
+    },
+    {
+      "street": "preflop",
+      "translated_actions": 0,
+      "ratio_abstract": 200.0,
+      "ratio_real": 200.0,
+      "drift": 1.0
+    },
+    {
+      "street": "preflop",
+      "translated_actions": 2,
+      "ratio_abstract": 40.0,
+      "ratio_real": 40.0,
+      "drift": 1.0
+    },
+    {
+      "street": "preflop",
+      "translated_actions": 1,
+      "ratio_abstract": 100.0,
+      "ratio_real": 100.0,
+      "drift": 1.0
+    },
+    {
+      "street": "flop",
+      "translated_actions": 4,
+      "ratio_abstract": 40.0,
+      "ratio_real": 50.0,
+      "drift": 1.25
+    },
+    {
+      "street": "turn",
+      "translated_actions": 7,
+      "ratio_abstract": 20.0,
+      "ratio_real": 33.3333,
+      "drift": 1.6667
+    },
+    {
+      "street": "river",
+      "translated_actions": 8,
+      "ratio_abstract": 10.0,
+      "ratio_real": 25.0,
+      "drift": 2.5
+    },
+    {
+      "street": "river",
+      "translated_actions": 10,
+      "ratio_abstract": 10.0,
+      "ratio_real": 25.0,
+      "drift": 2.5
+    },
+    {
+      "street": "preflop",
+      "translated_actions": 0,
+      "ratio_abstract": 200.0,
+      "ratio_real": 200.0,
+      "drift": 1.0
+    },
+    {
+      "street": "preflop",
+      "translated_actions": 2,
+      "ratio_abstract": 40.0,
+      "ratio_real": 40.0,
+      "drift": 1.0
+    },
+    {
+      "street": "preflop",
+      "translated_actions": 1,
+      "ratio_abstract": 100.0,
+      "ratio_real": 100.0,
+      "drift": 1.0
+    },
+    {
+      "street": "preflop",
+      "translated_actions": 3,
+      "ratio_abstract": 16.0,
+      "ratio_real": 20.0,
+      "drift": 1.25
+    },
+    {
+      "street": "preflop",
+      "translated_actions": 0,
+      "ratio_abstract": 200.0,
+      "ratio_real": 200.0,
+      "drift": 1.0
+    },
+    {
+      "street": "preflop",
+      "translated_actions": 2,
+      "ratio_abstract": 40.0,
+      "ratio_real": 40.0,
+      "drift": 1.0
+    },
+    {
+      "street": "flop",
+      "translated_actions": 4,
+      "ratio_abstract": 16.0,
+      "ratio_real": 25.0,
+      "drift": 1.5625
+    },
+    {
+      "street": "preflop",
+      "translated_actions": 1,
+      "ratio_abstract": 100.0,
+      "ratio_real": 100.0,
+      "drift": 1.0
+    },
+    {
+      "street": "flop",
+      "translated_actions": 4,
+      "ratio_abstract": 40.0,
+      "ratio_real": 50.0,
+      "drift": 1.25
+    },
+    {
+      "street": "flop",
+      "translated_actions": 6,
+      "ratio_abstract": 10.0,
+      "ratio_real": 16.6667,
+      "drift": 1.6667
+    },
+    {
+      "street": "turn",
+      "translated_actions": 9,
+      "ratio_abstract": 5.0,
+      "ratio_real": 11.1111,
+      "drift": 2.2222
+    },
+    {
+      "street": "preflop",
+      "translated_actions": 0,
+      "ratio_abstract": 200.0,
+      "ratio_real": 200.0,
+      "drift": 1.0
+    },
+    {
+      "street": "preflop",
+      "translated_actions": 2,
+      "ratio_abstract": 40.0,
+      "ratio_real": 40.0,
+      "drift": 1.0
+    },
+    {
+      "street": "flop",
+      "translated_actions": 4,
+      "ratio_abstract": 16.0,
+      "ratio_real": 25.0,
+      "drift": 1.5625
+    },
+    {
+      "street": "preflop",
+      "translated_actions": 1,
+      "ratio_abstract": 100.0,
+      "ratio_real": 100.0,
+      "drift": 1.0
+    },
+    {
+      "street": "preflop",
+      "translated_actions": 3,
+      "ratio_abstract": 16.0,
+      "ratio_real": 20.0,
+      "drift": 1.25
+    },
+    {
+      "street": "preflop",
+      "translated_actions": 0,
+      "ratio_abstract": 200.0,
+      "ratio_real": 200.0,
+      "drift": 1.0
+    },
+    {
+      "street": "preflop",
+      "translated_actions": 2,
+      "ratio_abstract": 40.0,
+      "ratio_real": 40.0,
+      "drift": 1.0
+    },
+    {
+      "street": "preflop",
+      "translated_actions": 1,
+      "ratio_abstract": 100.0,
+      "ratio_real": 100.0,
+      "drift": 1.0
+    },
+    {
+      "street": "preflop",
+      "translated_actions": 0,
+      "ratio_abstract": 200.0,
+      "ratio_real": 200.0,
+      "drift": 1.0
+    },
+    {
+      "street": "preflop",
+      "translated_actions": 2,
+      "ratio_abstract": 40.0,
+      "ratio_real": 40.0,
+      "drift": 1.0
+    },
+    {
+      "street": "flop",
+      "translated_actions": 4,
+      "ratio_abstract": 16.0,
+      "ratio_real": 25.0,
+      "drift": 1.5625
+    },
+    {
+      "street": "turn",
+      "translated_actions": 6,
+      "ratio_abstract": 8.0,
+      "ratio_real": 20.0,
+      "drift": 2.5
+    },
+    {
+      "street": "river",
+      "translated_actions": 8,
+      "ratio_abstract": 4.0,
+      "ratio_real": 16.6667,
+      "drift": 4.1667
+    },
+    {
+      "street": "preflop",
+      "translated_actions": 1,
+      "ratio_abstract": 100.0,
+      "ratio_real": 100.0,
+      "drift": 1.0
+    },
+    {
+      "street": "preflop",
+      "translated_actions": 0,
+      "ratio_abstract": 200.0,
+      "ratio_real": 200.0,
+      "drift": 1.0
+    },
+    {
+      "street": "preflop",
+      "translated_actions": 2,
+      "ratio_abstract": 40.0,
+      "ratio_real": 40.0,
+      "drift": 1.0
+    },
+    {
+      "street": "preflop",
+      "translated_actions": 1,
+      "ratio_abstract": 100.0,
+      "ratio_real": 100.0,
+      "drift": 1.0
+    },
+    {
+      "street": "preflop",
+      "translated_actions": 3,
+      "ratio_abstract": 10.0,
+      "ratio_real": 12.5,
+      "drift": 1.25
+    },
+    {
+      "street": "preflop",
+      "translated_actions": 0,
+      "ratio_abstract": 200.0,
+      "ratio_real": 200.0,
+      "drift": 1.0
+    },
+    {
+      "street": "preflop",
+      "translated_actions": 1,
+      "ratio_abstract": 100.0,
+      "ratio_real": 100.0,
+      "drift": 1.0
+    },
+    {
+      "street": "flop",
+      "translated_actions": 4,
+      "ratio_abstract": 40.0,
+      "ratio_real": 50.0,
+      "drift": 1.25
+    },
+    {
+      "street": "preflop",
+      "translated_actions": 0,
+      "ratio_abstract": 200.0,
+      "ratio_real": 200.0,
+      "drift": 1.0
+    },
+    {
+      "street": "preflop",
+      "translated_actions": 2,
+      "ratio_abstract": 40.0,
+      "ratio_real": 40.0,
+      "drift": 1.0
+    },
+    {
+      "street": "preflop",
+      "translated_actions": 1,
+      "ratio_abstract": 100.0,
+      "ratio_real": 100.0,
+      "drift": 1.0
+    },
+    {
+      "street": "preflop",
+      "translated_actions": 0,
+      "ratio_abstract": 200.0,
+      "ratio_real": 200.0,
+      "drift": 1.0
+    },
+    {
+      "street": "preflop",
+      "translated_actions": 2,
+      "ratio_abstract": 40.0,
+      "ratio_real": 40.0,
+      "drift": 1.0
+    },
+    {
+      "street": "preflop",
+      "translated_actions": 1,
+      "ratio_abstract": 100.0,
+      "ratio_real": 100.0,
+      "drift": 1.0
+    },
+    {
+      "street": "preflop",
+      "translated_actions": 0,
+      "ratio_abstract": 200.0,
+      "ratio_real": 200.0,
+      "drift": 1.0
+    },
+    {
+      "street": "preflop",
+      "translated_actions": 2,
+      "ratio_abstract": 40.0,
+      "ratio_real": 40.0,
+      "drift": 1.0
+    },
+    {
+      "street": "preflop",
+      "translated_actions": 1,
+      "ratio_abstract": 100.0,
+      "ratio_real": 100.0,
+      "drift": 1.0
+    },
+    {
+      "street": "preflop",
+      "translated_actions": 0,
+      "ratio_abstract": 200.0,
+      "ratio_real": 200.0,
+      "drift": 1.0
+    },
+    {
+      "street": "preflop",
+      "translated_actions": 2,
+      "ratio_abstract": 40.0,
+      "ratio_real": 40.0,
+      "drift": 1.0
+    },
+    {
+      "street": "flop",
+      "translated_actions": 4,
+      "ratio_abstract": 16.0,
+      "ratio_real": 25.0,
+      "drift": 1.5625
+    },
+    {
+      "street": "turn",
+      "translated_actions": 6,
+      "ratio_abstract": 8.0,
+      "ratio_real": 20.0,
+      "drift": 2.5
+    },
+    {
+      "street": "preflop",
+      "translated_actions": 1,
+      "ratio_abstract": 100.0,
+      "ratio_real": 100.0,
+      "drift": 1.0
+    },
+    {
+      "street": "preflop",
+      "translated_actions": 3,
+      "ratio_abstract": 16.0,
+      "ratio_real": 20.0,
+      "drift": 1.25
+    },
+    {
+      "street": "preflop",
+      "translated_actions": 0,
+      "ratio_abstract": 200.0,
+      "ratio_real": 200.0,
+      "drift": 1.0
+    },
+    {
+      "street": "preflop",
+      "translated_actions": 2,
+      "ratio_abstract": 40.0,
+      "ratio_real": 40.0,
+      "drift": 1.0
+    },
+    {
+      "street": "preflop",
+      "translated_actions": 1,
+      "ratio_abstract": 100.0,
+      "ratio_real": 100.0,
+      "drift": 1.0
+    },
+    {
+      "street": "flop",
+      "translated_actions": 4,
+      "ratio_abstract": 40.0,
+      "ratio_real": 50.0,
+      "drift": 1.25
+    },
+    {
+      "street": "turn",
+      "translated_actions": 7,
+      "ratio_abstract": 20.0,
+      "ratio_real": 33.3333,
+      "drift": 1.6667
+    },
+    {
+      "street": "river",
+      "translated_actions": 8,
+      "ratio_abstract": 10.0,
+      "ratio_real": 25.0,
+      "drift": 2.5
+    },
+    {
+      "street": "river",
+      "translated_actions": 10,
+      "ratio_abstract": 10.0,
+      "ratio_real": 25.0,
+      "drift": 2.5
+    },
+    {
+      "street": "preflop",
+      "translated_actions": 0,
+      "ratio_abstract": 200.0,
+      "ratio_real": 200.0,
+      "drift": 1.0
+    },
+    {
+      "street": "preflop",
+      "translated_actions": 2,
+      "ratio_abstract": 40.0,
+      "ratio_real": 40.0,
+      "drift": 1.0
+    },
+    {
+      "street": "flop",
+      "translated_actions": 4,
+      "ratio_abstract": 16.0,
+      "ratio_real": 25.0,
+      "drift": 1.5625
+    },
+    {
+      "street": "turn",
+      "translated_actions": 6,
+      "ratio_abstract": 8.0,
+      "ratio_real": 20.0,
+      "drift": 2.5
+    },
+    {
+      "street": "river",
+      "translated_actions": 8,
+      "ratio_abstract": 4.0,
+      "ratio_real": 16.6667,
+      "drift": 4.1667
+    },
+    {
+      "street": "preflop",
+      "translated_actions": 1,
+      "ratio_abstract": 100.0,
+      "ratio_real": 100.0,
+      "drift": 1.0
+    },
+    {
+      "street": "flop",
+      "translated_actions": 4,
+      "ratio_abstract": 40.0,
+      "ratio_real": 50.0,
+      "drift": 1.25
+    },
+    {
+      "street": "turn",
+      "translated_actions": 7,
+      "ratio_abstract": 20.0,
+      "ratio_real": 33.3333,
+      "drift": 1.6667
+    },
+    {
+      "street": "turn",
+      "translated_actions": 9,
+      "ratio_abstract": 3.3333,
+      "ratio_real": 8.3333,
+      "drift": 2.5
+    },
+    {
+      "street": "preflop",
+      "translated_actions": 0,
+      "ratio_abstract": 200.0,
+      "ratio_real": 200.0,
+      "drift": 1.0
+    },
+    {
+      "street": "preflop",
+      "translated_actions": 2,
+      "ratio_abstract": 40.0,
+      "ratio_real": 40.0,
+      "drift": 1.0
+    },
+    {
+      "street": "flop",
+      "translated_actions": 4,
+      "ratio_abstract": 16.0,
+      "ratio_real": 25.0,
+      "drift": 1.5625
+    },
+    {
+      "street": "turn",
+      "translated_actions": 6,
+      "ratio_abstract": 8.0,
+      "ratio_real": 20.0,
+      "drift": 2.5
+    },
+    {
+      "street": "river",
+      "translated_actions": 8,
+      "ratio_abstract": 4.0,
+      "ratio_real": 16.6667,
+      "drift": 4.1667
+    },
+    {
+      "street": "preflop",
+      "translated_actions": 1,
+      "ratio_abstract": 100.0,
+      "ratio_real": 100.0,
+      "drift": 1.0
+    },
+    {
+      "street": "flop",
+      "translated_actions": 4,
+      "ratio_abstract": 40.0,
+      "ratio_real": 50.0,
+      "drift": 1.25
+    },
+    {
+      "street": "turn",
+      "translated_actions": 7,
+      "ratio_abstract": 20.0,
+      "ratio_real": 33.3333,
+      "drift": 1.6667
+    },
+    {
+      "street": "preflop",
+      "translated_actions": 0,
+      "ratio_abstract": 200.0,
+      "ratio_real": 200.0,
+      "drift": 1.0
+    },
+    {
+      "street": "preflop",
+      "translated_actions": 2,
+      "ratio_abstract": 40.0,
+      "ratio_real": 40.0,
+      "drift": 1.0
+    },
+    {
+      "street": "preflop",
+      "translated_actions": 1,
+      "ratio_abstract": 100.0,
+      "ratio_real": 100.0,
+      "drift": 1.0
+    },
+    {
+      "street": "flop",
+      "translated_actions": 4,
+      "ratio_abstract": 40.0,
+      "ratio_real": 50.0,
+      "drift": 1.25
+    },
+    {
+      "street": "preflop",
+      "translated_actions": 0,
+      "ratio_abstract": 200.0,
+      "ratio_real": 200.0,
+      "drift": 1.0
+    },
+    {
+      "street": "preflop",
+      "translated_actions": 2,
+      "ratio_abstract": 40.0,
+      "ratio_real": 40.0,
+      "drift": 1.0
+    },
+    {
+      "street": "preflop",
+      "translated_actions": 1,
+      "ratio_abstract": 100.0,
+      "ratio_real": 100.0,
+      "drift": 1.0
+    },
+    {
+      "street": "preflop",
+      "translated_actions": 0,
+      "ratio_abstract": 200.0,
+      "ratio_real": 200.0,
+      "drift": 1.0
+    },
+    {
+      "street": "preflop",
+      "translated_actions": 2,
+      "ratio_abstract": 40.0,
+      "ratio_real": 40.0,
+      "drift": 1.0
+    },
+    {
+      "street": "preflop",
+      "translated_actions": 1,
+      "ratio_abstract": 100.0,
+      "ratio_real": 100.0,
+      "drift": 1.0
+    },
+    {
+      "street": "preflop",
+      "translated_actions": 0,
+      "ratio_abstract": 200.0,
+      "ratio_real": 200.0,
+      "drift": 1.0
+    },
+    {
+      "street": "preflop",
+      "translated_actions": 2,
+      "ratio_abstract": 40.0,
+      "ratio_real": 40.0,
+      "drift": 1.0
+    },
+    {
+      "street": "flop",
+      "translated_actions": 4,
+      "ratio_abstract": 16.0,
+      "ratio_real": 25.0,
+      "drift": 1.5625
+    },
+    {
+      "street": "turn",
+      "translated_actions": 6,
+      "ratio_abstract": 8.0,
+      "ratio_real": 20.0,
+      "drift": 2.5
+    },
+    {
+      "street": "river",
+      "translated_actions": 8,
+      "ratio_abstract": 4.0,
+      "ratio_real": 16.6667,
+      "drift": 4.1667
+    },
+    {
+      "street": "preflop",
+      "translated_actions": 1,
+      "ratio_abstract": 100.0,
+      "ratio_real": 100.0,
+      "drift": 1.0
+    },
+    {
+      "street": "preflop",
+      "translated_actions": 0,
+      "ratio_abstract": 200.0,
+      "ratio_real": 200.0,
+      "drift": 1.0
+    },
+    {
+      "street": "preflop",
+      "translated_actions": 2,
+      "ratio_abstract": 40.0,
+      "ratio_real": 40.0,
+      "drift": 1.0
+    },
+    {
+      "street": "preflop",
+      "translated_actions": 1,
+      "ratio_abstract": 100.0,
+      "ratio_real": 100.0,
+      "drift": 1.0
+    },
+    {
+      "street": "preflop",
+      "translated_actions": 3,
+      "ratio_abstract": 16.0,
+      "ratio_real": 20.0,
+      "drift": 1.25
+    },
+    {
+      "street": "flop",
+      "translated_actions": 6,
+      "ratio_abstract": 6.4,
+      "ratio_real": 12.5,
+      "drift": 1.9531
+    },
+    {
+      "street": "turn",
+      "translated_actions": 9,
+      "ratio_abstract": 3.2,
+      "ratio_real": 11.1111,
+      "drift": 3.4722
+    },
+    {
+      "street": "preflop",
+      "translated_actions": 0,
+      "ratio_abstract": 200.0,
+      "ratio_real": 200.0,
+      "drift": 1.0
+    },
+    {
+      "street": "preflop",
+      "translated_actions": 2,
+      "ratio_abstract": 40.0,
+      "ratio_real": 40.0,
+      "drift": 1.0
+    },
+    {
+      "street": "preflop",
+      "translated_actions": 1,
+      "ratio_abstract": 100.0,
+      "ratio_real": 100.0,
+      "drift": 1.0
+    },
+    {
+      "street": "preflop",
+      "translated_actions": 0,
+      "ratio_abstract": 200.0,
+      "ratio_real": 200.0,
+      "drift": 1.0
+    },
+    {
+      "street": "preflop",
+      "translated_actions": 2,
+      "ratio_abstract": 40.0,
+      "ratio_real": 40.0,
+      "drift": 1.0
+    },
+    {
+      "street": "flop",
+      "translated_actions": 4,
+      "ratio_abstract": 16.0,
+      "ratio_real": 25.0,
+      "drift": 1.5625
+    },
+    {
+      "street": "turn",
+      "translated_actions": 6,
+      "ratio_abstract": 8.0,
+      "ratio_real": 20.0,
+      "drift": 2.5
+    },
+    {
+      "street": "preflop",
+      "translated_actions": 1,
+      "ratio_abstract": 100.0,
+      "ratio_real": 100.0,
+      "drift": 1.0
+    },
+    {
+      "street": "preflop",
+      "translated_actions": 0,
+      "ratio_abstract": 200.0,
+      "ratio_real": 200.0,
+      "drift": 1.0
+    },
+    {
+      "street": "preflop",
+      "translated_actions": 2,
+      "ratio_abstract": 40.0,
+      "ratio_real": 40.0,
+      "drift": 1.0
+    },
+    {
+      "street": "turn",
+      "translated_actions": 8,
+      "ratio_abstract": 3.2,
+      "ratio_real": 5.8824,
+      "drift": 1.8382
+    },
+    {
+      "street": "river",
+      "translated_actions": 10,
+      "ratio_abstract": 1.6,
+      "ratio_real": 5.5556,
+      "drift": 3.4722
+    },
+    {
+      "street": "preflop",
+      "translated_actions": 1,
+      "ratio_abstract": 100.0,
+      "ratio_real": 100.0,
+      "drift": 1.0
+    },
+    {
+      "street": "flop",
+      "translated_actions": 4,
+      "ratio_abstract": 40.0,
+      "ratio_real": 50.0,
+      "drift": 1.25
+    },
+    {
+      "street": "turn",
+      "translated_actions": 7,
+      "ratio_abstract": 20.0,
+      "ratio_real": 33.3333,
+      "drift": 1.6667
+    },
+    {
+      "street": "river",
+      "translated_actions": 8,
+      "ratio_abstract": 10.0,
+      "ratio_real": 25.0,
+      "drift": 2.5
+    },
+    {
+      "street": "river",
+      "translated_actions": 10,
+      "ratio_abstract": 10.0,
+      "ratio_real": 25.0,
+      "drift": 2.5
+    },
+    {
+      "street": "preflop",
+      "translated_actions": 0,
+      "ratio_abstract": 200.0,
+      "ratio_real": 200.0,
+      "drift": 1.0
+    },
+    {
+      "street": "preflop",
+      "translated_actions": 2,
+      "ratio_abstract": 40.0,
+      "ratio_real": 40.0,
+      "drift": 1.0
+    },
+    {
+      "street": "flop",
+      "translated_actions": 4,
+      "ratio_abstract": 16.0,
+      "ratio_real": 25.0,
+      "drift": 1.5625
+    },
+    {
+      "street": "flop",
+      "translated_actions": 6,
+      "ratio_abstract": 4.0,
+      "ratio_real": 10.0,
+      "drift": 2.5
+    },
+    {
+      "street": "preflop",
+      "translated_actions": 1,
+      "ratio_abstract": 100.0,
+      "ratio_real": 100.0,
+      "drift": 1.0
+    },
+    {
+      "street": "flop",
+      "translated_actions": 4,
+      "ratio_abstract": 40.0,
+      "ratio_real": 50.0,
+      "drift": 1.25
+    },
+    {
+      "street": "turn",
+      "translated_actions": 7,
+      "ratio_abstract": 20.0,
+      "ratio_real": 33.3333,
+      "drift": 1.6667
+    },
+    {
+      "street": "preflop",
+      "translated_actions": 0,
+      "ratio_abstract": 200.0,
+      "ratio_real": 200.0,
+      "drift": 1.0
+    },
+    {
+      "street": "preflop",
+      "translated_actions": 2,
+      "ratio_abstract": 40.0,
+      "ratio_real": 40.0,
+      "drift": 1.0
+    },
+    {
+      "street": "flop",
+      "translated_actions": 4,
+      "ratio_abstract": 16.0,
+      "ratio_real": 25.0,
+      "drift": 1.5625
+    },
+    {
+      "street": "turn",
+      "translated_actions": 6,
+      "ratio_abstract": 8.0,
+      "ratio_real": 20.0,
+      "drift": 2.5
+    },
+    {
+      "street": "river",
+      "translated_actions": 8,
+      "ratio_abstract": 4.0,
+      "ratio_real": 16.6667,
+      "drift": 4.1667
+    },
+    {
+      "street": "preflop",
+      "translated_actions": 1,
+      "ratio_abstract": 100.0,
+      "ratio_real": 100.0,
+      "drift": 1.0
+    },
+    {
+      "street": "preflop",
+      "translated_actions": 0,
+      "ratio_abstract": 200.0,
+      "ratio_real": 200.0,
+      "drift": 1.0
+    },
+    {
+      "street": "preflop",
+      "translated_actions": 2,
+      "ratio_abstract": 40.0,
+      "ratio_real": 40.0,
+      "drift": 1.0
+    },
+    {
+      "street": "turn",
+      "translated_actions": 8,
+      "ratio_abstract": 3.2,
+      "ratio_real": 5.8824,
+      "drift": 1.8382
+    },
+    {
+      "street": "river",
+      "translated_actions": 10,
+      "ratio_abstract": 1.6,
+      "ratio_real": 5.5556,
+      "drift": 3.4722
+    },
+    {
+      "street": "preflop",
+      "translated_actions": 1,
+      "ratio_abstract": 100.0,
+      "ratio_real": 100.0,
+      "drift": 1.0
+    },
+    {
+      "street": "flop",
+      "translated_actions": 4,
+      "ratio_abstract": 40.0,
+      "ratio_real": 50.0,
+      "drift": 1.25
+    },
+    {
+      "street": "turn",
+      "translated_actions": 7,
+      "ratio_abstract": 20.0,
+      "ratio_real": 33.3333,
+      "drift": 1.6667
+    },
+    {
+      "street": "preflop",
+      "translated_actions": 0,
+      "ratio_abstract": 200.0,
+      "ratio_real": 200.0,
+      "drift": 1.0
+    },
+    {
+      "street": "preflop",
+      "translated_actions": 2,
+      "ratio_abstract": 40.0,
+      "ratio_real": 40.0,
+      "drift": 1.0
+    },
+    {
+      "street": "flop",
+      "translated_actions": 4,
+      "ratio_abstract": 16.0,
+      "ratio_real": 25.0,
+      "drift": 1.5625
+    },
+    {
+      "street": "preflop",
+      "translated_actions": 1,
+      "ratio_abstract": 100.0,
+      "ratio_real": 100.0,
+      "drift": 1.0
+    },
+    {
+      "street": "flop",
+      "translated_actions": 4,
+      "ratio_abstract": 40.0,
+      "ratio_real": 50.0,
+      "drift": 1.25
+    },
+    {
+      "street": "turn",
+      "translated_actions": 7,
+      "ratio_abstract": 20.0,
+      "ratio_real": 33.3333,
+      "drift": 1.6667
+    },
+    {
+      "street": "preflop",
+      "translated_actions": 0,
+      "ratio_abstract": 200.0,
+      "ratio_real": 200.0,
+      "drift": 1.0
+    },
+    {
+      "street": "preflop",
+      "translated_actions": 2,
+      "ratio_abstract": 40.0,
+      "ratio_real": 40.0,
+      "drift": 1.0
+    },
+    {
+      "street": "preflop",
+      "translated_actions": 1,
+      "ratio_abstract": 100.0,
+      "ratio_real": 100.0,
+      "drift": 1.0
+    },
+    {
+      "street": "preflop",
+      "translated_actions": 3,
+      "ratio_abstract": 10.0,
+      "ratio_real": 12.5,
+      "drift": 1.25
+    },
+    {
+      "street": "preflop",
+      "translated_actions": 0,
+      "ratio_abstract": 200.0,
+      "ratio_real": 200.0,
+      "drift": 1.0
+    },
+    {
+      "street": "preflop",
+      "translated_actions": 2,
+      "ratio_abstract": 40.0,
+      "ratio_real": 40.0,
+      "drift": 1.0
+    },
+    {
+      "street": "preflop",
+      "translated_actions": 1,
+      "ratio_abstract": 100.0,
+      "ratio_real": 100.0,
+      "drift": 1.0
+    },
+    {
+      "street": "flop",
+      "translated_actions": 4,
+      "ratio_abstract": 40.0,
+      "ratio_real": 50.0,
+      "drift": 1.25
+    },
+    {
+      "street": "turn",
+      "translated_actions": 7,
+      "ratio_abstract": 20.0,
+      "ratio_real": 33.3333,
+      "drift": 1.6667
+    },
+    {
+      "street": "river",
+      "translated_actions": 8,
+      "ratio_abstract": 10.0,
+      "ratio_real": 25.0,
+      "drift": 2.5
+    },
+    {
+      "street": "river",
+      "translated_actions": 10,
+      "ratio_abstract": 10.0,
+      "ratio_real": 25.0,
+      "drift": 2.5
+    },
+    {
+      "street": "preflop",
+      "translated_actions": 0,
+      "ratio_abstract": 200.0,
+      "ratio_real": 200.0,
+      "drift": 1.0
+    },
+    {
+      "street": "preflop",
+      "translated_actions": 1,
+      "ratio_abstract": 100.0,
+      "ratio_real": 100.0,
+      "drift": 1.0
+    },
+    {
+      "street": "flop",
+      "translated_actions": 4,
+      "ratio_abstract": 40.0,
+      "ratio_real": 50.0,
+      "drift": 1.25
+    },
+    {
+      "street": "turn",
+      "translated_actions": 7,
+      "ratio_abstract": 20.0,
+      "ratio_real": 33.3333,
+      "drift": 1.6667
+    },
+    {
+      "street": "preflop",
+      "translated_actions": 0,
+      "ratio_abstract": 200.0,
+      "ratio_real": 200.0,
+      "drift": 1.0
+    },
+    {
+      "street": "preflop",
+      "translated_actions": 2,
+      "ratio_abstract": 40.0,
+      "ratio_real": 40.0,
+      "drift": 1.0
+    },
+    {
+      "street": "preflop",
+      "translated_actions": 1,
+      "ratio_abstract": 100.0,
+      "ratio_real": 100.0,
+      "drift": 1.0
+    },
+    {
+      "street": "flop",
+      "translated_actions": 4,
+      "ratio_abstract": 40.0,
+      "ratio_real": 50.0,
+      "drift": 1.25
+    },
+    {
+      "street": "turn",
+      "translated_actions": 7,
+      "ratio_abstract": 20.0,
+      "ratio_real": 33.3333,
+      "drift": 1.6667
+    },
+    {
+      "street": "river",
+      "translated_actions": 8,
+      "ratio_abstract": 10.0,
+      "ratio_real": 25.0,
+      "drift": 2.5
+    },
+    {
+      "street": "river",
+      "translated_actions": 10,
+      "ratio_abstract": 10.0,
+      "ratio_real": 25.0,
+      "drift": 2.5
+    },
+    {
+      "street": "preflop",
+      "translated_actions": 0,
+      "ratio_abstract": 200.0,
+      "ratio_real": 200.0,
+      "drift": 1.0
+    },
+    {
+      "street": "preflop",
+      "translated_actions": 2,
+      "ratio_abstract": 40.0,
+      "ratio_real": 40.0,
+      "drift": 1.0
+    },
+    {
+      "street": "preflop",
+      "translated_actions": 1,
+      "ratio_abstract": 100.0,
+      "ratio_real": 100.0,
+      "drift": 1.0
+    },
+    {
+      "street": "flop",
+      "translated_actions": 4,
+      "ratio_abstract": 40.0,
+      "ratio_real": 50.0,
+      "drift": 1.25
+    },
+    {
+      "street": "preflop",
+      "translated_actions": 0,
+      "ratio_abstract": 200.0,
+      "ratio_real": 200.0,
+      "drift": 1.0
+    },
+    {
+      "street": "preflop",
+      "translated_actions": 2,
+      "ratio_abstract": 40.0,
+      "ratio_real": 40.0,
+      "drift": 1.0
+    },
+    {
+      "street": "flop",
+      "translated_actions": 4,
+      "ratio_abstract": 16.0,
+      "ratio_real": 25.0,
+      "drift": 1.5625
+    },
+    {
+      "street": "turn",
+      "translated_actions": 6,
+      "ratio_abstract": 8.0,
+      "ratio_real": 20.0,
+      "drift": 2.5
+    },
+    {
+      "street": "river",
+      "translated_actions": 8,
+      "ratio_abstract": 4.0,
+      "ratio_real": 16.6667,
+      "drift": 4.1667
+    },
+    {
+      "street": "preflop",
+      "translated_actions": 1,
+      "ratio_abstract": 100.0,
+      "ratio_real": 100.0,
+      "drift": 1.0
+    },
+    {
+      "street": "preflop",
+      "translated_actions": 0,
+      "ratio_abstract": 200.0,
+      "ratio_real": 200.0,
+      "drift": 1.0
+    },
+    {
+      "street": "preflop",
+      "translated_actions": 2,
+      "ratio_abstract": 40.0,
+      "ratio_real": 40.0,
+      "drift": 1.0
+    },
+    {
+      "street": "preflop",
+      "translated_actions": 1,
+      "ratio_abstract": 100.0,
+      "ratio_real": 100.0,
+      "drift": 1.0
+    },
+    {
+      "street": "preflop",
+      "translated_actions": 0,
+      "ratio_abstract": 200.0,
+      "ratio_real": 200.0,
+      "drift": 1.0
+    },
+    {
+      "street": "preflop",
+      "translated_actions": 2,
+      "ratio_abstract": 40.0,
+      "ratio_real": 40.0,
+      "drift": 1.0
+    },
+    {
+      "street": "preflop",
+      "translated_actions": 1,
+      "ratio_abstract": 100.0,
+      "ratio_real": 100.0,
+      "drift": 1.0
+    },
+    {
+      "street": "preflop",
+      "translated_actions": 0,
+      "ratio_abstract": 200.0,
+      "ratio_real": 200.0,
+      "drift": 1.0
+    },
+    {
+      "street": "preflop",
+      "translated_actions": 2,
+      "ratio_abstract": 40.0,
+      "ratio_real": 40.0,
+      "drift": 1.0
+    },
+    {
+      "street": "flop",
+      "translated_actions": 4,
+      "ratio_abstract": 16.0,
+      "ratio_real": 25.0,
+      "drift": 1.5625
+    },
+    {
+      "street": "preflop",
+      "translated_actions": 1,
+      "ratio_abstract": 100.0,
+      "ratio_real": 100.0,
+      "drift": 1.0
+    },
+    {
+      "street": "preflop",
+      "translated_actions": 0,
+      "ratio_abstract": 200.0,
+      "ratio_real": 200.0,
+      "drift": 1.0
+    },
+    {
+      "street": "preflop",
+      "translated_actions": 2,
+      "ratio_abstract": 40.0,
+      "ratio_real": 40.0,
+      "drift": 1.0
+    },
+    {
+      "street": "turn",
+      "translated_actions": 8,
+      "ratio_abstract": 2.0,
+      "ratio_real": 3.4483,
+      "drift": 1.7241
+    },
+    {
+      "street": "preflop",
+      "translated_actions": 1,
+      "ratio_abstract": 100.0,
+      "ratio_real": 100.0,
+      "drift": 1.0
+    },
+    {
+      "street": "flop",
+      "translated_actions": 4,
+      "ratio_abstract": 40.0,
+      "ratio_real": 50.0,
+      "drift": 1.25
+    },
+    {
+      "street": "preflop",
+      "translated_actions": 0,
+      "ratio_abstract": 200.0,
+      "ratio_real": 200.0,
+      "drift": 1.0
+    },
+    {
+      "street": "preflop",
+      "translated_actions": 1,
+      "ratio_abstract": 100.0,
+      "ratio_real": 100.0,
+      "drift": 1.0
+    },
+    {
+      "street": "flop",
+      "translated_actions": 4,
+      "ratio_abstract": 40.0,
+      "ratio_real": 50.0,
+      "drift": 1.25
+    },
+    {
+      "street": "preflop",
+      "translated_actions": 0,
+      "ratio_abstract": 200.0,
+      "ratio_real": 200.0,
+      "drift": 1.0
+    },
+    {
+      "street": "preflop",
+      "translated_actions": 2,
+      "ratio_abstract": 40.0,
+      "ratio_real": 40.0,
+      "drift": 1.0
+    },
+    {
+      "street": "flop",
+      "translated_actions": 4,
+      "ratio_abstract": 16.0,
+      "ratio_real": 25.0,
+      "drift": 1.5625
+    },
+    {
+      "street": "flop",
+      "translated_actions": 6,
+      "ratio_abstract": 4.0,
+      "ratio_real": 10.0,
+      "drift": 2.5
+    },
+    {
+      "street": "preflop",
+      "translated_actions": 1,
+      "ratio_abstract": 100.0,
+      "ratio_real": 100.0,
+      "drift": 1.0
+    },
+    {
+      "street": "preflop",
+      "translated_actions": 0,
+      "ratio_abstract": 200.0,
+      "ratio_real": 200.0,
+      "drift": 1.0
+    },
+    {
+      "street": "preflop",
+      "translated_actions": 2,
+      "ratio_abstract": 40.0,
+      "ratio_real": 40.0,
+      "drift": 1.0
+    },
+    {
+      "street": "preflop",
+      "translated_actions": 1,
+      "ratio_abstract": 100.0,
+      "ratio_real": 100.0,
+      "drift": 1.0
+    },
+    {
+      "street": "flop",
+      "translated_actions": 4,
+      "ratio_abstract": 40.0,
+      "ratio_real": 50.0,
+      "drift": 1.25
+    },
+    {
+      "street": "preflop",
+      "translated_actions": 0,
+      "ratio_abstract": 200.0,
+      "ratio_real": 200.0,
+      "drift": 1.0
+    },
+    {
+      "street": "preflop",
+      "translated_actions": 2,
+      "ratio_abstract": 100.0,
+      "ratio_real": 100.0,
+      "drift": 1.0
+    },
+    {
+      "street": "preflop",
+      "translated_actions": 1,
+      "ratio_abstract": 100.0,
+      "ratio_real": 100.0,
+      "drift": 1.0
+    },
+    {
+      "street": "preflop",
+      "translated_actions": 0,
+      "ratio_abstract": 200.0,
+      "ratio_real": 200.0,
+      "drift": 1.0
+    },
+    {
+      "street": "preflop",
+      "translated_actions": 2,
+      "ratio_abstract": 100.0,
+      "ratio_real": 100.0,
+      "drift": 1.0
+    },
+    {
+      "street": "preflop",
+      "translated_actions": 1,
+      "ratio_abstract": 100.0,
+      "ratio_real": 100.0,
+      "drift": 1.0
+    },
+    {
+      "street": "flop",
+      "translated_actions": 4,
+      "ratio_abstract": 40.0,
+      "ratio_real": 50.0,
+      "drift": 1.25
+    },
+    {
+      "street": "preflop",
+      "translated_actions": 0,
+      "ratio_abstract": 200.0,
+      "ratio_real": 200.0,
+      "drift": 1.0
+    },
+    {
+      "street": "preflop",
+      "translated_actions": 2,
+      "ratio_abstract": 40.0,
+      "ratio_real": 40.0,
+      "drift": 1.0
+    },
+    {
+      "street": "flop",
+      "translated_actions": 4,
+      "ratio_abstract": 16.0,
+      "ratio_real": 25.0,
+      "drift": 1.5625
+    },
+    {
+      "street": "turn",
+      "translated_actions": 6,
+      "ratio_abstract": 8.0,
+      "ratio_real": 20.0,
+      "drift": 2.5
+    },
+    {
+      "street": "river",
+      "translated_actions": 8,
+      "ratio_abstract": 4.0,
+      "ratio_real": 16.6667,
+      "drift": 4.1667
+    },
+    {
+      "street": "preflop",
+      "translated_actions": 1,
+      "ratio_abstract": 100.0,
+      "ratio_real": 100.0,
+      "drift": 1.0
+    },
+    {
+      "street": "flop",
+      "translated_actions": 4,
+      "ratio_abstract": 40.0,
+      "ratio_real": 50.0,
+      "drift": 1.25
+    },
+    {
+      "street": "turn",
+      "translated_actions": 7,
+      "ratio_abstract": 20.0,
+      "ratio_real": 33.3333,
+      "drift": 1.6667
+    },
+    {
+      "street": "preflop",
+      "translated_actions": 0,
+      "ratio_abstract": 200.0,
+      "ratio_real": 200.0,
+      "drift": 1.0
+    },
+    {
+      "street": "preflop",
+      "translated_actions": 2,
+      "ratio_abstract": 40.0,
+      "ratio_real": 40.0,
+      "drift": 1.0
+    },
+    {
+      "street": "preflop",
+      "translated_actions": 1,
+      "ratio_abstract": 100.0,
+      "ratio_real": 100.0,
+      "drift": 1.0
+    },
+    {
+      "street": "preflop",
+      "translated_actions": 0,
+      "ratio_abstract": 200.0,
+      "ratio_real": 200.0,
+      "drift": 1.0
+    },
+    {
+      "street": "preflop",
+      "translated_actions": 2,
+      "ratio_abstract": 100.0,
+      "ratio_real": 100.0,
+      "drift": 1.0
+    },
+    {
+      "street": "flop",
+      "translated_actions": 4,
+      "ratio_abstract": 40.0,
+      "ratio_real": 50.0,
+      "drift": 1.25
+    },
+    {
+      "street": "flop",
+      "translated_actions": 6,
+      "ratio_abstract": 10.0,
+      "ratio_real": 16.6667,
+      "drift": 1.6667
+    },
+    {
+      "street": "preflop",
+      "translated_actions": 1,
+      "ratio_abstract": 100.0,
+      "ratio_real": 100.0,
+      "drift": 1.0
+    },
+    {
+      "street": "preflop",
+      "translated_actions": 3,
+      "ratio_abstract": 16.0,
+      "ratio_real": 20.0,
+      "drift": 1.25
+    },
+    {
+      "street": "preflop",
+      "translated_actions": 0,
+      "ratio_abstract": 200.0,
+      "ratio_real": 200.0,
+      "drift": 1.0
+    },
+    {
+      "street": "preflop",
+      "translated_actions": 2,
+      "ratio_abstract": 40.0,
+      "ratio_real": 40.0,
+      "drift": 1.0
+    },
+    {
+      "street": "preflop",
+      "translated_actions": 1,
+      "ratio_abstract": 100.0,
+      "ratio_real": 100.0,
+      "drift": 1.0
+    },
+    {
+      "street": "preflop",
+      "translated_actions": 0,
+      "ratio_abstract": 200.0,
+      "ratio_real": 200.0,
+      "drift": 1.0
+    },
+    {
+      "street": "preflop",
+      "translated_actions": 2,
+      "ratio_abstract": 40.0,
+      "ratio_real": 40.0,
+      "drift": 1.0
+    },
+    {
+      "street": "flop",
+      "translated_actions": 4,
+      "ratio_abstract": 16.0,
+      "ratio_real": 25.0,
+      "drift": 1.5625
+    },
+    {
+      "street": "turn",
+      "translated_actions": 6,
+      "ratio_abstract": 8.0,
+      "ratio_real": 20.0,
+      "drift": 2.5
+    },
+    {
+      "street": "river",
+      "translated_actions": 8,
+      "ratio_abstract": 4.0,
+      "ratio_real": 16.6667,
+      "drift": 4.1667
+    },
+    {
+      "street": "preflop",
+      "translated_actions": 1,
+      "ratio_abstract": 100.0,
+      "ratio_real": 100.0,
+      "drift": 1.0
+    },
+    {
+      "street": "preflop",
+      "translated_actions": 0,
+      "ratio_abstract": 200.0,
+      "ratio_real": 200.0,
+      "drift": 1.0
+    },
+    {
+      "street": "preflop",
+      "translated_actions": 2,
+      "ratio_abstract": 40.0,
+      "ratio_real": 40.0,
+      "drift": 1.0
+    },
+    {
+      "street": "turn",
+      "translated_actions": 8,
+      "ratio_abstract": 3.2,
+      "ratio_real": 5.8824,
+      "drift": 1.8382
+    },
+    {
+      "street": "river",
+      "translated_actions": 10,
+      "ratio_abstract": 1.6,
+      "ratio_real": 5.5556,
+      "drift": 3.4722
+    },
+    {
+      "street": "preflop",
+      "translated_actions": 1,
+      "ratio_abstract": 100.0,
+      "ratio_real": 100.0,
+      "drift": 1.0
+    },
+    {
+      "street": "flop",
+      "translated_actions": 4,
+      "ratio_abstract": 40.0,
+      "ratio_real": 50.0,
+      "drift": 1.25
+    },
+    {
+      "street": "preflop",
+      "translated_actions": 0,
+      "ratio_abstract": 200.0,
+      "ratio_real": 200.0,
+      "drift": 1.0
+    },
+    {
+      "street": "preflop",
+      "translated_actions": 2,
+      "ratio_abstract": 40.0,
+      "ratio_real": 40.0,
+      "drift": 1.0
+    },
+    {
+      "street": "preflop",
+      "translated_actions": 1,
+      "ratio_abstract": 100.0,
+      "ratio_real": 100.0,
+      "drift": 1.0
+    },
+    {
+      "street": "flop",
+      "translated_actions": 4,
+      "ratio_abstract": 40.0,
+      "ratio_real": 50.0,
+      "drift": 1.25
+    },
+    {
+      "street": "turn",
+      "translated_actions": 7,
+      "ratio_abstract": 20.0,
+      "ratio_real": 33.3333,
+      "drift": 1.6667
+    },
+    {
+      "street": "river",
+      "translated_actions": 8,
+      "ratio_abstract": 10.0,
+      "ratio_real": 25.0,
+      "drift": 2.5
+    },
+    {
+      "street": "river",
+      "translated_actions": 10,
+      "ratio_abstract": 10.0,
+      "ratio_real": 25.0,
+      "drift": 2.5
+    },
+    {
+      "street": "preflop",
+      "translated_actions": 0,
+      "ratio_abstract": 200.0,
+      "ratio_real": 200.0,
+      "drift": 1.0
+    },
+    {
+      "street": "preflop",
+      "translated_actions": 2,
+      "ratio_abstract": 40.0,
+      "ratio_real": 40.0,
+      "drift": 1.0
+    },
+    {
+      "street": "flop",
+      "translated_actions": 4,
+      "ratio_abstract": 16.0,
+      "ratio_real": 25.0,
+      "drift": 1.5625
+    },
+    {
+      "street": "preflop",
+      "translated_actions": 1,
+      "ratio_abstract": 100.0,
+      "ratio_real": 100.0,
+      "drift": 1.0
+    },
+    {
+      "street": "flop",
+      "translated_actions": 4,
+      "ratio_abstract": 40.0,
+      "ratio_real": 50.0,
+      "drift": 1.25
+    },
+    {
+      "street": "turn",
+      "translated_actions": 7,
+      "ratio_abstract": 20.0,
+      "ratio_real": 33.3333,
+      "drift": 1.6667
+    },
+    {
+      "street": "river",
+      "translated_actions": 8,
+      "ratio_abstract": 10.0,
+      "ratio_real": 25.0,
+      "drift": 2.5
+    },
+    {
+      "street": "river",
+      "translated_actions": 10,
+      "ratio_abstract": 10.0,
+      "ratio_real": 25.0,
+      "drift": 2.5
+    },
+    {
+      "street": "preflop",
+      "translated_actions": 0,
+      "ratio_abstract": 200.0,
+      "ratio_real": 200.0,
+      "drift": 1.0
+    },
+    {
+      "street": "preflop",
+      "translated_actions": 2,
+      "ratio_abstract": 40.0,
+      "ratio_real": 40.0,
+      "drift": 1.0
+    },
+    {
+      "street": "flop",
+      "translated_actions": 4,
+      "ratio_abstract": 16.0,
+      "ratio_real": 25.0,
+      "drift": 1.5625
+    },
+    {
+      "street": "preflop",
+      "translated_actions": 1,
+      "ratio_abstract": 100.0,
+      "ratio_real": 100.0,
+      "drift": 1.0
+    },
+    {
+      "street": "flop",
+      "translated_actions": 4,
+      "ratio_abstract": 40.0,
+      "ratio_real": 50.0,
+      "drift": 1.25
+    },
+    {
+      "street": "turn",
+      "translated_actions": 7,
+      "ratio_abstract": 20.0,
+      "ratio_real": 33.3333,
+      "drift": 1.6667
+    },
+    {
+      "street": "preflop",
+      "translated_actions": 0,
+      "ratio_abstract": 200.0,
+      "ratio_real": 200.0,
+      "drift": 1.0
+    },
+    {
+      "street": "preflop",
+      "translated_actions": 2,
+      "ratio_abstract": 40.0,
+      "ratio_real": 40.0,
+      "drift": 1.0
+    },
+    {
+      "street": "flop",
+      "translated_actions": 4,
+      "ratio_abstract": 16.0,
+      "ratio_real": 25.0,
+      "drift": 1.5625
+    },
+    {
+      "street": "preflop",
+      "translated_actions": 1,
+      "ratio_abstract": 100.0,
+      "ratio_real": 100.0,
+      "drift": 1.0
+    },
+    {
+      "street": "flop",
+      "translated_actions": 4,
+      "ratio_abstract": 40.0,
+      "ratio_real": 50.0,
+      "drift": 1.25
+    },
+    {
+      "street": "turn",
+      "translated_actions": 7,
+      "ratio_abstract": 20.0,
+      "ratio_real": 33.3333,
+      "drift": 1.6667
+    },
+    {
+      "street": "preflop",
+      "translated_actions": 0,
+      "ratio_abstract": 200.0,
+      "ratio_real": 200.0,
+      "drift": 1.0
+    },
+    {
+      "street": "preflop",
+      "translated_actions": 2,
+      "ratio_abstract": 40.0,
+      "ratio_real": 40.0,
+      "drift": 1.0
+    },
+    {
+      "street": "preflop",
+      "translated_actions": 1,
+      "ratio_abstract": 100.0,
+      "ratio_real": 100.0,
+      "drift": 1.0
+    },
+    {
+      "street": "flop",
+      "translated_actions": 4,
+      "ratio_abstract": 40.0,
+      "ratio_real": 50.0,
+      "drift": 1.25
+    },
+    {
+      "street": "turn",
+      "translated_actions": 7,
+      "ratio_abstract": 20.0,
+      "ratio_real": 33.3333,
+      "drift": 1.6667
+    },
+    {
+      "street": "river",
+      "translated_actions": 8,
+      "ratio_abstract": 10.0,
+      "ratio_real": 25.0,
+      "drift": 2.5
+    },
+    {
+      "street": "river",
+      "translated_actions": 10,
+      "ratio_abstract": 10.0,
+      "ratio_real": 25.0,
+      "drift": 2.5
+    },
+    {
+      "street": "preflop",
+      "translated_actions": 0,
+      "ratio_abstract": 200.0,
+      "ratio_real": 200.0,
+      "drift": 1.0
+    },
+    {
+      "street": "preflop",
+      "translated_actions": 2,
+      "ratio_abstract": 40.0,
+      "ratio_real": 40.0,
+      "drift": 1.0
+    },
+    {
+      "street": "flop",
+      "translated_actions": 4,
+      "ratio_abstract": 16.0,
+      "ratio_real": 25.0,
+      "drift": 1.5625
+    },
+    {
+      "street": "turn",
+      "translated_actions": 6,
+      "ratio_abstract": 8.0,
+      "ratio_real": 20.0,
+      "drift": 2.5
+    },
+    {
+      "street": "preflop",
+      "translated_actions": 1,
+      "ratio_abstract": 100.0,
+      "ratio_real": 100.0,
+      "drift": 1.0
+    },
+    {
+      "street": "preflop",
+      "translated_actions": 0,
+      "ratio_abstract": 200.0,
+      "ratio_real": 200.0,
+      "drift": 1.0
+    },
+    {
+      "street": "preflop",
+      "translated_actions": 2,
+      "ratio_abstract": 100.0,
+      "ratio_real": 100.0,
+      "drift": 1.0
+    },
+    {
+      "street": "preflop",
+      "translated_actions": 1,
+      "ratio_abstract": 100.0,
+      "ratio_real": 100.0,
+      "drift": 1.0
+    },
+    {
+      "street": "flop",
+      "translated_actions": 4,
+      "ratio_abstract": 40.0,
+      "ratio_real": 50.0,
+      "drift": 1.25
+    },
+    {
+      "street": "preflop",
+      "translated_actions": 0,
+      "ratio_abstract": 200.0,
+      "ratio_real": 200.0,
+      "drift": 1.0
+    },
+    {
+      "street": "preflop",
+      "translated_actions": 2,
+      "ratio_abstract": 40.0,
+      "ratio_real": 40.0,
+      "drift": 1.0
+    },
+    {
+      "street": "preflop",
+      "translated_actions": 1,
+      "ratio_abstract": 100.0,
+      "ratio_real": 100.0,
+      "drift": 1.0
+    },
+    {
+      "street": "preflop",
+      "translated_actions": 3,
+      "ratio_abstract": 10.0,
+      "ratio_real": 12.5,
+      "drift": 1.25
+    },
+    {
+      "street": "preflop",
+      "translated_actions": 0,
+      "ratio_abstract": 200.0,
+      "ratio_real": 200.0,
+      "drift": 1.0
+    },
+    {
+      "street": "preflop",
+      "translated_actions": 1,
+      "ratio_abstract": 100.0,
+      "ratio_real": 100.0,
+      "drift": 1.0
+    },
+    {
+      "street": "flop",
+      "translated_actions": 4,
+      "ratio_abstract": 40.0,
+      "ratio_real": 50.0,
+      "drift": 1.25
+    },
+    {
+      "street": "preflop",
+      "translated_actions": 0,
+      "ratio_abstract": 200.0,
+      "ratio_real": 200.0,
+      "drift": 1.0
+    },
+    {
+      "street": "preflop",
+      "translated_actions": 2,
+      "ratio_abstract": 40.0,
+      "ratio_real": 40.0,
+      "drift": 1.0
+    },
+    {
+      "street": "flop",
+      "translated_actions": 4,
+      "ratio_abstract": 16.0,
+      "ratio_real": 25.0,
+      "drift": 1.5625
+    },
+    {
+      "street": "flop",
+      "translated_actions": 6,
+      "ratio_abstract": 4.0,
+      "ratio_real": 10.0,
+      "drift": 2.5
+    },
+    {
+      "street": "preflop",
+      "translated_actions": 1,
+      "ratio_abstract": 100.0,
+      "ratio_real": 100.0,
+      "drift": 1.0
+    },
+    {
+      "street": "preflop",
+      "translated_actions": 3,
+      "ratio_abstract": 10.0,
+      "ratio_real": 12.5,
+      "drift": 1.25
+    },
+    {
+      "street": "preflop",
+      "translated_actions": 0,
+      "ratio_abstract": 200.0,
+      "ratio_real": 200.0,
+      "drift": 1.0
+    },
+    {
+      "street": "preflop",
+      "translated_actions": 2,
+      "ratio_abstract": 40.0,
+      "ratio_real": 40.0,
+      "drift": 1.0
+    },
+    {
+      "street": "flop",
+      "translated_actions": 4,
+      "ratio_abstract": 16.0,
+      "ratio_real": 25.0,
+      "drift": 1.5625
+    },
+    {
+      "street": "turn",
+      "translated_actions": 6,
+      "ratio_abstract": 8.0,
+      "ratio_real": 20.0,
+      "drift": 2.5
+    },
+    {
+      "street": "river",
+      "translated_actions": 8,
+      "ratio_abstract": 4.0,
+      "ratio_real": 16.6667,
+      "drift": 4.1667
+    },
+    {
+      "street": "preflop",
+      "translated_actions": 1,
+      "ratio_abstract": 100.0,
+      "ratio_real": 100.0,
+      "drift": 1.0
+    },
+    {
+      "street": "flop",
+      "translated_actions": 4,
+      "ratio_abstract": 40.0,
+      "ratio_real": 50.0,
+      "drift": 1.25
+    },
+    {
+      "street": "preflop",
+      "translated_actions": 0,
+      "ratio_abstract": 200.0,
+      "ratio_real": 200.0,
+      "drift": 1.0
+    },
+    {
+      "street": "preflop",
+      "translated_actions": 2,
+      "ratio_abstract": 40.0,
+      "ratio_real": 40.0,
+      "drift": 1.0
+    },
+    {
+      "street": "flop",
+      "translated_actions": 4,
+      "ratio_abstract": 16.0,
+      "ratio_real": 25.0,
+      "drift": 1.5625
+    },
+    {
+      "street": "preflop",
+      "translated_actions": 1,
+      "ratio_abstract": 100.0,
+      "ratio_real": 100.0,
+      "drift": 1.0
+    },
+    {
+      "street": "preflop",
+      "translated_actions": 3,
+      "ratio_abstract": 10.0,
+      "ratio_real": 12.5,
+      "drift": 1.25
+    },
+    {
+      "street": "preflop",
+      "translated_actions": 0,
+      "ratio_abstract": 200.0,
+      "ratio_real": 200.0,
+      "drift": 1.0
+    },
+    {
+      "street": "preflop",
+      "translated_actions": 2,
+      "ratio_abstract": 40.0,
+      "ratio_real": 40.0,
+      "drift": 1.0
+    },
+    {
+      "street": "preflop",
+      "translated_actions": 1,
+      "ratio_abstract": 100.0,
+      "ratio_real": 100.0,
+      "drift": 1.0
+    },
+    {
+      "street": "preflop",
+      "translated_actions": 0,
+      "ratio_abstract": 200.0,
+      "ratio_real": 200.0,
+      "drift": 1.0
+    },
+    {
+      "street": "preflop",
+      "translated_actions": 2,
+      "ratio_abstract": 40.0,
+      "ratio_real": 40.0,
+      "drift": 1.0
+    },
+    {
+      "street": "preflop",
+      "translated_actions": 1,
+      "ratio_abstract": 100.0,
+      "ratio_real": 100.0,
+      "drift": 1.0
+    },
+    {
+      "street": "preflop",
+      "translated_actions": 0,
+      "ratio_abstract": 200.0,
+      "ratio_real": 200.0,
+      "drift": 1.0
+    },
+    {
+      "street": "preflop",
+      "translated_actions": 2,
+      "ratio_abstract": 40.0,
+      "ratio_real": 40.0,
+      "drift": 1.0
+    },
+    {
+      "street": "flop",
+      "translated_actions": 4,
+      "ratio_abstract": 16.0,
+      "ratio_real": 25.0,
+      "drift": 1.5625
+    },
+    {
+      "street": "turn",
+      "translated_actions": 6,
+      "ratio_abstract": 8.0,
+      "ratio_real": 20.0,
+      "drift": 2.5
+    },
+    {
+      "street": "river",
+      "translated_actions": 8,
+      "ratio_abstract": 4.0,
+      "ratio_real": 16.6667,
+      "drift": 4.1667
+    },
+    {
+      "street": "preflop",
+      "translated_actions": 1,
+      "ratio_abstract": 100.0,
+      "ratio_real": 100.0,
+      "drift": 1.0
+    },
+    {
+      "street": "flop",
+      "translated_actions": 4,
+      "ratio_abstract": 40.0,
+      "ratio_real": 50.0,
+      "drift": 1.25
+    },
+    {
+      "street": "preflop",
+      "translated_actions": 0,
+      "ratio_abstract": 200.0,
+      "ratio_real": 200.0,
+      "drift": 1.0
+    },
+    {
+      "street": "preflop",
+      "translated_actions": 2,
+      "ratio_abstract": 40.0,
+      "ratio_real": 40.0,
+      "drift": 1.0
+    },
+    {
+      "street": "flop",
+      "translated_actions": 4,
+      "ratio_abstract": 16.0,
+      "ratio_real": 25.0,
+      "drift": 1.5625
+    },
+    {
+      "street": "turn",
+      "translated_actions": 6,
+      "ratio_abstract": 8.0,
+      "ratio_real": 20.0,
+      "drift": 2.5
+    },
+    {
+      "street": "preflop",
+      "translated_actions": 1,
+      "ratio_abstract": 100.0,
+      "ratio_real": 100.0,
+      "drift": 1.0
+    },
+    {
+      "street": "preflop",
+      "translated_actions": 0,
+      "ratio_abstract": 200.0,
+      "ratio_real": 200.0,
+      "drift": 1.0
+    },
+    {
+      "street": "preflop",
+      "translated_actions": 2,
+      "ratio_abstract": 40.0,
+      "ratio_real": 40.0,
+      "drift": 1.0
+    },
+    {
+      "street": "turn",
+      "translated_actions": 8,
+      "ratio_abstract": 3.2,
+      "ratio_real": 5.8824,
+      "drift": 1.8382
+    },
+    {
+      "street": "river",
+      "translated_actions": 10,
+      "ratio_abstract": 1.6,
+      "ratio_real": 5.5556,
+      "drift": 3.4722
+    },
+    {
+      "street": "preflop",
+      "translated_actions": 1,
+      "ratio_abstract": 100.0,
+      "ratio_real": 100.0,
+      "drift": 1.0
+    },
+    {
+      "street": "flop",
+      "translated_actions": 4,
+      "ratio_abstract": 40.0,
+      "ratio_real": 50.0,
+      "drift": 1.25
+    },
+    {
+      "street": "turn",
+      "translated_actions": 7,
+      "ratio_abstract": 20.0,
+      "ratio_real": 33.3333,
+      "drift": 1.6667
+    },
+    {
+      "street": "preflop",
+      "translated_actions": 0,
+      "ratio_abstract": 200.0,
+      "ratio_real": 200.0,
+      "drift": 1.0
+    },
+    {
+      "street": "preflop",
+      "translated_actions": 2,
+      "ratio_abstract": 40.0,
+      "ratio_real": 40.0,
+      "drift": 1.0
+    },
+    {
+      "street": "flop",
+      "translated_actions": 4,
+      "ratio_abstract": 16.0,
+      "ratio_real": 25.0,
+      "drift": 1.5625
+    },
+    {
+      "street": "flop",
+      "translated_actions": 6,
+      "ratio_abstract": 4.0,
+      "ratio_real": 10.0,
+      "drift": 2.5
+    },
+    {
+      "street": "turn",
+      "translated_actions": 8,
+      "ratio_abstract": 2.0,
+      "ratio_real": 6.6667,
+      "drift": 3.3333
+    },
+    {
+      "street": "river",
+      "translated_actions": 10,
+      "ratio_abstract": 1.0,
+      "ratio_real": 6.25,
+      "drift": 6.25
+    },
+    {
+      "street": "preflop",
+      "translated_actions": 1,
+      "ratio_abstract": 100.0,
+      "ratio_real": 100.0,
+      "drift": 1.0
+    },
+    {
+      "street": "flop",
+      "translated_actions": 4,
+      "ratio_abstract": 40.0,
+      "ratio_real": 50.0,
+      "drift": 1.25
+    },
+    {
+      "street": "turn",
+      "translated_actions": 7,
+      "ratio_abstract": 20.0,
+      "ratio_real": 33.3333,
+      "drift": 1.6667
+    },
+    {
+      "street": "preflop",
+      "translated_actions": 0,
+      "ratio_abstract": 200.0,
+      "ratio_real": 200.0,
+      "drift": 1.0
+    },
+    {
+      "street": "preflop",
+      "translated_actions": 2,
+      "ratio_abstract": 40.0,
+      "ratio_real": 40.0,
+      "drift": 1.0
+    },
+    {
+      "street": "flop",
+      "translated_actions": 4,
+      "ratio_abstract": 16.0,
+      "ratio_real": 25.0,
+      "drift": 1.5625
+    },
+    {
+      "street": "preflop",
+      "translated_actions": 1,
+      "ratio_abstract": 100.0,
+      "ratio_real": 100.0,
+      "drift": 1.0
+    },
+    {
+      "street": "flop",
+      "translated_actions": 4,
+      "ratio_abstract": 40.0,
+      "ratio_real": 50.0,
+      "drift": 1.25
+    },
+    {
+      "street": "preflop",
+      "translated_actions": 0,
+      "ratio_abstract": 200.0,
+      "ratio_real": 200.0,
+      "drift": 1.0
+    },
+    {
+      "street": "preflop",
+      "translated_actions": 2,
+      "ratio_abstract": 40.0,
+      "ratio_real": 40.0,
+      "drift": 1.0
+    },
+    {
+      "street": "flop",
+      "translated_actions": 4,
+      "ratio_abstract": 16.0,
+      "ratio_real": 25.0,
+      "drift": 1.5625
+    },
+    {
+      "street": "flop",
+      "translated_actions": 6,
+      "ratio_abstract": 4.0,
+      "ratio_real": 10.0,
+      "drift": 2.5
+    },
+    {
+      "street": "preflop",
+      "translated_actions": 1,
+      "ratio_abstract": 100.0,
+      "ratio_real": 100.0,
+      "drift": 1.0
+    },
+    {
+      "street": "flop",
+      "translated_actions": 4,
+      "ratio_abstract": 40.0,
+      "ratio_real": 50.0,
+      "drift": 1.25
+    },
+    {
+      "street": "turn",
+      "translated_actions": 7,
+      "ratio_abstract": 20.0,
+      "ratio_real": 33.3333,
+      "drift": 1.6667
+    },
+    {
+      "street": "river",
+      "translated_actions": 8,
+      "ratio_abstract": 10.0,
+      "ratio_real": 25.0,
+      "drift": 2.5
+    },
+    {
+      "street": "river",
+      "translated_actions": 10,
+      "ratio_abstract": 10.0,
+      "ratio_real": 25.0,
+      "drift": 2.5
+    },
+    {
+      "street": "preflop",
+      "translated_actions": 0,
+      "ratio_abstract": 200.0,
+      "ratio_real": 200.0,
+      "drift": 1.0
+    },
+    {
+      "street": "preflop",
+      "translated_actions": 1,
+      "ratio_abstract": 100.0,
+      "ratio_real": 100.0,
+      "drift": 1.0
+    },
+    {
+      "street": "flop",
+      "translated_actions": 4,
+      "ratio_abstract": 40.0,
+      "ratio_real": 50.0,
+      "drift": 1.25
+    },
+    {
+      "street": "turn",
+      "translated_actions": 7,
+      "ratio_abstract": 20.0,
+      "ratio_real": 33.3333,
+      "drift": 1.6667
+    },
+    {
+      "street": "river",
+      "translated_actions": 8,
+      "ratio_abstract": 10.0,
+      "ratio_real": 25.0,
+      "drift": 2.5
+    },
+    {
+      "street": "river",
+      "translated_actions": 10,
+      "ratio_abstract": 10.0,
+      "ratio_real": 25.0,
+      "drift": 2.5
+    },
+    {
+      "street": "preflop",
+      "translated_actions": 0,
+      "ratio_abstract": 200.0,
+      "ratio_real": 200.0,
+      "drift": 1.0
+    },
+    {
+      "street": "preflop",
+      "translated_actions": 2,
+      "ratio_abstract": 40.0,
+      "ratio_real": 40.0,
+      "drift": 1.0
+    },
+    {
+      "street": "flop",
+      "translated_actions": 4,
+      "ratio_abstract": 16.0,
+      "ratio_real": 25.0,
+      "drift": 1.5625
+    },
+    {
+      "street": "turn",
+      "translated_actions": 6,
+      "ratio_abstract": 8.0,
+      "ratio_real": 20.0,
+      "drift": 2.5
+    },
+    {
+      "street": "river",
+      "translated_actions": 8,
+      "ratio_abstract": 4.0,
+      "ratio_real": 16.6667,
+      "drift": 4.1667
+    },
+    {
+      "street": "preflop",
+      "translated_actions": 1,
+      "ratio_abstract": 100.0,
+      "ratio_real": 100.0,
+      "drift": 1.0
+    },
+    {
+      "street": "preflop",
+      "translated_actions": 0,
+      "ratio_abstract": 200.0,
+      "ratio_real": 200.0,
+      "drift": 1.0
+    },
+    {
+      "street": "preflop",
+      "translated_actions": 2,
+      "ratio_abstract": 40.0,
+      "ratio_real": 40.0,
+      "drift": 1.0
+    },
+    {
+      "street": "flop",
+      "translated_actions": 4,
+      "ratio_abstract": 16.0,
+      "ratio_real": 25.0,
+      "drift": 1.5625
+    },
+    {
+      "street": "preflop",
+      "translated_actions": 1,
+      "ratio_abstract": 100.0,
+      "ratio_real": 100.0,
+      "drift": 1.0
+    },
+    {
+      "street": "preflop",
+      "translated_actions": 3,
+      "ratio_abstract": 10.0,
+      "ratio_real": 12.5,
+      "drift": 1.25
+    },
+    {
+      "street": "flop",
+      "translated_actions": 6,
+      "ratio_abstract": 4.0,
+      "ratio_real": 7.1429,
+      "drift": 1.7857
+    },
+    {
+      "street": "preflop",
+      "translated_actions": 0,
+      "ratio_abstract": 200.0,
+      "ratio_real": 200.0,
+      "drift": 1.0
+    },
+    {
+      "street": "preflop",
+      "translated_actions": 2,
+      "ratio_abstract": 40.0,
+      "ratio_real": 40.0,
+      "drift": 1.0
+    },
+    {
+      "street": "flop",
+      "translated_actions": 4,
+      "ratio_abstract": 16.0,
+      "ratio_real": 25.0,
+      "drift": 1.5625
+    },
+    {
+      "street": "turn",
+      "translated_actions": 6,
+      "ratio_abstract": 8.0,
+      "ratio_real": 20.0,
+      "drift": 2.5
+    },
+    {
+      "street": "river",
+      "translated_actions": 8,
+      "ratio_abstract": 4.0,
+      "ratio_real": 16.6667,
+      "drift": 4.1667
+    },
+    {
+      "street": "preflop",
+      "translated_actions": 1,
+      "ratio_abstract": 100.0,
+      "ratio_real": 100.0,
+      "drift": 1.0
+    },
+    {
+      "street": "preflop",
+      "translated_actions": 0,
+      "ratio_abstract": 200.0,
+      "ratio_real": 200.0,
+      "drift": 1.0
+    },
+    {
+      "street": "preflop",
+      "translated_actions": 2,
+      "ratio_abstract": 40.0,
+      "ratio_real": 40.0,
+      "drift": 1.0
+    },
+    {
+      "street": "preflop",
+      "translated_actions": 1,
+      "ratio_abstract": 100.0,
+      "ratio_real": 100.0,
+      "drift": 1.0
+    },
+    {
+      "street": "preflop",
+      "translated_actions": 0,
+      "ratio_abstract": 200.0,
+      "ratio_real": 200.0,
+      "drift": 1.0
+    },
+    {
+      "street": "preflop",
+      "translated_actions": 2,
+      "ratio_abstract": 40.0,
+      "ratio_real": 40.0,
+      "drift": 1.0
+    },
+    {
+      "street": "flop",
+      "translated_actions": 4,
+      "ratio_abstract": 16.0,
+      "ratio_real": 25.0,
+      "drift": 1.5625
+    },
+    {
+      "street": "preflop",
+      "translated_actions": 1,
+      "ratio_abstract": 100.0,
+      "ratio_real": 100.0,
+      "drift": 1.0
+    },
+    {
+      "street": "flop",
+      "translated_actions": 4,
+      "ratio_abstract": 40.0,
+      "ratio_real": 50.0,
+      "drift": 1.25
+    },
+    {
+      "street": "preflop",
+      "translated_actions": 0,
+      "ratio_abstract": 200.0,
+      "ratio_real": 200.0,
+      "drift": 1.0
+    },
+    {
+      "street": "preflop",
+      "translated_actions": 2,
+      "ratio_abstract": 40.0,
+      "ratio_real": 40.0,
+      "drift": 1.0
+    },
+    {
+      "street": "preflop",
+      "translated_actions": 1,
+      "ratio_abstract": 100.0,
+      "ratio_real": 100.0,
+      "drift": 1.0
+    },
+    {
+      "street": "preflop",
+      "translated_actions": 0,
+      "ratio_abstract": 200.0,
+      "ratio_real": 200.0,
+      "drift": 1.0
+    },
+    {
+      "street": "preflop",
+      "translated_actions": 2,
+      "ratio_abstract": 40.0,
+      "ratio_real": 40.0,
+      "drift": 1.0
+    },
+    {
+      "street": "flop",
+      "translated_actions": 4,
+      "ratio_abstract": 16.0,
+      "ratio_real": 25.0,
+      "drift": 1.5625
+    },
+    {
+      "street": "turn",
+      "translated_actions": 6,
+      "ratio_abstract": 8.0,
+      "ratio_real": 20.0,
+      "drift": 2.5
+    },
+    {
+      "street": "river",
+      "translated_actions": 8,
+      "ratio_abstract": 4.0,
+      "ratio_real": 16.6667,
+      "drift": 4.1667
+    },
+    {
+      "street": "preflop",
+      "translated_actions": 1,
+      "ratio_abstract": 100.0,
+      "ratio_real": 100.0,
+      "drift": 1.0
+    },
+    {
+      "street": "preflop",
+      "translated_actions": 3,
+      "ratio_abstract": 10.0,
+      "ratio_real": 12.5,
+      "drift": 1.25
+    },
+    {
+      "street": "preflop",
+      "translated_actions": 0,
+      "ratio_abstract": 200.0,
+      "ratio_real": 200.0,
+      "drift": 1.0
+    },
+    {
+      "street": "preflop",
+      "translated_actions": 2,
+      "ratio_abstract": 40.0,
+      "ratio_real": 40.0,
+      "drift": 1.0
+    },
+    {
+      "street": "flop",
+      "translated_actions": 4,
+      "ratio_abstract": 16.0,
+      "ratio_real": 25.0,
+      "drift": 1.5625
+    },
+    {
+      "street": "preflop",
+      "translated_actions": 1,
+      "ratio_abstract": 100.0,
+      "ratio_real": 100.0,
+      "drift": 1.0
+    },
+    {
+      "street": "flop",
+      "translated_actions": 4,
+      "ratio_abstract": 40.0,
+      "ratio_real": 50.0,
+      "drift": 1.25
+    },
+    {
+      "street": "flop",
+      "translated_actions": 6,
+      "ratio_abstract": 10.0,
+      "ratio_real": 16.6667,
+      "drift": 1.6667
+    },
+    {
+      "street": "preflop",
+      "translated_actions": 0,
+      "ratio_abstract": 200.0,
+      "ratio_real": 200.0,
+      "drift": 1.0
+    },
+    {
+      "street": "preflop",
+      "translated_actions": 2,
+      "ratio_abstract": 40.0,
+      "ratio_real": 40.0,
+      "drift": 1.0
+    },
+    {
+      "street": "preflop",
+      "translated_actions": 1,
+      "ratio_abstract": 100.0,
+      "ratio_real": 100.0,
+      "drift": 1.0
+    },
+    {
+      "street": "preflop",
+      "translated_actions": 0,
+      "ratio_abstract": 200.0,
+      "ratio_real": 200.0,
+      "drift": 1.0
+    },
+    {
+      "street": "preflop",
+      "translated_actions": 2,
+      "ratio_abstract": 40.0,
+      "ratio_real": 40.0,
+      "drift": 1.0
+    },
+    {
+      "street": "flop",
+      "translated_actions": 4,
+      "ratio_abstract": 16.0,
+      "ratio_real": 25.0,
+      "drift": 1.5625
+    },
+    {
+      "street": "turn",
+      "translated_actions": 6,
+      "ratio_abstract": 8.0,
+      "ratio_real": 20.0,
+      "drift": 2.5
+    },
+    {
+      "street": "river",
+      "translated_actions": 8,
+      "ratio_abstract": 4.0,
+      "ratio_real": 16.6667,
+      "drift": 4.1667
+    },
+    {
+      "street": "preflop",
+      "translated_actions": 1,
+      "ratio_abstract": 100.0,
+      "ratio_real": 100.0,
+      "drift": 1.0
+    },
+    {
+      "street": "flop",
+      "translated_actions": 4,
+      "ratio_abstract": 40.0,
+      "ratio_real": 50.0,
+      "drift": 1.25
+    },
+    {
+      "street": "turn",
+      "translated_actions": 7,
+      "ratio_abstract": 20.0,
+      "ratio_real": 33.3333,
+      "drift": 1.6667
+    },
+    {
+      "street": "preflop",
+      "translated_actions": 0,
+      "ratio_abstract": 200.0,
+      "ratio_real": 200.0,
+      "drift": 1.0
+    },
+    {
+      "street": "preflop",
+      "translated_actions": 1,
+      "ratio_abstract": 100.0,
+      "ratio_real": 100.0,
+      "drift": 1.0
+    },
+    {
+      "street": "preflop",
+      "translated_actions": 0,
+      "ratio_abstract": 200.0,
+      "ratio_real": 200.0,
+      "drift": 1.0
+    },
+    {
+      "street": "preflop",
+      "translated_actions": 2,
+      "ratio_abstract": 40.0,
+      "ratio_real": 40.0,
+      "drift": 1.0
+    },
+    {
+      "street": "flop",
+      "translated_actions": 4,
+      "ratio_abstract": 16.0,
+      "ratio_real": 25.0,
+      "drift": 1.5625
+    },
+    {
+      "street": "preflop",
+      "translated_actions": 1,
+      "ratio_abstract": 100.0,
+      "ratio_real": 100.0,
+      "drift": 1.0
+    },
+    {
+      "street": "preflop",
+      "translated_actions": 0,
+      "ratio_abstract": 200.0,
+      "ratio_real": 200.0,
+      "drift": 1.0
+    },
+    {
+      "street": "preflop",
+      "translated_actions": 2,
+      "ratio_abstract": 40.0,
+      "ratio_real": 40.0,
+      "drift": 1.0
+    },
+    {
+      "street": "flop",
+      "translated_actions": 4,
+      "ratio_abstract": 16.0,
+      "ratio_real": 25.0,
+      "drift": 1.5625
+    },
+    {
+      "street": "preflop",
+      "translated_actions": 1,
+      "ratio_abstract": 100.0,
+      "ratio_real": 100.0,
+      "drift": 1.0
+    },
+    {
+      "street": "preflop",
+      "translated_actions": 0,
+      "ratio_abstract": 200.0,
+      "ratio_real": 200.0,
+      "drift": 1.0
+    },
+    {
+      "street": "preflop",
+      "translated_actions": 2,
+      "ratio_abstract": 40.0,
+      "ratio_real": 40.0,
+      "drift": 1.0
+    },
+    {
+      "street": "flop",
+      "translated_actions": 4,
+      "ratio_abstract": 16.0,
+      "ratio_real": 25.0,
+      "drift": 1.5625
+    },
+    {
+      "street": "turn",
+      "translated_actions": 6,
+      "ratio_abstract": 8.0,
+      "ratio_real": 20.0,
+      "drift": 2.5
+    },
+    {
+      "street": "preflop",
+      "translated_actions": 1,
+      "ratio_abstract": 100.0,
+      "ratio_real": 100.0,
+      "drift": 1.0
+    },
+    {
+      "street": "preflop",
+      "translated_actions": 0,
+      "ratio_abstract": 200.0,
+      "ratio_real": 200.0,
+      "drift": 1.0
+    },
+    {
+      "street": "preflop",
+      "translated_actions": 2,
+      "ratio_abstract": 40.0,
+      "ratio_real": 40.0,
+      "drift": 1.0
+    },
+    {
+      "street": "preflop",
+      "translated_actions": 1,
+      "ratio_abstract": 100.0,
+      "ratio_real": 100.0,
+      "drift": 1.0
+    },
+    {
+      "street": "flop",
+      "translated_actions": 4,
+      "ratio_abstract": 40.0,
+      "ratio_real": 50.0,
+      "drift": 1.25
+    },
+    {
+      "street": "turn",
+      "translated_actions": 7,
+      "ratio_abstract": 20.0,
+      "ratio_real": 33.3333,
+      "drift": 1.6667
+    },
+    {
+      "street": "river",
+      "translated_actions": 8,
+      "ratio_abstract": 10.0,
+      "ratio_real": 25.0,
+      "drift": 2.5
+    },
+    {
+      "street": "river",
+      "translated_actions": 10,
+      "ratio_abstract": 10.0,
+      "ratio_real": 25.0,
+      "drift": 2.5
+    },
+    {
+      "street": "preflop",
+      "translated_actions": 0,
+      "ratio_abstract": 200.0,
+      "ratio_real": 200.0,
+      "drift": 1.0
+    },
+    {
+      "street": "preflop",
+      "translated_actions": 2,
+      "ratio_abstract": 40.0,
+      "ratio_real": 40.0,
+      "drift": 1.0
+    },
+    {
+      "street": "turn",
+      "translated_actions": 8,
+      "ratio_abstract": 3.2,
+      "ratio_real": 5.8824,
+      "drift": 1.8382
+    },
+    {
+      "street": "river",
+      "translated_actions": 10,
+      "ratio_abstract": 1.6,
+      "ratio_real": 5.5556,
+      "drift": 3.4722
+    },
+    {
+      "street": "preflop",
+      "translated_actions": 1,
+      "ratio_abstract": 100.0,
+      "ratio_real": 100.0,
+      "drift": 1.0
+    },
+    {
+      "street": "preflop",
+      "translated_actions": 0,
+      "ratio_abstract": 200.0,
+      "ratio_real": 200.0,
+      "drift": 1.0
+    },
+    {
+      "street": "preflop",
+      "translated_actions": 2,
+      "ratio_abstract": 40.0,
+      "ratio_real": 40.0,
+      "drift": 1.0
+    },
+    {
+      "street": "preflop",
+      "translated_actions": 1,
+      "ratio_abstract": 100.0,
+      "ratio_real": 100.0,
+      "drift": 1.0
+    },
+    {
+      "street": "preflop",
+      "translated_actions": 0,
+      "ratio_abstract": 200.0,
+      "ratio_real": 200.0,
+      "drift": 1.0
+    },
+    {
+      "street": "preflop",
+      "translated_actions": 2,
+      "ratio_abstract": 40.0,
+      "ratio_real": 40.0,
+      "drift": 1.0
+    },
+    {
+      "street": "flop",
+      "translated_actions": 4,
+      "ratio_abstract": 16.0,
+      "ratio_real": 25.0,
+      "drift": 1.5625
+    },
+    {
+      "street": "turn",
+      "translated_actions": 6,
+      "ratio_abstract": 8.0,
+      "ratio_real": 20.0,
+      "drift": 2.5
+    },
+    {
+      "street": "preflop",
+      "translated_actions": 1,
+      "ratio_abstract": 100.0,
+      "ratio_real": 100.0,
+      "drift": 1.0
+    },
+    {
+      "street": "flop",
+      "translated_actions": 4,
+      "ratio_abstract": 40.0,
+      "ratio_real": 50.0,
+      "drift": 1.25
+    },
+    {
+      "street": "turn",
+      "translated_actions": 7,
+      "ratio_abstract": 20.0,
+      "ratio_real": 33.3333,
+      "drift": 1.6667
+    },
+    {
+      "street": "preflop",
+      "translated_actions": 0,
+      "ratio_abstract": 200.0,
+      "ratio_real": 200.0,
+      "drift": 1.0
+    },
+    {
+      "street": "preflop",
+      "translated_actions": 2,
+      "ratio_abstract": 40.0,
+      "ratio_real": 40.0,
+      "drift": 1.0
+    },
+    {
+      "street": "preflop",
+      "translated_actions": 1,
+      "ratio_abstract": 100.0,
+      "ratio_real": 100.0,
+      "drift": 1.0
+    },
+    {
+      "street": "flop",
+      "translated_actions": 4,
+      "ratio_abstract": 40.0,
+      "ratio_real": 50.0,
+      "drift": 1.25
+    },
+    {
+      "street": "turn",
+      "translated_actions": 7,
+      "ratio_abstract": 20.0,
+      "ratio_real": 33.3333,
+      "drift": 1.6667
+    },
+    {
+      "street": "river",
+      "translated_actions": 8,
+      "ratio_abstract": 10.0,
+      "ratio_real": 25.0,
+      "drift": 2.5
+    },
+    {
+      "street": "river",
+      "translated_actions": 10,
+      "ratio_abstract": 10.0,
+      "ratio_real": 25.0,
+      "drift": 2.5
+    },
+    {
+      "street": "preflop",
+      "translated_actions": 0,
+      "ratio_abstract": 200.0,
+      "ratio_real": 200.0,
+      "drift": 1.0
+    },
+    {
+      "street": "preflop",
+      "translated_actions": 2,
+      "ratio_abstract": 40.0,
+      "ratio_real": 40.0,
+      "drift": 1.0
+    },
+    {
+      "street": "preflop",
+      "translated_actions": 1,
+      "ratio_abstract": 100.0,
+      "ratio_real": 100.0,
+      "drift": 1.0
+    },
+    {
+      "street": "preflop",
+      "translated_actions": 0,
+      "ratio_abstract": 200.0,
+      "ratio_real": 200.0,
+      "drift": 1.0
+    },
+    {
+      "street": "preflop",
+      "translated_actions": 2,
+      "ratio_abstract": 40.0,
+      "ratio_real": 40.0,
+      "drift": 1.0
+    },
+    {
+      "street": "preflop",
+      "translated_actions": 1,
+      "ratio_abstract": 100.0,
+      "ratio_real": 100.0,
+      "drift": 1.0
+    },
+    {
+      "street": "flop",
+      "translated_actions": 4,
+      "ratio_abstract": 40.0,
+      "ratio_real": 50.0,
+      "drift": 1.25
+    },
+    {
+      "street": "turn",
+      "translated_actions": 7,
+      "ratio_abstract": 20.0,
+      "ratio_real": 33.3333,
+      "drift": 1.6667
+    },
+    {
+      "street": "river",
+      "translated_actions": 8,
+      "ratio_abstract": 10.0,
+      "ratio_real": 25.0,
+      "drift": 2.5
+    },
+    {
+      "street": "river",
+      "translated_actions": 10,
+      "ratio_abstract": 10.0,
+      "ratio_real": 25.0,
+      "drift": 2.5
+    },
+    {
+      "street": "preflop",
+      "translated_actions": 0,
+      "ratio_abstract": 200.0,
+      "ratio_real": 200.0,
+      "drift": 1.0
+    },
+    {
+      "street": "preflop",
+      "translated_actions": 2,
+      "ratio_abstract": 40.0,
+      "ratio_real": 40.0,
+      "drift": 1.0
+    },
+    {
+      "street": "flop",
+      "translated_actions": 4,
+      "ratio_abstract": 16.0,
+      "ratio_real": 25.0,
+      "drift": 1.5625
+    },
+    {
+      "street": "preflop",
+      "translated_actions": 1,
+      "ratio_abstract": 100.0,
+      "ratio_real": 100.0,
+      "drift": 1.0
+    },
+    {
+      "street": "preflop",
+      "translated_actions": 0,
+      "ratio_abstract": 200.0,
+      "ratio_real": 200.0,
+      "drift": 1.0
+    },
+    {
+      "street": "preflop",
+      "translated_actions": 2,
+      "ratio_abstract": 40.0,
+      "ratio_real": 40.0,
+      "drift": 1.0
+    },
+    {
+      "street": "preflop",
+      "translated_actions": 1,
+      "ratio_abstract": 100.0,
+      "ratio_real": 100.0,
+      "drift": 1.0
+    },
+    {
+      "street": "preflop",
+      "translated_actions": 0,
+      "ratio_abstract": 200.0,
+      "ratio_real": 200.0,
+      "drift": 1.0
+    },
+    {
+      "street": "preflop",
+      "translated_actions": 2,
+      "ratio_abstract": 40.0,
+      "ratio_real": 40.0,
+      "drift": 1.0
+    },
+    {
+      "street": "flop",
+      "translated_actions": 4,
+      "ratio_abstract": 16.0,
+      "ratio_real": 25.0,
+      "drift": 1.5625
+    },
+    {
+      "street": "turn",
+      "translated_actions": 6,
+      "ratio_abstract": 8.0,
+      "ratio_real": 20.0,
+      "drift": 2.5
+    },
+    {
+      "street": "river",
+      "translated_actions": 8,
+      "ratio_abstract": 4.0,
+      "ratio_real": 16.6667,
+      "drift": 4.1667
+    },
+    {
+      "street": "preflop",
+      "translated_actions": 1,
+      "ratio_abstract": 100.0,
+      "ratio_real": 100.0,
+      "drift": 1.0
+    },
+    {
+      "street": "flop",
+      "translated_actions": 4,
+      "ratio_abstract": 40.0,
+      "ratio_real": 50.0,
+      "drift": 1.25
+    },
+    {
+      "street": "turn",
+      "translated_actions": 7,
+      "ratio_abstract": 20.0,
+      "ratio_real": 33.3333,
+      "drift": 1.6667
+    },
+    {
+      "street": "river",
+      "translated_actions": 8,
+      "ratio_abstract": 10.0,
+      "ratio_real": 25.0,
+      "drift": 2.5
+    },
+    {
+      "street": "river",
+      "translated_actions": 10,
+      "ratio_abstract": 10.0,
+      "ratio_real": 25.0,
+      "drift": 2.5
+    },
+    {
+      "street": "river",
+      "translated_actions": 12,
+      "ratio_abstract": 1.6667,
+      "ratio_real": 6.6667,
+      "drift": 4.0
+    },
+    {
+      "street": "preflop",
+      "translated_actions": 0,
+      "ratio_abstract": 200.0,
+      "ratio_real": 200.0,
+      "drift": 1.0
+    },
+    {
+      "street": "preflop",
+      "translated_actions": 2,
+      "ratio_abstract": 40.0,
+      "ratio_real": 40.0,
+      "drift": 1.0
+    },
+    {
+      "street": "preflop",
+      "translated_actions": 1,
+      "ratio_abstract": 100.0,
+      "ratio_real": 100.0,
+      "drift": 1.0
+    },
+    {
+      "street": "flop",
+      "translated_actions": 4,
+      "ratio_abstract": 40.0,
+      "ratio_real": 50.0,
+      "drift": 1.25
+    },
+    {
+      "street": "preflop",
+      "translated_actions": 0,
+      "ratio_abstract": 200.0,
+      "ratio_real": 200.0,
+      "drift": 1.0
+    },
+    {
+      "street": "preflop",
+      "translated_actions": 2,
+      "ratio_abstract": 40.0,
+      "ratio_real": 40.0,
+      "drift": 1.0
+    },
+    {
+      "street": "turn",
+      "translated_actions": 8,
+      "ratio_abstract": 2.0,
+      "ratio_real": 3.4483,
+      "drift": 1.7241
+    },
+    {
+      "street": "preflop",
+      "translated_actions": 1,
+      "ratio_abstract": 100.0,
+      "ratio_real": 100.0,
+      "drift": 1.0
+    },
+    {
+      "street": "flop",
+      "translated_actions": 4,
+      "ratio_abstract": 40.0,
+      "ratio_real": 50.0,
+      "drift": 1.25
+    },
+    {
+      "street": "turn",
+      "translated_actions": 7,
+      "ratio_abstract": 20.0,
+      "ratio_real": 33.3333,
+      "drift": 1.6667
+    },
+    {
+      "street": "turn",
+      "translated_actions": 9,
+      "ratio_abstract": 3.3333,
+      "ratio_real": 8.3333,
+      "drift": 2.5
+    },
+    {
+      "street": "preflop",
+      "translated_actions": 0,
+      "ratio_abstract": 200.0,
+      "ratio_real": 200.0,
+      "drift": 1.0
+    },
+    {
+      "street": "preflop",
+      "translated_actions": 2,
+      "ratio_abstract": 40.0,
+      "ratio_real": 40.0,
+      "drift": 1.0
+    },
+    {
+      "street": "turn",
+      "translated_actions": 8,
+      "ratio_abstract": 3.2,
+      "ratio_real": 5.8824,
+      "drift": 1.8382
+    },
+    {
+      "street": "river",
+      "translated_actions": 10,
+      "ratio_abstract": 1.6,
+      "ratio_real": 5.5556,
+      "drift": 3.4722
+    },
+    {
+      "street": "preflop",
+      "translated_actions": 1,
+      "ratio_abstract": 100.0,
+      "ratio_real": 100.0,
+      "drift": 1.0
+    },
+    {
+      "street": "preflop",
+      "translated_actions": 3,
+      "ratio_abstract": 10.0,
+      "ratio_real": 12.5,
+      "drift": 1.25
+    },
+    {
+      "street": "preflop",
+      "translated_actions": 0,
+      "ratio_abstract": 200.0,
+      "ratio_real": 200.0,
+      "drift": 1.0
+    },
+    {
+      "street": "preflop",
+      "translated_actions": 2,
+      "ratio_abstract": 40.0,
+      "ratio_real": 40.0,
+      "drift": 1.0
+    },
+    {
+      "street": "preflop",
+      "translated_actions": 1,
+      "ratio_abstract": 100.0,
+      "ratio_real": 100.0,
+      "drift": 1.0
+    },
+    {
+      "street": "flop",
+      "translated_actions": 4,
+      "ratio_abstract": 40.0,
+      "ratio_real": 50.0,
+      "drift": 1.25
+    },
+    {
+      "street": "turn",
+      "translated_actions": 7,
+      "ratio_abstract": 20.0,
+      "ratio_real": 33.3333,
+      "drift": 1.6667
+    },
+    {
+      "street": "preflop",
+      "translated_actions": 0,
+      "ratio_abstract": 200.0,
+      "ratio_real": 200.0,
+      "drift": 1.0
+    },
+    {
+      "street": "preflop",
+      "translated_actions": 2,
+      "ratio_abstract": 40.0,
+      "ratio_real": 40.0,
+      "drift": 1.0
+    },
+    {
+      "street": "preflop",
+      "translated_actions": 1,
+      "ratio_abstract": 100.0,
+      "ratio_real": 100.0,
+      "drift": 1.0
+    },
+    {
+      "street": "flop",
+      "translated_actions": 4,
+      "ratio_abstract": 40.0,
+      "ratio_real": 50.0,
+      "drift": 1.25
+    },
+    {
+      "street": "turn",
+      "translated_actions": 7,
+      "ratio_abstract": 20.0,
+      "ratio_real": 33.3333,
+      "drift": 1.6667
+    },
+    {
+      "street": "river",
+      "translated_actions": 8,
+      "ratio_abstract": 10.0,
+      "ratio_real": 25.0,
+      "drift": 2.5
+    },
+    {
+      "street": "river",
+      "translated_actions": 10,
+      "ratio_abstract": 10.0,
+      "ratio_real": 25.0,
+      "drift": 2.5
+    },
+    {
+      "street": "preflop",
+      "translated_actions": 0,
+      "ratio_abstract": 200.0,
+      "ratio_real": 200.0,
+      "drift": 1.0
+    },
+    {
+      "street": "preflop",
+      "translated_actions": 2,
+      "ratio_abstract": 40.0,
+      "ratio_real": 40.0,
+      "drift": 1.0
+    },
+    {
+      "street": "flop",
+      "translated_actions": 4,
+      "ratio_abstract": 16.0,
+      "ratio_real": 25.0,
+      "drift": 1.5625
+    },
+    {
+      "street": "turn",
+      "translated_actions": 6,
+      "ratio_abstract": 8.0,
+      "ratio_real": 20.0,
+      "drift": 2.5
+    },
+    {
+      "street": "preflop",
+      "translated_actions": 1,
+      "ratio_abstract": 100.0,
+      "ratio_real": 100.0,
+      "drift": 1.0
+    },
+    {
+      "street": "preflop",
+      "translated_actions": 3,
+      "ratio_abstract": 16.0,
+      "ratio_real": 20.0,
+      "drift": 1.25
+    },
+    {
+      "street": "preflop",
+      "translated_actions": 0,
+      "ratio_abstract": 200.0,
+      "ratio_real": 200.0,
+      "drift": 1.0
+    },
+    {
+      "street": "preflop",
+      "translated_actions": 2,
+      "ratio_abstract": 40.0,
+      "ratio_real": 40.0,
+      "drift": 1.0
+    },
+    {
+      "street": "flop",
+      "translated_actions": 4,
+      "ratio_abstract": 16.0,
+      "ratio_real": 25.0,
+      "drift": 1.5625
+    },
+    {
+      "street": "turn",
+      "translated_actions": 6,
+      "ratio_abstract": 8.0,
+      "ratio_real": 20.0,
+      "drift": 2.5
+    },
+    {
+      "street": "river",
+      "translated_actions": 8,
+      "ratio_abstract": 4.0,
+      "ratio_real": 16.6667,
+      "drift": 4.1667
+    },
+    {
+      "street": "preflop",
+      "translated_actions": 1,
+      "ratio_abstract": 100.0,
+      "ratio_real": 100.0,
+      "drift": 1.0
+    },
+    {
+      "street": "flop",
+      "translated_actions": 4,
+      "ratio_abstract": 40.0,
+      "ratio_real": 50.0,
+      "drift": 1.25
+    },
+    {
+      "street": "preflop",
+      "translated_actions": 0,
+      "ratio_abstract": 200.0,
+      "ratio_real": 200.0,
+      "drift": 1.0
+    },
+    {
+      "street": "preflop",
+      "translated_actions": 2,
+      "ratio_abstract": 40.0,
+      "ratio_real": 40.0,
+      "drift": 1.0
+    },
+    {
+      "street": "turn",
+      "translated_actions": 8,
+      "ratio_abstract": 2.0,
+      "ratio_real": 3.4483,
+      "drift": 1.7241
+    },
+    {
+      "street": "river",
+      "translated_actions": 10,
+      "ratio_abstract": 1.0,
+      "ratio_real": 3.3333,
+      "drift": 3.3333
+    },
+    {
+      "street": "preflop",
+      "translated_actions": 1,
+      "ratio_abstract": 100.0,
+      "ratio_real": 100.0,
+      "drift": 1.0
+    },
+    {
+      "street": "preflop",
+      "translated_actions": 0,
+      "ratio_abstract": 200.0,
+      "ratio_real": 200.0,
+      "drift": 1.0
+    },
+    {
+      "street": "preflop",
+      "translated_actions": 1,
+      "ratio_abstract": 100.0,
+      "ratio_real": 100.0,
+      "drift": 1.0
+    },
+    {
+      "street": "flop",
+      "translated_actions": 4,
+      "ratio_abstract": 40.0,
+      "ratio_real": 50.0,
+      "drift": 1.25
+    },
+    {
+      "street": "preflop",
+      "translated_actions": 0,
+      "ratio_abstract": 200.0,
+      "ratio_real": 200.0,
+      "drift": 1.0
+    }
+  ]
+}

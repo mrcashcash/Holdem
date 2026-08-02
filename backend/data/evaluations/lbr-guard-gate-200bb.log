@@ -1,0 +1,16 @@
+2026-07-30T18:36:10Z === LBR guard gate: 400 duplicate pairs, seed 20260730, 200bb ===
+2026-07-30T18:36:10Z checkpoint: backend\data\gpu_blueprint_200bb\champion.npz
+2026-07-30T18:36:10Z durable log: backend\data\evaluations\lbr-guard-gate-200bb.log
+2026-07-30T18:36:10Z arm 'off' of 2
+2026-07-30T18:36:16Z   arm start: guard=OFF tolerance=1.5 cap=6.0x pot
+2026-07-30T18:37:52Z   arm done : LBR +290.43 bb/100 [+72.62,+508.23] fallback=1.11% in 96.4s
+2026-07-30T18:37:52Z arm 'on' of 2
+2026-07-30T18:37:55Z   arm start: guard=ON tolerance=1.5 cap=6.0x pot
+2026-07-30T18:39:29Z   arm done : LBR +263.93 bb/100 [+51.42,+476.43] fallback=1.11% in 94.0s
+2026-07-30T18:39:29Z 
+2026-07-30T18:39:29Z --- paired difference (guard ON minus OFF), NEGATIVE means the guard helps ---
+2026-07-30T18:39:29Z   -26.50 bb/100 [-78.44, +25.44] over 400 pairs
+2026-07-30T18:39:29Z   pairs where the guard changed nothing: 399/400
+2026-07-30T18:39:29Z   VERDICT: INCONCLUSIVE
+2026-07-30T18:39:29Z written to backend\data\evaluations\lbr-guard-gate-200bb.json
+2026-07-30T18:39:29Z === gate complete ===

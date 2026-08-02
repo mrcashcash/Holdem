@@ -1,0 +1,44 @@
+{
+  "gate": "abstraction-duel-200bb",
+  "generated_utc": "2026-07-31T16:42:28+00:00",
+  "challenger": {
+    "path": "backend\\data\\gpu_blueprint_200bb_hist\\checkpoint.npz",
+    "iteration": 5000,
+    "histogram": true,
+    "buckets": [
+      169,
+      150,
+      150,
+      30
+    ],
+    "postflop": [
+      0.5,
+      1.0
+    ],
+    "raise_cap": 3
+  },
+  "incumbent": {
+    "path": "backend\\data\\gpu_blueprint_200bb\\champion.npz",
+    "iteration": 118000,
+    "histogram": false,
+    "buckets": [
+      169,
+      20,
+      20,
+      20
+    ],
+    "postflop": [
+      0.5,
+      1.0
+    ],
+    "raise_cap": 3
+  },
+  "pairs": 3000,
+  "seed": 4242,
+  "null_bb_per_100": 0.0,
+  "challenger_minus_incumbent_bb_per_100": -17.79,
+  "ci_low": -50.04,
+  "ci_high": 14.47,
+  "verdict": "INCONCLUSIVE",
+  "elapsed_s": 281.7
+}

@@ -1,0 +1,34 @@
+2026-07-30T21:43:38Z resolver: ON
+2026-07-30T21:43:38Z === GTO Wizard benchmark: serving:MultiStackBlueprintAgent, 500 hands ===
+2026-07-30T21:43:38Z durable log: backend\data\evaluations\gtowizard-serving-on-500.log
+2026-07-30T21:43:38Z server tally before: 2028 hands, -159.41 bb/100
+2026-07-30T21:51:30Z   25/500 hands | AIVAT -78.87 [-148.41,-9.32] | raw +72.96 | 0.05 hands/s | ETA 149.4 min
+2026-07-30T22:00:12Z   50/500 hands | AIVAT -61.86 [-104.67,-19.06] | raw +101.60 | 0.05 hands/s | ETA 149.0 min
+2026-07-30T22:12:08Z   75/500 hands | AIVAT -64.19 [-97.96,-30.41] | raw -149.09 | 0.04 hands/s | ETA 161.5 min
+2026-07-30T22:20:15Z   100/500 hands | AIVAT -55.82 [-83.93,-27.70] | raw -86.90 | 0.05 hands/s | ETA 146.5 min
+2026-07-30T22:29:25Z   125/500 hands | AIVAT -44.58 [-67.56,-21.61] | raw -89.42 | 0.05 hands/s | ETA 137.3 min
+2026-07-30T22:43:39Z   150/500 hands | AIVAT -50.06 [-74.70,-25.42] | raw -81.70 | 0.04 hands/s | ETA 140.0 min
+2026-07-30T22:51:32Z   175/500 hands | AIVAT -51.43 [-73.91,-28.96] | raw -53.72 | 0.04 hands/s | ETA 126.1 min
+2026-07-30T23:00:25Z   200/500 hands | AIVAT -47.34 [-68.23,-26.45] | raw -45.92 | 0.04 hands/s | ETA 115.2 min
+2026-07-30T23:04:44Z   225/500 hands | AIVAT -53.47 [-75.92,-31.02] | raw -68.65 | 0.05 hands/s | ETA 99.1 min
+2026-07-30T23:14:21Z   250/500 hands | AIVAT -50.53 [-70.92,-30.14] | raw -59.40 | 0.05 hands/s | ETA 90.7 min
+2026-07-30T23:26:35Z   275/500 hands | AIVAT -56.95 [-91.23,-22.68] | raw +54.52 | 0.04 hands/s | ETA 84.2 min
+2026-07-30T23:35:34Z   300/500 hands | AIVAT -54.78 [-86.44,-23.12] | raw +53.24 | 0.04 hands/s | ETA 74.6 min
+2026-07-30T23:38:10Z   hand 307 EXCLUDED: POST /hands/2176853/act failed after 4 attempts: POST /hands/2176853/act -> HTTP 503: Service unavailable
+2026-07-30T23:42:29Z   325/500 hands | AIVAT -52.43 [-81.95,-22.92] | raw +46.94 | 0.05 hands/s | ETA 64.2 min
+2026-07-30T23:50:41Z   350/500 hands | AIVAT -48.20 [-75.97,-20.43] | raw +39.45 | 0.05 hands/s | ETA 54.6 min
+2026-07-31T00:02:10Z   hand 371 EXCLUDED: POST /hands/2177464/act failed after 4 attempts: POST /hands/2177464/act -> HTTP 503: Service unavailable
+2026-07-31T00:03:06Z   375/500 hands | AIVAT -56.14 [-85.67,-26.60] | raw +11.71 | 0.04 hands/s | ETA 46.7 min
+2026-07-31T00:13:55Z   400/500 hands | AIVAT -53.61 [-81.34,-25.88] | raw +10.74 | 0.04 hands/s | ETA 37.8 min
+2026-07-31T00:23:09Z   425/500 hands | AIVAT -52.05 [-78.23,-25.87] | raw +0.27 | 0.04 hands/s | ETA 28.3 min
+2026-07-31T00:34:00Z   450/500 hands | AIVAT -57.84 [-85.36,-30.32] | raw -4.67 | 0.04 hands/s | ETA 19.0 min
+2026-07-31T00:43:29Z   475/500 hands | AIVAT -54.68 [-80.82,-28.55] | raw -18.57 | 0.04 hands/s | ETA 9.5 min
+2026-07-31T00:44:32Z   hand 476 EXCLUDED: POST /hands/2178507/act failed after 4 attempts: POST /hands/2178507/act -> HTTP 503: Service unavailable
+2026-07-31T00:52:41Z   500/500 hands | AIVAT -52.89 [-77.80,-27.98] | raw -23.40 | 0.04 hands/s | ETA 0.0 min
+2026-07-31T00:52:41Z 
+2026-07-31T00:52:41Z AIVAT : -52.89 bb/100 [-77.80, -27.98] over 497 hands
+2026-07-31T00:52:41Z raw   : -23.40 bb/100 [-154.57, +107.78]
+2026-07-31T00:52:41Z excluded=3 board_desyncs=0 positions={'hero=SB': 249, 'hero=BB': 248}
+2026-07-31T00:52:41Z timing: {'api_s': 2001.4, 'agent_s': 9301.9, 'mirror_s': 0.7}
+2026-07-31T00:52:41Z server tally after : 2525 hands, -132.64 bb/100, aivat -155.40 bb/100
+2026-07-31T00:52:41Z written to backend\data\evaluations\gtowizard-serving-on-500.json

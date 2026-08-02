@@ -1,0 +1,34 @@
+{
+  "gate": "lbr-paired-checkpoint",
+  "generated_utc": "2026-08-02T04:09:14+00:00",
+  "challenger": "backend\\data\\gpu_blueprint_200bb_hist\\checkpoint-40000.npz",
+  "incumbent": "backend\\data\\gpu_blueprint_200bb_hist\\checkpoint-20000.npz",
+  "stack_bb": 200.0,
+  "seed": 20260730,
+  "incumbent_arm": {
+    "bb_per_100": 211.71,
+    "ci_low": 180.86,
+    "ci_high": 242.55,
+    "pairs": 20000,
+    "fallback_rate": 0.010963,
+    "elapsed_s": 9987.0,
+    "chunks_done": 20
+  },
+  "challenger_arm": {
+    "bb_per_100": 201.78,
+    "ci_low": 170.97,
+    "ci_high": 232.58,
+    "pairs": 20000,
+    "fallback_rate": 0.011052,
+    "elapsed_s": 8169.2,
+    "chunks_done": 20
+  },
+  "paired_delta": {
+    "bb_per_100": -9.93,
+    "ci_low": -29.29,
+    "ci_high": 9.42,
+    "pairs": 20000
+  },
+  "pairs_identical": 15573,
+  "verdict": "INCONCLUSIVE"
+}

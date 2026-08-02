@@ -1,0 +1,28 @@
+2026-07-31T11:57:00Z === river-net gate v2 (null-anchored): backend\data\cfv\river_net\river_net.pt ===
+2026-07-31T11:57:00Z 12 situations x 160 iterations on cuda
+2026-07-31T11:57:00Z durable log: backend\data\evaluations\river-gate-v2.log
+2026-07-31T11:58:05Z   s0    200bb  sensitive mass   2.7%  sensitive acc  0.633  agree net/null 0.770/0.973  L1 net/null 0.525/0.428
+2026-07-31T11:59:06Z   s1    200bb  sensitive mass   2.5%  sensitive acc  0.036  agree net/null 0.038/0.975  L1 net/null 1.426/0.358
+2026-07-31T11:59:51Z   s2    200bb  sensitive mass   6.1%  sensitive acc  0.884  agree net/null 0.958/0.939  L1 net/null 0.425/0.454
+2026-07-31T12:00:36Z   s3    200bb  sensitive mass   8.0%  sensitive acc  0.900  agree net/null 0.934/0.920  L1 net/null 0.451/0.518
+2026-07-31T12:01:12Z   s4    200bb  sensitive mass   8.8%  sensitive acc  0.000  agree net/null 0.028/0.912  L1 net/null 1.891/0.485
+2026-07-31T12:02:15Z   s5    200bb  sensitive mass   4.6%  sensitive acc  0.000  agree net/null 0.064/0.954  L1 net/null 1.477/0.418
+2026-07-31T12:03:15Z   s6    200bb  sensitive mass   2.2%  sensitive acc  0.000  agree net/null 0.000/0.978  L1 net/null 1.975/0.420
+2026-07-31T12:03:46Z   s7    200bb  sensitive mass  19.1%  sensitive acc  0.572  agree net/null 0.776/0.809  L1 net/null 0.795/0.690
+2026-07-31T12:04:32Z   s8    200bb  sensitive mass   2.2%  sensitive acc  0.000  agree net/null 0.093/0.978  L1 net/null 1.457/0.369
+2026-07-31T12:05:05Z   s9    200bb  sensitive mass  17.6%  sensitive acc  0.000  agree net/null 0.035/0.824  L1 net/null 1.183/0.612
+2026-07-31T12:05:45Z   s10   200bb  sensitive mass   5.2%  sensitive acc  0.085  agree net/null 0.057/0.948  L1 net/null 1.513/0.425
+2026-07-31T12:06:45Z   s11   200bb  sensitive mass   8.8%  sensitive acc  0.525  agree net/null 0.758/0.912  L1 net/null 0.662/0.411
+2026-07-31T12:06:45Z 
+2026-07-31T12:06:45Z --- v2 summary ---
+2026-07-31T12:06:45Z mean horizon-sensitive mass          : 7.3%  (share of range the river horizon actually moves)
+2026-07-31T12:06:45Z SENSITIVE-SET ACCURACY (primary)     : 0.3029  (0 = no better than a zero horizon, 1 = perfect)
+2026-07-31T12:06:45Z policy L1, net vs null               : 1.1482 vs 0.4657
+2026-07-31T12:06:45Z L1 SKILL vs null                     : -1.4658  (fraction of the null's error removed; negative = worse than nothing)
+2026-07-31T12:06:45Z 
+2026-07-31T12:06:45Z for audit, v1-style over ALL mass    : agreement net 0.3759 vs null 0.9268
+2026-07-31T12:06:45Z   v1 required >= 0.90, which the NULL clears -- that is why v1 is retired.
+2026-07-31T12:06:45Z 
+2026-07-31T12:06:45Z VERDICT: negative L1 skill -- the net adds more policy error than a zero
+2026-07-31T12:06:45Z horizon. Any acceptance bar is moot until this is positive.
+2026-07-31T12:06:45Z written to backend\data\evaluations\river-gate-v2.json

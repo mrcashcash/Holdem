@@ -1,0 +1,14 @@
+2026-07-31T09:16:13Z === DCFR vs DCFR+ duel: 20bb, 300 iterations, d=100, solver seed 20260731 ===
+2026-07-31T09:16:13Z durable log: backend\data\evaluations\smoke-dcfr-duel.log
+2026-07-31T09:16:13Z -- training dcfr: backend.solver.gpu.train --stack-bb 20.0 --abstraction histogram --iterations 300 --save-every 500 --batch-boards 1 --device cuda --seed 20260731 --tag dcfr_ctl300
+2026-07-31T09:22:07Z    trained in 353.7s -> C:\Users\dudiz\Documents\Holdem\backend\data\gpu_blueprint_20bb_dcfr_ctl300\checkpoint.npz
+2026-07-31T09:22:07Z -- training dcfr_plus: backend.solver.gpu.train --stack-bb 20.0 --abstraction histogram --iterations 300 --save-every 500 --batch-boards 1 --device cuda --seed 20260731 --tag dcfrplus100_300 --dcfr-plus-delay 100
+2026-07-31T09:28:17Z    trained in 370.0s -> C:\Users\dudiz\Documents\Holdem\backend\data\gpu_blueprint_20bb_dcfrplus100_300\checkpoint.npz
+2026-07-31T09:28:19Z 
+2026-07-31T09:28:19Z -- NULL first: control vs ITSELF must read exactly +0.00 with CRN --
+2026-07-31T09:28:28Z    null: +0.00 bb/100 [+0.00,+0.00]
+2026-07-31T09:28:28Z 
+2026-07-31T09:28:28Z -- duel: DCFR+ (challenger) vs DCFR (control), 60 pairs, CRN --
+2026-07-31T09:28:34Z    DCFR+ minus DCFR: +142.12 bb/100 [+5.58,+278.67] in 5.6s
+2026-07-31T09:28:34Z    VERDICT: DCFR+ BETTER
+2026-07-31T09:28:34Z written to backend\data\evaluations\smoke-dcfr-duel.json

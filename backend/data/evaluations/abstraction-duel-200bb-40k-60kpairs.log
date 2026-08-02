@@ -1,0 +1,9 @@
+2026-08-01T20:01:30Z === abstraction duel @ 200bb, 60000 pairs, CRN ===
+2026-08-01T20:01:30Z challenger: iter=40,000 histogram=True buckets=[169, 150, 150, 30] postflop=[0.5, 1.0] cap=3
+2026-08-01T20:01:30Z incumbent : iter=118,000 histogram=False buckets=[169, 20, 20, 20] postflop=[0.5, 1.0] cap=3
+2026-08-01T20:01:30Z durable log: backend\data\evaluations\abstraction-duel-200bb-40k-60kpairs.log
+2026-08-01T20:01:30Z 
+2026-08-01T20:01:30Z -- NULL: incumbent vs ITSELF must read exactly +0.00 with CRN --
+2026-08-01T20:02:09Z    null: +0.00 bb/100 [+0.00,+0.00]
+2026-08-01T20:02:09Z 
+2026-08-01T20:02:09Z -- duel: histogram (challenger) vs scalar (incumbent) --

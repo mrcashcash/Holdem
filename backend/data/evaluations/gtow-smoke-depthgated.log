@@ -1,0 +1,12 @@
+2026-07-31T08:40:21Z resolver by depth (what will actually play): {20.0: True, 100.0: True, 200.0: False}
+2026-07-31T08:40:21Z === GTO Wizard benchmark: serving:MultiStackBlueprintAgent, 10 hands ===
+2026-07-31T08:40:21Z durable log: backend\data\evaluations\gtow-smoke-depthgated.log
+2026-07-31T08:40:22Z server tally before: 2599 hands, -132.21 bb/100
+2026-07-31T08:40:59Z   10/10 hands | AIVAT +6.05 [-24.12,+36.22] | raw -546.30 | 0.27 hands/s | ETA 0.0 min
+2026-07-31T08:40:59Z 
+2026-07-31T08:40:59Z AIVAT : +6.05 bb/100 [-24.12, +36.22] over 10 hands
+2026-07-31T08:40:59Z raw   : -546.30 bb/100 [-1313.03, +220.43]
+2026-07-31T08:40:59Z excluded=0 board_desyncs=0 positions={'hero=BB': 5, 'hero=SB': 5}
+2026-07-31T08:40:59Z timing: {'api_s': 36.0, 'agent_s': 0.5, 'mirror_s': 0.5}
+2026-07-31T08:40:59Z server tally after : 2609 hands, -133.80 bb/100, aivat -151.26 bb/100
+2026-07-31T08:40:59Z written to backend\data\evaluations\gtow-smoke-depthgated.json

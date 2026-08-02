@@ -1,0 +1,61 @@
+2026-07-30T18:41:19Z === LBR guard gate: 20000 duplicate pairs, seed 20260730, 200bb ===
+2026-07-30T18:41:19Z checkpoint: backend\data\gpu_blueprint_200bb\champion.npz
+2026-07-30T18:41:19Z durable log: backend\data\evaluations\lbr-guard-gate-200bb-20k.log
+2026-07-30T18:41:19Z arm 'off' of 2
+2026-07-30T18:41:25Z   arm start: guard=OFF tolerance=1.5 cap=6.0x pot
+2026-07-30T19:28:25Z === LBR guard gate: 20000 duplicate pairs, seed 20260730, 200bb ===
+2026-07-30T19:28:25Z checkpoint: backend\data\gpu_blueprint_200bb\champion.npz
+2026-07-30T19:28:25Z durable log: backend\data\evaluations\lbr-guard-gate-200bb-20k.log
+2026-07-30T19:28:25Z arm 'off' of 2
+2026-07-30T19:28:32Z   arm start: guard=OFF tolerance=1.5 cap=6.0x pot, 20 chunks of 1000
+2026-07-30T19:31:24Z     chunk 1/20: 1,000 pairs, running LBR +255.21 bb/100, 2.9 min
+2026-07-30T19:34:01Z     chunk 2/20: 2,000 pairs, running LBR +264.27 bb/100, 5.5 min
+2026-07-30T19:36:47Z     chunk 3/20: 3,000 pairs, running LBR +225.90 bb/100, 8.3 min
+2026-07-30T19:39:33Z     chunk 4/20: 4,000 pairs, running LBR +211.53 bb/100, 11.0 min
+2026-07-30T19:42:25Z     chunk 5/20: 5,000 pairs, running LBR +213.43 bb/100, 13.9 min
+2026-07-30T19:45:05Z     chunk 6/20: 6,000 pairs, running LBR +230.18 bb/100, 16.6 min
+2026-07-30T19:47:39Z     chunk 7/20: 7,000 pairs, running LBR +222.34 bb/100, 19.1 min
+2026-07-30T19:50:24Z     chunk 8/20: 8,000 pairs, running LBR +238.62 bb/100, 21.9 min
+2026-07-30T19:53:10Z     chunk 9/20: 9,000 pairs, running LBR +242.16 bb/100, 24.6 min
+2026-07-30T19:55:59Z     chunk 10/20: 10,000 pairs, running LBR +233.66 bb/100, 27.4 min
+2026-07-30T19:58:55Z     chunk 11/20: 11,000 pairs, running LBR +237.49 bb/100, 30.4 min
+2026-07-30T20:01:52Z     chunk 12/20: 12,000 pairs, running LBR +241.40 bb/100, 33.3 min
+2026-07-30T20:05:28Z     chunk 13/20: 13,000 pairs, running LBR +247.24 bb/100, 36.9 min
+2026-07-30T20:08:21Z     chunk 14/20: 14,000 pairs, running LBR +245.06 bb/100, 39.8 min
+2026-07-30T20:10:43Z     chunk 15/20: 15,000 pairs, running LBR +244.35 bb/100, 42.2 min
+2026-07-30T20:13:03Z     chunk 16/20: 16,000 pairs, running LBR +248.81 bb/100, 44.5 min
+2026-07-30T20:15:27Z     chunk 17/20: 17,000 pairs, running LBR +249.49 bb/100, 46.9 min
+2026-07-30T20:17:42Z     chunk 18/20: 18,000 pairs, running LBR +249.55 bb/100, 49.2 min
+2026-07-30T20:19:57Z     chunk 19/20: 19,000 pairs, running LBR +250.02 bb/100, 51.4 min
+2026-07-30T20:22:15Z     chunk 20/20: 20,000 pairs, running LBR +252.45 bb/100, 53.7 min
+2026-07-30T20:22:15Z   arm done : LBR +252.45 bb/100 [+223.34,+281.55] fallback=1.36% over 20,000 pairs in 53.7 min
+2026-07-30T20:22:15Z arm 'on' of 2
+2026-07-30T20:22:17Z   arm start: guard=ON tolerance=1.5 cap=6.0x pot, 20 chunks of 1000
+2026-07-30T20:24:37Z     chunk 1/20: 1,000 pairs, running LBR +238.99 bb/100, 2.3 min
+2026-07-30T20:26:51Z     chunk 2/20: 2,000 pairs, running LBR +246.12 bb/100, 4.6 min
+2026-07-30T20:29:12Z     chunk 3/20: 3,000 pairs, running LBR +211.85 bb/100, 6.9 min
+2026-07-30T20:31:36Z     chunk 4/20: 4,000 pairs, running LBR +193.53 bb/100, 9.3 min
+2026-07-30T20:34:06Z     chunk 5/20: 5,000 pairs, running LBR +195.37 bb/100, 11.8 min
+2026-07-30T20:36:35Z     chunk 6/20: 6,000 pairs, running LBR +216.89 bb/100, 14.3 min
+2026-07-30T20:39:07Z     chunk 7/20: 7,000 pairs, running LBR +210.11 bb/100, 16.8 min
+2026-07-30T20:41:23Z     chunk 8/20: 8,000 pairs, running LBR +232.78 bb/100, 19.1 min
+2026-07-30T20:43:42Z     chunk 9/20: 9,000 pairs, running LBR +235.99 bb/100, 21.4 min
+2026-07-30T20:46:04Z     chunk 10/20: 10,000 pairs, running LBR +228.79 bb/100, 23.8 min
+2026-07-30T20:48:21Z     chunk 11/20: 11,000 pairs, running LBR +233.70 bb/100, 26.1 min
+2026-07-30T20:50:39Z     chunk 12/20: 12,000 pairs, running LBR +237.79 bb/100, 28.4 min
+2026-07-30T20:52:57Z     chunk 13/20: 13,000 pairs, running LBR +243.91 bb/100, 30.7 min
+2026-07-30T20:55:21Z     chunk 14/20: 14,000 pairs, running LBR +241.33 bb/100, 33.1 min
+2026-07-30T20:57:40Z     chunk 15/20: 15,000 pairs, running LBR +239.97 bb/100, 35.4 min
+2026-07-30T20:59:57Z     chunk 16/20: 16,000 pairs, running LBR +245.21 bb/100, 37.7 min
+2026-07-30T21:02:17Z     chunk 17/20: 17,000 pairs, running LBR +245.84 bb/100, 40.0 min
+2026-07-30T21:04:30Z     chunk 18/20: 18,000 pairs, running LBR +245.16 bb/100, 42.2 min
+2026-07-30T21:06:42Z     chunk 19/20: 19,000 pairs, running LBR +245.26 bb/100, 44.4 min
+2026-07-30T21:08:56Z     chunk 20/20: 20,000 pairs, running LBR +247.70 bb/100, 46.6 min
+2026-07-30T21:08:56Z   arm done : LBR +247.70 bb/100 [+218.13,+277.27] fallback=1.44% over 20,000 pairs in 46.6 min
+2026-07-30T21:08:56Z 
+2026-07-30T21:08:56Z --- paired difference (guard ON minus OFF), NEGATIVE means the guard helps ---
+2026-07-30T21:08:56Z   -4.74 bb/100 [-10.63, +1.14] over 20000 pairs
+2026-07-30T21:08:56Z   pairs where the guard changed nothing: 19931/20000
+2026-07-30T21:08:56Z   VERDICT: INCONCLUSIVE
+2026-07-30T21:08:56Z written to backend\data\evaluations\lbr-guard-gate-200bb-20k.json
+2026-07-30T21:08:56Z === gate complete ===

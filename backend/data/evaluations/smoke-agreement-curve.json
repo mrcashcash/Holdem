@@ -1,0 +1,22 @@
+{
+  "points": [
+    {
+      "fraction": 0.1,
+      "rows": 7641,
+      "val_mae": 0.6828491687774658,
+      "zero_baseline_mae": 0.7149350047111511,
+      "ratio_vs_baseline": 0.9551206253404131,
+      "action_agreement": 0.8041,
+      "policy_l1": 0.5976,
+      "train_s": 6.0
+    }
+  ],
+  "recorded_baseline": {
+    "fraction": 1.0,
+    "rows": 76411,
+    "note": "recorded 120-epoch run (backend/data/cfv/river_net)",
+    "ratio_vs_baseline": 0.4864,
+    "action_agreement": 0.3766,
+    "policy_l1": 1.1474
+  }
+}

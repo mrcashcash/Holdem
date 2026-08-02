@@ -1,0 +1,24 @@
+2026-08-02T04:25:25Z === native50-vs-20bb-routed: 60,000 pairs @ 50bb, CRN, 6 workers ===
+2026-08-02T04:25:25Z challenger: iter=15,000 histogram=True buckets=[169, 150, 150, 30] preflop=[0.75, 1.0] postflop=[0.4, 0.7, 1.2] cap=2
+2026-08-02T04:25:25Z incumbent : iter=50,000 histogram=True buckets=[169, 150, 150, 30] preflop=[0.5, 0.75] postflop=[0.33, 0.66, 1.0, 1.5] cap=2
+2026-08-02T04:25:25Z NOTE: preflop differs between the arms -- this duel does not isolate training progress alone.
+2026-08-02T04:25:25Z NOTE: postflop differs between the arms -- this duel does not isolate training progress alone.
+2026-08-02T04:25:25Z durable log: backend\data\evaluations\native50-vs-20bb-routed.log
+2026-08-02T04:25:25Z 
+2026-08-02T04:25:25Z -- NULL: incumbent vs itself, 400 pairs, must be exactly +0.00 --
+2026-08-02T04:26:14Z    null: +0.00 bb/100
+2026-08-02T04:26:14Z 
+2026-08-02T04:26:14Z -- launching 6 shards: [0,10,000), [10,000,20,000), [20,000,30,000), [30,000,40,000), [40,000,50,000), [50,000,60,000)
+2026-08-02T04:26:14Z -- serial control: replaying pairs [0,200) in-process --
+2026-08-02T04:58:49Z    shard 0 [0,10,000) done
+2026-08-02T04:58:49Z    shard 1 [10,000,20,000) done
+2026-08-02T04:58:49Z    shard 2 [20,000,30,000) done
+2026-08-02T04:58:49Z    shard 3 [30,000,40,000) done
+2026-08-02T04:58:54Z    shard 4 [40,000,50,000) done
+2026-08-02T04:58:54Z    shard 5 [50,000,60,000) done
+2026-08-02T04:58:54Z    exactness: first 200 pairs match the serial control bit for bit
+2026-08-02T04:58:54Z 
+2026-08-02T04:58:54Z    challenger minus incumbent: +14.66 bb/100 [+9.41,+19.92]
+2026-08-02T04:58:54Z    60,000 pairs in 1960.0s -> 30.61 pairs/s across 6 shards
+2026-08-02T04:58:54Z    VERDICT: CHALLENGER BETTER
+2026-08-02T04:58:54Z written to backend\data\evaluations\native50-vs-20bb-routed.json

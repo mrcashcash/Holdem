@@ -1,0 +1,61 @@
+{
+  "gate": "canon50-10k-vs-5k",
+  "generated_utc": "2026-08-02T00:22:31+00:00",
+  "challenger": {
+    "path": "backend/data/gpu_blueprint_50bb_canon50/checkpoint-10000.npz",
+    "iteration": 10000,
+    "histogram": true,
+    "buckets": [
+      169,
+      150,
+      150,
+      30
+    ],
+    "preflop": [
+      0.75,
+      1.0
+    ],
+    "postflop": [
+      0.4,
+      0.7,
+      1.2
+    ],
+    "raise_cap": 2,
+    "stack_bb": 50.0
+  },
+  "incumbent": {
+    "path": "backend/data/gpu_blueprint_50bb_canon50/checkpoint-5000.npz",
+    "iteration": 5000,
+    "histogram": true,
+    "buckets": [
+      169,
+      150,
+      150,
+      30
+    ],
+    "preflop": [
+      0.75,
+      1.0
+    ],
+    "postflop": [
+      0.4,
+      0.7,
+      1.2
+    ],
+    "raise_cap": 2,
+    "stack_bb": 50.0
+  },
+  "stack_bb": 50.0,
+  "seed": 4242,
+  "workers": 40,
+  "null_bb_per_100": 0.0,
+  "exactness_verified_pairs": 200,
+  "challenger_minus_incumbent_bb_per_100": 1.62,
+  "ci_low": -1.45,
+  "ci_high": 4.68,
+  "verdict": "INCONCLUSIVE",
+  "elapsed_s": 1245.1,
+  "pairs_per_s": 48.19,
+  "pairs": 60000,
+  "hands": 120000
+}

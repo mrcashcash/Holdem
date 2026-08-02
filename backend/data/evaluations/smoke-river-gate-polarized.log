@@ -1,0 +1,20 @@
+2026-07-31T12:14:59Z === river-net gate v2 (null-anchored): backend\data\cfv\river_net\river_net.pt ===
+2026-07-31T12:14:59Z 3 situations x 40 iterations on cuda
+2026-07-31T12:14:59Z range distribution: POLARIZED  (matches datagen + real play)
+2026-07-31T12:14:59Z durable log: backend\data\evaluations\smoke-river-gate-polarized.log
+2026-07-31T12:15:16Z   s0    200bb  sensitive mass  26.1%  sensitive acc  0.257  agree net/null 0.662/0.739  L1 net/null 0.568/0.499
+2026-07-31T12:15:27Z   s1    200bb  sensitive mass  42.6%  sensitive acc  0.005  agree net/null 0.562/0.574  L1 net/null 0.395/0.445
+2026-07-31T12:15:43Z   s2    200bb  sensitive mass   6.8%  sensitive acc  0.687  agree net/null 0.826/0.932  L1 net/null 0.275/0.085
+2026-07-31T12:15:43Z 
+2026-07-31T12:15:43Z --- v2 summary ---
+2026-07-31T12:15:43Z mean horizon-sensitive mass          : 25.2%  (share of range the river horizon actually moves)
+2026-07-31T12:15:43Z SENSITIVE-SET ACCURACY (primary)     : 0.3161  (0 = no better than a zero horizon, 1 = perfect)
+2026-07-31T12:15:43Z policy L1, net vs null               : 0.4129 vs 0.3430
+2026-07-31T12:15:43Z L1 SKILL vs null                     : -0.2038  (fraction of the null's error removed; negative = worse than nothing)
+2026-07-31T12:15:43Z 
+2026-07-31T12:15:43Z for audit, v1-style over ALL mass    : agreement net 0.6833 vs null 0.7484
+2026-07-31T12:15:43Z   v1 required >= 0.90, which the NULL clears -- that is why v1 is retired.
+2026-07-31T12:15:43Z 
+2026-07-31T12:15:43Z VERDICT: negative L1 skill -- the net adds more policy error than a zero
+2026-07-31T12:15:43Z horizon. Any acceptance bar is moot until this is positive.
+2026-07-31T12:15:43Z written to backend\data\evaluations\smoke-river-gate-polarized.json

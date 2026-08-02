@@ -1,0 +1,16 @@
+2026-08-01T02:39:12Z === abstraction duel @ 200bb, 20000 pairs, CRN ===
+2026-08-01T02:39:12Z challenger: iter=20,000 histogram=True buckets=[169, 150, 150, 30] postflop=[0.5, 1.0] cap=3
+2026-08-01T02:39:12Z incumbent : iter=118,000 histogram=False buckets=[169, 20, 20, 20] postflop=[0.5, 1.0] cap=3
+2026-08-01T02:39:12Z durable log: backend\data\evaluations\abstraction-duel-200bb-20kpairs.log
+2026-08-01T02:39:12Z 
+2026-08-01T02:39:12Z -- NULL: incumbent vs ITSELF must read exactly +0.00 with CRN --
+2026-08-01T02:39:41Z    null: +0.00 bb/100 [+0.00,+0.00]
+2026-08-01T02:39:41Z 
+2026-08-01T02:39:41Z -- duel: histogram (challenger) vs scalar (incumbent) --
+2026-08-01T03:09:41Z    histogram minus scalar: +8.53 bb/100 [-2.89,+19.96] in 1799.7s
+2026-08-01T03:09:41Z    VERDICT: INCONCLUSIVE
+2026-08-01T03:09:41Z 
+2026-08-01T03:09:41Z    The interval spans zero. Do NOT promote. The likeliest cause is
+2026-08-01T03:09:41Z    undertraining rather than the abstraction being worthless: this tree is
+2026-08-01T03:09:41Z    4x the one where histogram@5k won at 20bb.
+2026-08-01T03:09:41Z written to backend\data\evaluations\abstraction-duel-200bb-20kpairs.json

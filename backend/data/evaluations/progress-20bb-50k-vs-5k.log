@@ -1,0 +1,22 @@
+2026-08-01T22:29:23Z === progress-20bb-50k-vs-5k: 60,000 pairs @ 20bb, CRN, 6 workers ===
+2026-08-01T22:29:23Z challenger: iter=50,000 histogram=True buckets=[169, 150, 150, 30] preflop=[0.5, 0.75] postflop=[0.33, 0.66, 1.0, 1.5] cap=2
+2026-08-01T22:29:23Z incumbent : iter=5,000 histogram=True buckets=[169, 150, 150, 30] preflop=[0.5, 0.75] postflop=[0.33, 0.66, 1.0, 1.5] cap=2
+2026-08-01T22:29:23Z durable log: backend\data\evaluations\progress-20bb-50k-vs-5k.log
+2026-08-01T22:29:23Z 
+2026-08-01T22:29:23Z -- NULL: incumbent vs itself, 400 pairs, must be exactly +0.00 --
+2026-08-01T22:30:23Z    null: +0.00 bb/100
+2026-08-01T22:30:23Z 
+2026-08-01T22:30:23Z -- launching 6 shards: [0,10,000), [10,000,20,000), [20,000,30,000), [30,000,40,000), [40,000,50,000), [50,000,60,000)
+2026-08-01T22:30:23Z -- serial control: replaying pairs [0,200) in-process --
+2026-08-01T23:05:48Z    shard 0 [0,10,000) done
+2026-08-01T23:06:14Z    shard 1 [10,000,20,000) done
+2026-08-01T23:06:14Z    shard 2 [20,000,30,000) done
+2026-08-01T23:06:14Z    shard 3 [30,000,40,000) done
+2026-08-01T23:06:14Z    shard 4 [40,000,50,000) done
+2026-08-01T23:06:14Z    shard 5 [50,000,60,000) done
+2026-08-01T23:06:14Z    exactness: first 200 pairs match the serial control bit for bit
+2026-08-01T23:06:14Z 
+2026-08-01T23:06:14Z    challenger minus incumbent: +5.01 bb/100 [+3.03,+6.99]
+2026-08-01T23:06:14Z    60,000 pairs in 2151.3s -> 27.89 pairs/s across 6 shards
+2026-08-01T23:06:14Z    VERDICT: CHALLENGER BETTER
+2026-08-01T23:06:14Z written to backend\data\evaluations\progress-20bb-50k-vs-5k.json

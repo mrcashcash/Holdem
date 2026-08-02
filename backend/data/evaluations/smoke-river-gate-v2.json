@@ -1,0 +1,41 @@
+{
+  "gate": "river-net-acceptance-v2",
+  "generated_utc": "2026-07-31T11:56:25+00:00",
+  "net": "backend\\data\\cfv\\river_net\\river_net.pt",
+  "situations": 2,
+  "iterations": 40,
+  "situations_with_sensitive_mass": 2,
+  "mean_sensitive_mass": 0.2633,
+  "sensitive_accuracy_mean": 0.3942,
+  "policy_l1_net_mean": 0.6076,
+  "policy_l1_null_mean": 0.4677,
+  "l1_skill_vs_null": -0.2992,
+  "agreement_net_all_mass_mean": 0.6675,
+  "agreement_null_all_mass_mean": 0.7367,
+  "rows": [
+    {
+      "situation": 0,
+      "stack_bb": 200.0,
+      "sensitive_mass": 0.3298,
+      "sensitive_accuracy": 0.3199,
+      "agreement_net_all_mass": 0.6303,
+      "agreement_null_all_mass": 0.6702,
+      "policy_l1_net": 0.5492,
+      "policy_l1_null": 0.4983,
+      "full_s": 11.46,
+      "net_s": 3.95
+    },
+    {
+      "situation": 1,
+      "stack_bb": 200.0,
+      "sensitive_mass": 0.1968,
+      "sensitive_accuracy": 0.4685,
+      "agreement_net_all_mass": 0.7048,
+      "agreement_null_all_mass": 0.8032,
+      "policy_l1_net": 0.6659,
+      "policy_l1_null": 0.437,
+      "full_s": 10.7,
+      "net_s": 3.26
+    }
+  ]
+}

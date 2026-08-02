@@ -1,0 +1,45 @@
+2026-07-30T18:51:54Z === GTO Wizard benchmark: null:always-fold, 500 hands ===
+2026-07-30T18:51:54Z durable log: backend\data\evaluations\gtowizard-null-fold-500.log
+2026-07-30T18:51:55Z server tally before: 11 hands, -77.27 bb/100
+2026-07-30T18:52:27Z   25/500 hands | AIVAT -49.47 [-72.70,-26.25] | raw -74.00 | 0.76 hands/s | ETA 10.4 min
+2026-07-30T18:52:28Z   hand 25 EXCLUDED: could not identify the hero by visible hole cards
+2026-07-30T18:52:39Z   hand 33 EXCLUDED: could not identify the hero by visible hole cards
+2026-07-30T18:52:47Z   hand 43 EXCLUDED: could not identify the hero by visible hole cards
+2026-07-30T18:52:53Z   50/500 hands | AIVAT -52.46 [-69.46,-35.47] | raw -73.40 | 0.81 hands/s | ETA 9.3 min
+2026-07-30T18:52:54Z   hand 51 EXCLUDED: could not identify the hero by visible hole cards
+2026-07-30T18:53:04Z   hand 65 EXCLUDED: could not identify the hero by visible hole cards
+2026-07-30T18:53:12Z   75/500 hands | AIVAT -57.57 [-73.65,-41.48] | raw -72.86 | 0.91 hands/s | ETA 7.8 min
+2026-07-30T18:53:34Z   100/500 hands | AIVAT -60.30 [-74.51,-46.09] | raw -73.68 | 0.95 hands/s | ETA 7.0 min
+2026-07-30T18:53:52Z   hand 121 EXCLUDED: could not identify the hero by visible hole cards
+2026-07-30T18:53:53Z   hand 123 EXCLUDED: could not identify the hero by visible hole cards
+2026-07-30T18:53:54Z   125/500 hands | AIVAT -62.45 [-75.20,-49.71] | raw -73.31 | 0.98 hands/s | ETA 6.3 min
+2026-07-30T19:28:10Z === GTO Wizard benchmark: null:always-fold, 500 hands ===
+2026-07-30T19:28:10Z durable log: backend\data\evaluations\gtowizard-null-fold-500.log
+2026-07-30T19:28:11Z server tally before: 143 hands, -67.83 bb/100
+2026-07-30T19:28:11Z resuming at 118 hands (7 excluded)
+2026-07-30T19:28:32Z   150/500 hands | AIVAT -62.36 [-76.85,-47.87] | raw -73.78 | 6.84 hands/s | ETA 0.9 min
+2026-07-30T19:28:54Z   175/500 hands | AIVAT -65.92 [-81.10,-50.74] | raw -71.13 | 3.85 hands/s | ETA 1.4 min
+2026-07-30T19:29:13Z   200/500 hands | AIVAT -72.01 [-89.11,-54.91] | raw -70.21 | 3.08 hands/s | ETA 1.6 min
+2026-07-30T19:29:42Z   225/500 hands | AIVAT -73.33 [-89.77,-56.89] | raw -68.58 | 2.39 hands/s | ETA 1.9 min
+2026-07-30T19:30:02Z   250/500 hands | AIVAT -73.38 [-88.65,-58.11] | raw -68.11 | 2.18 hands/s | ETA 1.9 min
+2026-07-30T19:30:25Z   275/500 hands | AIVAT -76.37 [-93.01,-59.73] | raw -67.54 | 2.00 hands/s | ETA 1.9 min
+2026-07-30T19:30:48Z   300/500 hands | AIVAT -74.99 [-90.58,-59.41] | raw -67.24 | 1.86 hands/s | ETA 1.8 min
+2026-07-30T19:31:10Z   325/500 hands | AIVAT -75.80 [-90.98,-60.62] | raw -67.30 | 1.78 hands/s | ETA 1.6 min
+2026-07-30T19:31:26Z   350/500 hands | AIVAT -73.81 [-88.03,-59.59] | raw -66.18 | 1.75 hands/s | ETA 1.4 min
+2026-07-30T19:31:48Z   375/500 hands | AIVAT -72.55 [-85.96,-59.14] | raw -65.49 | 1.69 hands/s | ETA 1.2 min
+2026-07-30T19:32:12Z   400/500 hands | AIVAT -71.71 [-84.39,-59.04] | raw -65.39 | 1.63 hands/s | ETA 1.0 min
+2026-07-30T19:32:31Z   425/500 hands | AIVAT -70.54 [-82.73,-58.35] | raw -65.19 | 1.61 hands/s | ETA 0.8 min
+2026-07-30T19:32:50Z   450/500 hands | AIVAT -70.59 [-82.59,-58.59] | raw -64.45 | 1.59 hands/s | ETA 0.5 min
+2026-07-30T19:33:23Z   475/500 hands | AIVAT -70.05 [-81.61,-58.48] | raw -64.32 | 1.50 hands/s | ETA 0.3 min
+2026-07-30T19:33:48Z   500/500 hands | AIVAT -69.74 [-80.82,-58.65] | raw -64.30 | 1.46 hands/s | ETA 0.0 min
+2026-07-30T19:33:48Z 
+2026-07-30T19:33:48Z AIVAT : -69.74 bb/100 [-80.82, -58.65] over 493 hands
+2026-07-30T19:33:48Z raw   : -64.30 bb/100 [-67.77, -60.83]
+2026-07-30T19:33:48Z excluded=7 board_desyncs=0 positions={'hero=SB': 250, 'hero=BB': 243}
+2026-07-30T19:33:48Z timing: {'api_s': 456.5, 'agent_s': 0.0, 'mirror_s': 0.5}
+2026-07-30T19:33:48Z server tally after : 518 hands, -63.22 bb/100, aivat -69.73 bb/100
+2026-07-30T19:33:48Z 
+2026-07-30T19:33:48Z NULL ANCHOR: published -64.6 +- 3.3 bb/100
+2026-07-30T19:33:48Z   measured  -69.74 [-80.82,-58.65]
+2026-07-30T19:33:48Z   PASS - intervals overlap
+2026-07-30T19:33:48Z written to backend\data\evaluations\gtowizard-null-fold-500.json

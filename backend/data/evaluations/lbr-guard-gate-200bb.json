@@ -1,0 +1,117 @@
+{
+  "gate": "lbr-all-in-geometry-guard-on-vs-off",
+  "generated_utc": "2026-07-30T18:39:29+00:00",
+  "checkpoint": "backend\\data\\gpu_blueprint_200bb\\champion.npz",
+  "stack_bb": 200.0,
+  "seed": 20260730,
+  "search": "blueprint only (all search mechanisms off in both arms)",
+  "guard_tolerance": 1.5,
+  "guard_max_pot_multiple": 6.0,
+  "off": {
+    "lbr_bb_per_100": 290.43,
+    "ci_low_bb_per_100": 72.62,
+    "ci_high_bb_per_100": 508.23,
+    "hands": 800,
+    "pairs": 400,
+    "stack_bb": 200.0,
+    "by_terminal_street": {
+      "preflop": {
+        "bb_per_100": 202.38,
+        "ci_low_bb_per_100": 143.96,
+        "ci_high_bb_per_100": 260.81,
+        "hands": 472
+      },
+      "flop": {
+        "bb_per_100": 688.19,
+        "ci_low_bb_per_100": 516.43,
+        "ci_high_bb_per_100": 859.96,
+        "hands": 144
+      },
+      "turn": {
+        "bb_per_100": 943.01,
+        "ci_low_bb_per_100": 433.29,
+        "ci_high_bb_per_100": 1452.74,
+        "hands": 68
+      },
+      "river": {
+        "bb_per_100": -227.67,
+        "ci_low_bb_per_100": -1808.96,
+        "ci_high_bb_per_100": 1353.61,
+        "hands": 116
+      }
+    },
+    "diagnostics": {
+      "range_updates": 1523,
+      "equity_queries": 1523,
+      "fold_queries": 9872,
+      "blueprint_decisions": 2157,
+      "exact_nodes": 2133,
+      "fallbacks": 24,
+      "probe_sizes": 7,
+      "exact_node_rate": 0.988873,
+      "fallback_rate": 0.011127
+    },
+    "elapsed_s": 96.4,
+    "guard": false,
+    "guard_tolerance": 1.5,
+    "guard_max_pot_multiple": 6.0
+  },
+  "on": {
+    "lbr_bb_per_100": 263.93,
+    "ci_low_bb_per_100": 51.42,
+    "ci_high_bb_per_100": 476.43,
+    "hands": 800,
+    "pairs": 400,
+    "stack_bb": 200.0,
+    "by_terminal_street": {
+      "preflop": {
+        "bb_per_100": 202.38,
+        "ci_low_bb_per_100": 143.96,
+        "ci_high_bb_per_100": 260.81,
+        "hands": 472
+      },
+      "flop": {
+        "bb_per_100": 688.19,
+        "ci_low_bb_per_100": 516.43,
+        "ci_high_bb_per_100": 859.96,
+        "hands": 144
+      },
+      "turn": {
+        "bb_per_100": 943.01,
+        "ci_low_bb_per_100": 433.29,
+        "ci_high_bb_per_100": 1452.74,
+        "hands": 68
+      },
+      "river": {
+        "bb_per_100": -410.43,
+        "ci_low_bb_per_100": -1953.73,
+        "ci_high_bb_per_100": 1132.87,
+        "hands": 116
+      }
+    },
+    "diagnostics": {
+      "range_updates": 1523,
+      "equity_queries": 1523,
+      "fold_queries": 9877,
+      "blueprint_decisions": 2157,
+      "exact_nodes": 2133,
+      "fallbacks": 24,
+      "probe_sizes": 7,
+      "exact_node_rate": 0.988873,
+      "fallback_rate": 0.011127
+    },
+    "elapsed_s": 94.0,
+    "guard": true,
+    "guard_tolerance": 1.5,
+    "guard_max_pot_multiple": 6.0
+  },
+  "paired_delta": {
+    "bb_per_100": -26.5,
+    "ci_low": -78.44,
+    "ci_high": 25.44,
+    "stdev": 5.3,
+    "pairs": 400
+  },
+  "pairs_identical": 399,
+  "verdict": "INCONCLUSIVE"
+}

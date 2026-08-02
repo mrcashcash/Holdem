@@ -1,0 +1,3 @@
+2026-07-31T07:51:18Z === DCFR vs DCFR+ : iterations [150, 250, 500], delays [100], seeds [23] ===
+2026-07-31T07:51:18Z instrument: abstract_exploitability_mbb (independent BR); lower is better
+2026-07-31T07:51:18Z durable log: backend\data\evaluations\dcfr-plus-lowiter.log

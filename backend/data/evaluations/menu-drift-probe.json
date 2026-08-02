@@ -1,0 +1,142 @@
+[
+  {
+    "menu": "DEPLOYED 0.5/1.0 cap3",
+    "preflop": [
+      0.75,
+      1.5
+    ],
+    "postflop": [
+      0.5,
+      1.0
+    ],
+    "postflop_cap": 3,
+    "preflop_cap": null,
+    "nodes": 147349,
+    "est_gb": 9.36,
+    "fits_12gb": true,
+    "drifts": [
+      1.0,
+      1.25,
+      2.083,
+      3.125,
+      5.208
+    ],
+    "worst_drift": 5.208
+  },
+  {
+    "menu": "0.33/1.0 cap2",
+    "preflop": [
+      0.75,
+      1.5
+    ],
+    "postflop": [
+      0.33,
+      1.0
+    ],
+    "postflop_cap": 2,
+    "preflop_cap": null,
+    "nodes": 93141,
+    "est_gb": 5.92,
+    "fits_12gb": true,
+    "drifts": [
+      1.0,
+      1.25,
+      1.562,
+      2.075
+    ],
+    "worst_drift": 2.075
+  },
+  {
+    "menu": "0.25/0.75 cap2",
+    "preflop": [
+      0.75,
+      1.5
+    ],
+    "postflop": [
+      0.25,
+      0.75
+    ],
+    "postflop_cap": 2,
+    "preflop_cap": null,
+    "nodes": 122173,
+    "est_gb": 7.76,
+    "fits_12gb": true,
+    "drifts": [
+      1.0,
+      1.25,
+      1.562,
+      1.875
+    ],
+    "worst_drift": 1.875
+  },
+  {
+    "menu": "0.25/1.0 cap2",
+    "preflop": [
+      0.75,
+      1.5
+    ],
+    "postflop": [
+      0.25,
+      1.0
+    ],
+    "postflop_cap": 2,
+    "preflop_cap": null,
+    "nodes": 99877,
+    "est_gb": 6.34,
+    "fits_12gb": true,
+    "drifts": [
+      1.0,
+      1.25,
+      1.562,
+      1.875
+    ],
+    "worst_drift": 1.875
+  },
+  {
+    "menu": "0.2/0.6 cap2",
+    "preflop": [
+      0.75,
+      1.5
+    ],
+    "postflop": [
+      0.2,
+      0.6
+    ],
+    "postflop_cap": 2,
+    "preflop_cap": null,
+    "nodes": 153011,
+    "est_gb": 9.72,
+    "fits_12gb": false,
+    "drifts": [
+      1.0,
+      1.25,
+      1.562,
+      1.75
+    ],
+    "worst_drift": 1.75
+  },
+  {
+    "menu": "0.33/1.0 cap2 pfcap3",
+    "preflop": [
+      0.75,
+      1.5
+    ],
+    "postflop": [
+      0.33,
+      1.0
+    ],
+    "postflop_cap": 2,
+    "preflop_cap": 3,
+    "nodes": 112873,
+    "est_gb": 7.17,
+    "fits_12gb": true,
+    "drifts": [
+      1.0,
+      1.25,
+      2.083,
+      3.125,
+      4.323
+    ],
+    "worst_drift": 4.323
+  }
+]

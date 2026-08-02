@@ -1,0 +1,54 @@
+{
+  "gate": "river-net-acceptance-v2",
+  "generated_utc": "2026-07-31T12:15:43+00:00",
+  "net": "backend\\data\\cfv\\river_net\\river_net.pt",
+  "ranges": "polarized",
+  "situations": 3,
+  "iterations": 40,
+  "situations_with_sensitive_mass": 3,
+  "mean_sensitive_mass": 0.2516,
+  "sensitive_accuracy_mean": 0.3161,
+  "policy_l1_net_mean": 0.4129,
+  "policy_l1_null_mean": 0.343,
+  "l1_skill_vs_null": -0.2038,
+  "agreement_net_all_mass_mean": 0.6833,
+  "agreement_null_all_mass_mean": 0.7484,
+  "rows": [
+    {
+      "situation": 0,
+      "stack_bb": 200.0,
+      "sensitive_mass": 0.2608,
+      "sensitive_accuracy": 0.2573,
+      "agreement_net_all_mass": 0.6618,
+      "agreement_null_all_mass": 0.7392,
+      "policy_l1_net": 0.5684,
+      "policy_l1_null": 0.4985,
+      "full_s": 11.47,
+      "net_s": 2.83
+    },
+    {
+      "situation": 1,
+      "stack_bb": 200.0,
+      "sensitive_mass": 0.4256,
+      "sensitive_accuracy": 0.0046,
+      "agreement_net_all_mass": 0.5623,
+      "agreement_null_all_mass": 0.5744,
+      "policy_l1_net": 0.3955,
+      "policy_l1_null": 0.4453,
+      "full_s": 5.06,
+      "net_s": 2.97
+    },
+    {
+      "situation": 2,
+      "stack_bb": 200.0,
+      "sensitive_mass": 0.0683,
+      "sensitive_accuracy": 0.6865,
+      "agreement_net_all_mass": 0.8257,
+      "agreement_null_all_mass": 0.9317,
+      "policy_l1_net": 0.2748,
+      "policy_l1_null": 0.0852,
+      "full_s": 10.11,
+      "net_s": 2.97
+    }
+  ]
+}

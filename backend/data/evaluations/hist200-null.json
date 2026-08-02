@@ -1,0 +1,32 @@
+{
+  "gate": "continual-exact-resolving-on-vs-off",
+  "null_run": true,
+  "checkpoint": "backend\\data\\gpu_blueprint_200bb_hist\\checkpoint.npz",
+  "checkpoint_iteration": 5000,
+  "stack_bb": 200.0,
+  "resolve_iterations": 60,
+  "budget_ms": 20000,
+  "common_random_numbers": true,
+  "elapsed_s": 29.2,
+  "duel": {
+    "mean_bb_per_100": 0.0,
+    "ci_low_bb_per_100": 0.0,
+    "ci_high_bb_per_100": 0.0,
+    "hands": 400,
+    "pairs": 200,
+    "seed": 51009,
+    "verdict": "KEEP"
+  },
+  "resolver": {
+    "attempts": 0,
+    "resolved": 0,
+    "fallbacks": 0,
+    "resolve_rate": 0.0,
+    "by_street": {},
+    "errors": {},
+    "latency_ms_mean": null,
+    "latency_ms_p90": null,
+    "latency_ms_max": null
+  },
+  "eligible": false
+}

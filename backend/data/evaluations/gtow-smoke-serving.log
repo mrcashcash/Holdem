@@ -1,0 +1,12 @@
+2026-07-30T21:09:59Z resolver: OFF
+2026-07-30T21:09:59Z === GTO Wizard benchmark: serving:MultiStackBlueprintAgent, 10 hands ===
+2026-07-30T21:09:59Z durable log: backend\data\evaluations\gtow-smoke-serving.log
+2026-07-30T21:10:00Z server tally before: 1518 hands, -231.76 bb/100
+2026-07-30T21:11:06Z   10/10 hands | AIVAT -51.75 [-101.57,-1.93] | raw -160.80 | 0.15 hands/s | ETA 0.0 min
+2026-07-30T21:11:06Z 
+2026-07-30T21:11:06Z AIVAT : -51.75 bb/100 [-101.57, -1.93] over 10 hands
+2026-07-30T21:11:06Z raw   : -160.80 bb/100 [-556.32, +234.72]
+2026-07-30T21:11:06Z excluded=0 board_desyncs=0 positions={'hero=SB': 5, 'hero=BB': 5}
+2026-07-30T21:11:06Z timing: {'api_s': 64.1, 'agent_s': 0.6, 'mirror_s': 1.0}
+2026-07-30T21:11:06Z server tally after : 1528 hands, -231.29 bb/100, aivat -234.03 bb/100
+2026-07-30T21:11:06Z written to backend\data\evaluations\gtow-smoke-serving.json

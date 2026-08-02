@@ -1,0 +1,22 @@
+2026-07-31T09:30:00Z === DCFR vs DCFR+ duel: 20bb, 5,000 iterations, d=1000, solver seed 20260731 ===
+2026-07-31T09:30:00Z durable log: backend\data\evaluations\dcfr-plus-duel-20bb.log
+2026-07-31T09:30:00Z -- training dcfr: backend.solver.gpu.train --stack-bb 20.0 --abstraction histogram --iterations 5000 --save-every 500 --batch-boards 1 --device cuda --seed 20260731 --tag dcfr_ctl5000
+2026-07-31T10:32:16Z    trained in 3735.4s -> C:\Users\dudiz\Documents\Holdem\backend\data\gpu_blueprint_20bb_dcfr_ctl5000\checkpoint.npz
+2026-07-31T10:32:16Z -- training dcfr_plus: backend.solver.gpu.train --stack-bb 20.0 --abstraction histogram --iterations 5000 --save-every 500 --batch-boards 1 --device cuda --seed 20260731 --tag dcfrplus1000_5000 --dcfr-plus-delay 1000
+2026-07-31T11:29:17Z === DCFR vs DCFR+ duel: 20bb, 5,000 iterations, d=1000, solver seed 20260731 ===
+2026-07-31T11:29:17Z durable log: backend\data\evaluations\dcfr-plus-duel-20bb.log
+2026-07-31T11:29:17Z -- dcfr: complete at 5,000 iterations; reusing
+2026-07-31T11:29:17Z -- dcfr_plus: resuming from 4,500; training 500 more
+2026-07-31T11:29:17Z -- training dcfr_plus: backend.solver.gpu.train --stack-bb 20.0 --abstraction histogram --iterations 500 --save-every 500 --batch-boards 1 --device cuda --seed 20260731 --tag dcfrplus1000_5000 --dcfr-plus-delay 1000
+2026-07-31T11:35:09Z    trained in 351.8s -> C:\Users\dudiz\Documents\Holdem\backend\data\gpu_blueprint_20bb_dcfrplus1000_5000\checkpoint.npz
+2026-07-31T11:35:10Z both arms verified at exactly 5,000 iterations
+2026-07-31T11:35:10Z 
+2026-07-31T11:35:10Z -- NULL first: control vs ITSELF must read exactly +0.00 with CRN --
+2026-07-31T11:36:10Z    null: +0.00 bb/100 [+0.00,+0.00]
+2026-07-31T11:36:10Z 
+2026-07-31T11:36:10Z -- duel: DCFR+ (challenger) vs DCFR (control), 3000 pairs, CRN --
+2026-07-31T11:42:14Z    DCFR+ minus DCFR: +2.80 bb/100 [-2.56,+8.16] in 364.0s
+2026-07-31T11:42:14Z    VERDICT: INCONCLUSIVE
+2026-07-31T11:42:14Z    The interval spans zero, so the averaging rule is not shown to matter
+2026-07-31T11:42:14Z    at this depth and iteration count. Do NOT change the default on it.
+2026-07-31T11:42:14Z written to backend\data\evaluations\dcfr-plus-duel-20bb.json

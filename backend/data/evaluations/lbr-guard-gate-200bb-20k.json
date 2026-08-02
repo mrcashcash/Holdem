@@ -1,0 +1,43 @@
+{
+  "gate": "lbr-all-in-geometry-guard-on-vs-off",
+  "generated_utc": "2026-07-30T21:08:56+00:00",
+  "checkpoint": "backend\\data\\gpu_blueprint_200bb\\champion.npz",
+  "stack_bb": 200.0,
+  "seed": 20260730,
+  "search": "blueprint only (all search mechanisms off in both arms)",
+  "guard_tolerance": 1.5,
+  "guard_max_pot_multiple": 6.0,
+  "off": {
+    "guard": false,
+    "guard_tolerance": 1.5,
+    "guard_max_pot_multiple": 6.0,
+    "lbr_bb_per_100": 252.45,
+    "ci_low_bb_per_100": 223.34,
+    "ci_high_bb_per_100": 281.55,
+    "pairs": 20000,
+    "fallback_rate": 0.013588,
+    "elapsed_s": 3223.4,
+    "chunks_done": 20
+  },
+  "on": {
+    "guard": true,
+    "guard_tolerance": 1.5,
+    "guard_max_pot_multiple": 6.0,
+    "lbr_bb_per_100": 247.7,
+    "ci_low_bb_per_100": 218.13,
+    "ci_high_bb_per_100": 277.27,
+    "pairs": 20000,
+    "fallback_rate": 0.014386,
+    "elapsed_s": 2798.2,
+    "chunks_done": 20
+  },
+  "paired_delta": {
+    "bb_per_100": -4.74,
+    "ci_low": -10.63,
+    "ci_high": 1.14,
+    "stdev": 4.2478,
+    "pairs": 20000
+  },
+  "pairs_identical": 19931,
+  "verdict": "INCONCLUSIVE"
+}

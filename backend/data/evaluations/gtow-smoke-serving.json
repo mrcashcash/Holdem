@@ -1,0 +1,49 @@
+{
+  "instrument": "gto-wizard-ai",
+  "game_name": "HUNL 200BB",
+  "stack_bb": 200.0,
+  "hands_requested": 10,
+  "hands_scored": 10,
+  "excluded": 0,
+  "board_desyncs": 0,
+  "positions": {
+    "hero=SB": 5,
+    "hero=BB": 5
+  },
+  "aivat": {
+    "bb_per_100": -51.75,
+    "ci_low": -101.57,
+    "ci_high": -1.93,
+    "stdev_bb": 0.8038,
+    "hands": 10
+  },
+  "raw": {
+    "bb_per_100": -160.8,
+    "ci_low": -556.32,
+    "ci_high": 234.72,
+    "stdev_bb": 6.3813,
+    "hands": 10
+  },
+  "timing_s": {
+    "api_s": 64.1,
+    "agent_s": 0.6,
+    "mirror_s": 1.0
+  },
+  "elapsed_s": 65.7,
+  "agent": "serving:MultiStackBlueprintAgent",
+  "generated_utc": "2026-07-30T21:11:06+00:00",
+  "server_results_after": {
+    "bot_name": "Zadu",
+    "organization": "individual",
+    "gto_wizard_version": 2,
+    "total_hands": 1528,
+    "aivat_score": -357603.45272,
+    "bb_per_100": -231.29188481675394,
+    "chips_won_loss": -353414.0,
+    "all_hands_chips_bb_per_100": -231.9515575,
+    "chance_correction_bb_per_100": 22.541132938481674,
+    "action_correction_bb_per_100": -20.459017172774868,
+    "aivat_std_bb_per_100": 15.428427069794088,
+    "aivat_score_bb_per_100": -234.0336732460733
+  }
+}

@@ -1,0 +1,19 @@
+2026-07-31T03:09:33Z === guard head-to-head: 100 pairs @ 200bb, seed 20260731 ===
+2026-07-31T03:09:33Z checkpoint: backend\data\gpu_blueprint_200bb\champion.npz
+2026-07-31T03:09:33Z --- opponent: always-min-raise ---
+2026-07-31T03:11:07Z === guard head-to-head: 100 pairs @ 200bb, seed 20260731 ===
+2026-07-31T03:11:07Z checkpoint: backend\data\gpu_blueprint_200bb\champion.npz
+2026-07-31T03:11:07Z --- opponent: always-min-raise ---
+2026-07-31T03:11:15Z   guard OFF: +358.00 bb/100 [-268.00,+984.00] in 7.3s
+2026-07-31T03:11:19Z   guard ON : +218.60 bb/100 [-229.32,+666.52] in 4.6s
+2026-07-31T03:11:19Z   DELTA (on - off): -139.40 bb/100
+2026-07-31T03:11:19Z --- opponent: always-call ---
+2026-07-31T03:11:29Z   guard OFF: +98.00 bb/100 [-37.90,+233.90] in 10.0s
+2026-07-31T03:11:40Z   guard ON : +98.00 bb/100 [-37.90,+233.90] in 10.7s
+2026-07-31T03:11:40Z   DELTA (on - off): +0.00 bb/100
+2026-07-31T03:11:40Z 
+2026-07-31T03:11:40Z --- comparison with the pre-fix measurement ---
+2026-07-31T03:11:40Z   always-min-raise: delta -139.40 bb/100
+2026-07-31T03:11:40Z   always-call: delta +0.00 bb/100
+2026-07-31T03:11:40Z A delta near zero means the -268.82 was the defect, not the mechanism.
+2026-07-31T03:11:40Z written to backend\data\evaluations\smoke-guard-h2h.json

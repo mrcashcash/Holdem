@@ -1,0 +1,13 @@
+{
+  "gate": "river-net-acceptance",
+  "net": "backend\\data\\cfv\\null_net\\river_net.pt",
+  "situations": 12,
+  "iterations": 160,
+  "action_agreement_mean": 0.9269,
+  "action_agreement_min": 0.8094,
+  "policy_l1_mean": 0.4657,
+  "policy_l1_max": 0.69,
+  "full_solve_s_mean": 26.83,
+  "net_solve_s_mean": 10.263,
+  "speedup": 2.61
+}

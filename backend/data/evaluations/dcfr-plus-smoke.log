@@ -1,0 +1,16 @@
+2026-07-31T07:42:56Z === DCFR vs DCFR+ : iterations [1000, 4000], delays [100], seeds [23] ===
+2026-07-31T07:42:56Z instrument: abstract_exploitability_mbb (independent BR); lower is better
+2026-07-31T07:42:56Z durable log: backend\data\evaluations\dcfr-plus-smoke.log
+2026-07-31T07:43:40Z it= 1000 seed=23  DCFR (t^gamma)           0.00 mbb    43.7s
+2026-07-31T07:44:20Z it= 1000 seed=23  DCFR+ max(0,t-100)      0.00 mbb    39.8s  BETTER by 0.00
+2026-07-31T07:47:21Z it= 4000 seed=23  DCFR (t^gamma)           0.00 mbb   181.2s
+2026-07-31T07:50:24Z it= 4000 seed=23  DCFR+ max(0,t-100)      0.00 mbb   182.3s  BETTER by 0.00
+2026-07-31T07:50:24Z 
+2026-07-31T07:50:24Z --- summary (mean mbb across seeds; lower is better) ---
+2026-07-31T07:50:24Z iterations                 dcfr       dcfr_plus_d100
+2026-07-31T07:50:24Z       1000                 0.00                 0.00
+2026-07-31T07:50:24Z       4000                 0.00                 0.00
+2026-07-31T07:50:24Z 
+2026-07-31T07:50:24Z DCFR+ won at EVERY iteration count -> adopt it (then re-run the
+2026-07-31T07:50:24Z convergence guard and a CRN duel before changing any default).
+2026-07-31T07:50:24Z written to backend\data\evaluations\dcfr-plus-smoke.json

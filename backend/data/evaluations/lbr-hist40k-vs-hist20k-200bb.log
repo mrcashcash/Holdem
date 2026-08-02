@@ -1,0 +1,108 @@
+2026-08-01T23:06:18Z === paired LBR: 20,000 duplicate pairs @ 200bb, seed 20260730 ===
+2026-08-01T23:06:18Z challenger: backend\data\gpu_blueprint_200bb_hist\checkpoint-40000.npz
+2026-08-01T23:06:18Z incumbent : backend\data\gpu_blueprint_200bb_hist\checkpoint-20000.npz
+2026-08-01T23:06:18Z durable log: backend\data\evaluations\lbr-hist40k-vs-hist20k-200bb.log
+2026-08-01T23:06:18Z arm 'incumbent': checkpoint-20000.npz
+2026-08-01T23:06:23Z === paired LBR: 20,000 duplicate pairs @ 200bb, seed 20260730 ===
+2026-08-01T23:06:23Z challenger: backend\data\gpu_blueprint_200bb_hist\checkpoint-40000.npz
+2026-08-01T23:06:23Z incumbent : backend\data\gpu_blueprint_200bb_hist\checkpoint-20000.npz
+2026-08-01T23:06:23Z durable log: backend\data\evaluations\lbr-hist40k-vs-hist20k-200bb.log
+2026-08-01T23:06:23Z arm 'incumbent': checkpoint-20000.npz
+2026-08-01T23:16:20Z     chunk 1/20: 1,000 pairs, running LBR +219.20 bb/100, 9.9 min
+2026-08-01T23:16:25Z     chunk 1/20: 1,000 pairs, running LBR +219.20 bb/100, 9.8 min
+2026-08-01T23:26:39Z     chunk 2/20: 2,000 pairs, running LBR +205.92 bb/100, 20.2 min
+2026-08-01T23:26:47Z     chunk 2/20: 2,000 pairs, running LBR +205.92 bb/100, 20.2 min
+2026-08-01T23:38:03Z     chunk 3/20: 3,000 pairs, running LBR +200.65 bb/100, 31.6 min
+2026-08-01T23:38:06Z     chunk 3/20: 3,000 pairs, running LBR +200.65 bb/100, 31.5 min
+2026-08-01T23:49:15Z     chunk 4/20: 4,000 pairs, running LBR +182.63 bb/100, 42.8 min
+2026-08-01T23:49:20Z     chunk 4/20: 4,000 pairs, running LBR +182.63 bb/100, 42.7 min
+2026-08-02T00:00:10Z     chunk 5/20: 5,000 pairs, running LBR +183.34 bb/100, 53.7 min
+2026-08-02T00:00:21Z     chunk 5/20: 5,000 pairs, running LBR +183.34 bb/100, 53.8 min
+2026-08-02T00:11:24Z     chunk 6/20: 6,000 pairs, running LBR +200.51 bb/100, 65.0 min
+2026-08-02T00:11:48Z     chunk 6/20: 6,000 pairs, running LBR +200.51 bb/100, 65.2 min
+2026-08-02T00:22:35Z     chunk 7/20: 7,000 pairs, running LBR +188.05 bb/100, 76.2 min
+2026-08-02T00:22:57Z     chunk 7/20: 7,000 pairs, running LBR +188.05 bb/100, 76.4 min
+2026-08-02T00:30:12Z     chunk 8/20: 8,000 pairs, running LBR +191.16 bb/100, 83.8 min
+2026-08-02T00:30:30Z     chunk 8/20: 8,000 pairs, running LBR +191.16 bb/100, 83.9 min
+2026-08-02T00:36:52Z     chunk 9/20: 9,000 pairs, running LBR +193.07 bb/100, 90.4 min
+2026-08-02T00:37:12Z     chunk 9/20: 9,000 pairs, running LBR +193.07 bb/100, 90.6 min
+2026-08-02T00:44:05Z     chunk 10/20: 10,000 pairs, running LBR +186.41 bb/100, 97.6 min
+2026-08-02T00:44:29Z     chunk 10/20: 10,000 pairs, running LBR +186.41 bb/100, 97.9 min
+2026-08-02T00:51:23Z     chunk 11/20: 11,000 pairs, running LBR +191.72 bb/100, 105.0 min
+2026-08-02T00:51:54Z     chunk 11/20: 11,000 pairs, running LBR +191.72 bb/100, 105.3 min
+2026-08-02T00:58:44Z     chunk 12/20: 12,000 pairs, running LBR +199.92 bb/100, 112.3 min
+2026-08-02T00:59:14Z     chunk 12/20: 12,000 pairs, running LBR +199.92 bb/100, 112.6 min
+2026-08-02T01:07:13Z     chunk 13/20: 13,000 pairs, running LBR +212.11 bb/100, 120.8 min
+2026-08-02T01:07:36Z     chunk 13/20: 13,000 pairs, running LBR +212.11 bb/100, 121.0 min
+2026-08-02T01:13:43Z     chunk 14/20: 14,000 pairs, running LBR +206.88 bb/100, 127.3 min
+2026-08-02T01:14:07Z     chunk 14/20: 14,000 pairs, running LBR +206.88 bb/100, 127.5 min
+2026-08-02T01:20:17Z     chunk 15/20: 15,000 pairs, running LBR +206.34 bb/100, 133.8 min
+2026-08-02T01:20:40Z     chunk 15/20: 15,000 pairs, running LBR +206.34 bb/100, 134.1 min
+2026-08-02T01:26:52Z     chunk 16/20: 16,000 pairs, running LBR +211.45 bb/100, 140.4 min
+2026-08-02T01:27:16Z     chunk 16/20: 16,000 pairs, running LBR +211.45 bb/100, 140.7 min
+2026-08-02T01:33:15Z     chunk 17/20: 17,000 pairs, running LBR +210.75 bb/100, 146.8 min
+2026-08-02T01:33:44Z     chunk 17/20: 17,000 pairs, running LBR +210.75 bb/100, 147.2 min
+2026-08-02T01:39:37Z     chunk 18/20: 18,000 pairs, running LBR +207.87 bb/100, 153.2 min
+2026-08-02T01:40:09Z     chunk 18/20: 18,000 pairs, running LBR +207.87 bb/100, 153.6 min
+2026-08-02T01:46:16Z     chunk 19/20: 19,000 pairs, running LBR +210.66 bb/100, 159.8 min
+2026-08-02T01:46:45Z     chunk 19/20: 19,000 pairs, running LBR +210.66 bb/100, 160.2 min
+2026-08-02T01:52:31Z     chunk 20/20: 20,000 pairs, running LBR +211.71 bb/100, 166.1 min
+2026-08-02T01:52:31Z   arm done: LBR +211.71 bb/100 [+180.86,+242.55] fallback=1.10%
+2026-08-02T01:52:31Z arm 'challenger': checkpoint-40000.npz
+2026-08-02T01:53:02Z     chunk 20/20: 20,000 pairs, running LBR +211.71 bb/100, 166.5 min
+2026-08-02T01:53:02Z   arm done: LBR +211.71 bb/100 [+180.86,+242.55] fallback=1.10%
+2026-08-02T01:53:02Z arm 'challenger': checkpoint-40000.npz
+2026-08-02T01:58:52Z     chunk 1/20: 1,000 pairs, running LBR +241.21 bb/100, 6.3 min
+2026-08-02T01:59:25Z     chunk 1/20: 1,000 pairs, running LBR +241.21 bb/100, 6.4 min
+2026-08-02T02:05:12Z     chunk 2/20: 2,000 pairs, running LBR +217.26 bb/100, 12.7 min
+2026-08-02T02:05:48Z     chunk 2/20: 2,000 pairs, running LBR +217.26 bb/100, 12.7 min
+2026-08-02T02:11:51Z     chunk 3/20: 3,000 pairs, running LBR +201.59 bb/100, 19.3 min
+2026-08-02T02:12:30Z     chunk 3/20: 3,000 pairs, running LBR +201.59 bb/100, 19.4 min
+2026-08-02T02:18:36Z     chunk 4/20: 4,000 pairs, running LBR +161.62 bb/100, 26.1 min
+2026-08-02T02:19:13Z     chunk 4/20: 4,000 pairs, running LBR +161.62 bb/100, 26.2 min
+2026-08-02T02:24:52Z     chunk 5/20: 5,000 pairs, running LBR +176.32 bb/100, 32.3 min
+2026-08-02T02:25:30Z     chunk 5/20: 5,000 pairs, running LBR +176.32 bb/100, 32.4 min
+2026-08-02T02:31:32Z     chunk 6/20: 6,000 pairs, running LBR +191.30 bb/100, 39.0 min
+2026-08-02T02:32:12Z     chunk 6/20: 6,000 pairs, running LBR +191.30 bb/100, 39.1 min
+2026-08-02T02:38:33Z     chunk 7/20: 7,000 pairs, running LBR +179.84 bb/100, 46.0 min
+2026-08-02T02:39:12Z     chunk 7/20: 7,000 pairs, running LBR +179.84 bb/100, 46.1 min
+2026-08-02T02:45:43Z     chunk 8/20: 8,000 pairs, running LBR +184.88 bb/100, 53.2 min
+2026-08-02T02:46:23Z     chunk 8/20: 8,000 pairs, running LBR +184.88 bb/100, 53.3 min
+2026-08-02T02:52:32Z     chunk 9/20: 9,000 pairs, running LBR +181.26 bb/100, 60.0 min
+2026-08-02T02:53:09Z     chunk 9/20: 9,000 pairs, running LBR +181.26 bb/100, 60.1 min
+2026-08-02T02:59:58Z     chunk 10/20: 10,000 pairs, running LBR +183.84 bb/100, 67.4 min
+2026-08-02T03:00:53Z     chunk 10/20: 10,000 pairs, running LBR +183.84 bb/100, 67.8 min
+2026-08-02T03:07:51Z     chunk 11/20: 11,000 pairs, running LBR +184.33 bb/100, 75.3 min
+2026-08-02T03:08:36Z     chunk 11/20: 11,000 pairs, running LBR +184.33 bb/100, 75.5 min
+2026-08-02T03:14:30Z     chunk 12/20: 12,000 pairs, running LBR +191.55 bb/100, 82.0 min
+2026-08-02T03:15:16Z     chunk 12/20: 12,000 pairs, running LBR +191.55 bb/100, 82.2 min
+2026-08-02T03:21:34Z     chunk 13/20: 13,000 pairs, running LBR +203.58 bb/100, 89.0 min
+2026-08-02T03:22:22Z     chunk 13/20: 13,000 pairs, running LBR +203.58 bb/100, 89.3 min
+2026-08-02T03:28:08Z     chunk 14/20: 14,000 pairs, running LBR +200.97 bb/100, 95.6 min
+2026-08-02T03:28:55Z     chunk 14/20: 14,000 pairs, running LBR +200.97 bb/100, 95.8 min
+2026-08-02T03:35:06Z     chunk 15/20: 15,000 pairs, running LBR +201.08 bb/100, 102.6 min
+2026-08-02T03:35:51Z     chunk 15/20: 15,000 pairs, running LBR +201.08 bb/100, 102.8 min
+2026-08-02T03:42:09Z     chunk 16/20: 16,000 pairs, running LBR +206.29 bb/100, 109.6 min
+2026-08-02T03:42:55Z     chunk 16/20: 16,000 pairs, running LBR +206.29 bb/100, 109.9 min
+2026-08-02T03:49:00Z     chunk 17/20: 17,000 pairs, running LBR +202.72 bb/100, 116.5 min
+2026-08-02T03:49:51Z     chunk 17/20: 17,000 pairs, running LBR +202.72 bb/100, 116.8 min
+2026-08-02T03:55:22Z     chunk 18/20: 18,000 pairs, running LBR +198.67 bb/100, 122.8 min
+2026-08-02T03:56:10Z     chunk 18/20: 18,000 pairs, running LBR +198.67 bb/100, 123.1 min
+2026-08-02T04:01:44Z     chunk 19/20: 19,000 pairs, running LBR +198.78 bb/100, 129.2 min
+2026-08-02T04:02:38Z     chunk 19/20: 19,000 pairs, running LBR +198.78 bb/100, 129.6 min
+2026-08-02T04:08:26Z     chunk 20/20: 20,000 pairs, running LBR +201.78 bb/100, 135.9 min
+2026-08-02T04:08:26Z   arm done: LBR +201.78 bb/100 [+170.97,+232.58] fallback=1.11%
+2026-08-02T04:08:26Z 
+2026-08-02T04:08:26Z --- paired difference (challenger minus incumbent), NEGATIVE is better ---
+2026-08-02T04:08:26Z   -9.93 bb/100 [-29.29, +9.42] over 20,000 pairs
+2026-08-02T04:08:26Z   pairs where the two played identically: 15,573/20,000
+2026-08-02T04:08:26Z   VERDICT: INCONCLUSIVE
+2026-08-02T04:08:26Z written to backend\data\evaluations\lbr-hist40k-vs-hist20k-200bb.json
+2026-08-02T04:09:13Z     chunk 20/20: 20,000 pairs, running LBR +201.78 bb/100, 136.2 min
+2026-08-02T04:09:13Z   arm done: LBR +201.78 bb/100 [+170.97,+232.58] fallback=1.11%
+2026-08-02T04:09:14Z 
+2026-08-02T04:09:14Z --- paired difference (challenger minus incumbent), NEGATIVE is better ---
+2026-08-02T04:09:14Z   -9.93 bb/100 [-29.29, +9.42] over 20,000 pairs
+2026-08-02T04:09:14Z   pairs where the two played identically: 15,573/20,000
+2026-08-02T04:09:14Z   VERDICT: INCONCLUSIVE
+2026-08-02T04:09:14Z written to backend\data\evaluations\lbr-hist40k-vs-hist20k-200bb.json

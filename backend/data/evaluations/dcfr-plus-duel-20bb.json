@@ -1,0 +1,25 @@
+{
+  "gate": "dcfr-plus-vs-dcfr-duel",
+  "generated_utc": "2026-07-31T11:42:14+00:00",
+  "stack_bb": 20.0,
+  "iterations": 5000,
+  "dcfr_plus_delay": 1000,
+  "solver_seed": 20260731,
+  "duel_seed": 4242,
+  "pairs": 3000,
+  "null_bb_per_100": 0.0,
+  "challenger_minus_control_bb_per_100": 2.8,
+  "ci_low": -2.56,
+  "ci_high": 8.16,
+  "verdict": "INCONCLUSIVE",
+  "arms": {
+    "dcfr": {
+      "tag": "dcfr_ctl5000",
+      "train_s": null
+    },
+    "dcfr_plus": {
+      "tag": "dcfrplus1000_5000",
+      "train_s": 351.8
+    }
+  }
+}

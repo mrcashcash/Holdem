@@ -1,0 +1,59 @@
+{
+  "gate": "progress-200bb-40k-vs-5k",
+  "generated_utc": "2026-08-02T00:20:20+00:00",
+  "challenger": {
+    "path": "backend\\data\\gpu_blueprint_200bb_hist\\checkpoint-40000.npz",
+    "iteration": 40000,
+    "histogram": true,
+    "buckets": [
+      169,
+      150,
+      150,
+      30
+    ],
+    "preflop": [
+      0.75,
+      1.5
+    ],
+    "postflop": [
+      0.5,
+      1.0
+    ],
+    "raise_cap": 3,
+    "stack_bb": 200.0
+  },
+  "incumbent": {
+    "path": "backend\\data\\gpu_blueprint_200bb_hist\\checkpoint-5000.npz",
+    "iteration": 5000,
+    "histogram": true,
+    "buckets": [
+      169,
+      150,
+      150,
+      30
+    ],
+    "preflop": [
+      0.75,
+      1.5
+    ],
+    "postflop": [
+      0.5,
+      1.0
+    ],
+    "raise_cap": 3,
+    "stack_bb": 200.0
+  },
+  "stack_bb": 200.0,
+  "seed": 4242,
+  "workers": 5,
+  "null_bb_per_100": 0.0,
+  "exactness_verified_pairs": 200,
+  "challenger_minus_incumbent_bb_per_100": 9.83,
+  "ci_low": 2.6,
+  "ci_high": 17.06,
+  "verdict": "CHALLENGER BETTER",
+  "elapsed_s": 3660.6,
+  "pairs_per_s": 16.39,
+  "pairs": 60000,
+  "hands": 120000
+}

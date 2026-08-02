@@ -1,0 +1,25 @@
+{
+  "gate": "dcfr-plus-vs-dcfr-duel",
+  "generated_utc": "2026-07-31T09:28:34+00:00",
+  "stack_bb": 20.0,
+  "iterations": 300,
+  "dcfr_plus_delay": 100,
+  "solver_seed": 20260731,
+  "duel_seed": 4242,
+  "pairs": 60,
+  "null_bb_per_100": 0.0,
+  "challenger_minus_control_bb_per_100": 142.12,
+  "ci_low": 5.58,
+  "ci_high": 278.67,
+  "verdict": "DCFR+ BETTER",
+  "arms": {
+    "dcfr": {
+      "tag": "dcfr_ctl300",
+      "train_s": 353.7
+    },
+    "dcfr_plus": {
+      "tag": "dcfrplus100_300",
+      "train_s": 370.0
+    }
+  }
+}

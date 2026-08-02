@@ -1,0 +1,24 @@
+2026-07-31T11:49:39Z === distortion audit: 200 hands @ 200bb vs always-min-raise, guard OFF ===
+2026-07-31T11:49:39Z durable log: backend\data\evaluations\overbet-distortion.log
+2026-07-31T11:49:43Z 
+2026-07-31T11:49:43Z translated ALL-INs reached: 11
+2026-07-31T11:49:43Z   street  all-ins  legacy >=3x pot   DISTORTED >1.5x
+2026-07-31T11:49:43Z  preflop        4                4                 0
+2026-07-31T11:49:43Z     turn        1                1                 1
+2026-07-31T11:49:43Z    river        6                5                 6
+2026-07-31T11:49:43Z    TOTAL       11               10                 7
+2026-07-31T11:49:43Z 
+2026-07-31T11:49:43Z FINDING: all 4 preflop jams the absolute criterion flags
+2026-07-31T11:49:43Z are UNDISTORTED -- the real geometry matches what the trained jam meant.
+2026-07-31T11:49:43Z They are legitimate shoves, not translation artifacts. The preflop
+2026-07-31T11:49:43Z translation leak in STATUS.md 3.6 is an artifact of the >=3x-pot rule,
+2026-07-31T11:49:43Z and PLAN_V3 P3's 1-2 week preflop budget is aimed at nothing.
+2026-07-31T11:49:43Z 
+2026-07-31T11:49:43Z worst distortions overall:
+2026-07-31T11:49:43Z     river: abstract 1.0x -> real 6.25x (distortion 6.25x)
+2026-07-31T11:49:43Z     river: abstract 0.667x -> real 3.846x (distortion 5.769x)
+2026-07-31T11:49:43Z     river: abstract 2.5x -> real 10.0x (distortion 4.0x)
+2026-07-31T11:49:43Z     river: abstract 1.0x -> real 3.333x (distortion 3.333x)
+2026-07-31T11:49:43Z     river: abstract 1.0x -> real 3.333x (distortion 3.333x)
+2026-07-31T11:49:43Z     river: abstract 0.833x -> real 2.222x (distortion 2.667x)
+2026-07-31T11:49:43Z written to backend\data\evaluations\overbet-distortion.json

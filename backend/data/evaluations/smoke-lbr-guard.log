@@ -1,0 +1,19 @@
+2026-07-30T18:26:27Z === LBR guard gate: 4 duplicate pairs, seed 20260730, 200bb ===
+2026-07-30T18:26:27Z checkpoint: backend\data\gpu_blueprint_200bb\champion.npz
+2026-07-30T18:26:27Z durable log: backend\data\evaluations\smoke-lbr-guard.log
+2026-07-30T18:26:27Z arm 'off' of 2
+2026-07-30T18:26:35Z   arm start: guard=OFF tolerance=1.5 cap=6.0x pot
+2026-07-30T18:26:36Z   arm done : LBR -231.25 bb/100 [-1704.02,+1241.52] fallback=15.79% in 1.5s
+2026-07-30T18:26:36Z arm 'on' of 2
+2026-07-30T18:26:39Z   arm start: guard=ON tolerance=1.5 cap=6.0x pot
+2026-07-30T18:26:40Z   arm done : LBR -231.25 bb/100 [-1704.02,+1241.52] fallback=15.79% in 0.5s
+2026-07-30T18:26:40Z 
+2026-07-30T18:26:40Z --- paired difference (guard ON minus OFF), NEGATIVE means the guard helps ---
+2026-07-30T18:26:40Z   +0.00 bb/100 [+0.00, +0.00] over 4 pairs
+2026-07-30T18:26:40Z   pairs where the guard changed nothing: 4/4
+2026-07-30T18:26:40Z   WARNING: the guard never fired. Either the probe's lines do not exhaust
+2026-07-30T18:26:40Z   the raise cap, or the flag is not reaching the decision path. Treat a
+2026-07-30T18:26:40Z   0.00 delta as UNMEASURED, not as evidence the guard is neutral.
+2026-07-30T18:26:40Z   VERDICT: INCONCLUSIVE
+2026-07-30T18:26:40Z written to backend\data\evaluations\smoke-lbr-guard.json
+2026-07-30T18:26:40Z === gate complete ===

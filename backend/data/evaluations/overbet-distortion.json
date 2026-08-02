@@ -1,0 +1,103 @@
+{
+  "hands": 200,
+  "stack_bb": 200.0,
+  "opponent": "always-min-raise",
+  "distortion_tolerance": 1.5,
+  "legacy_overbet_ratio": 3.0,
+  "all_ins": 11,
+  "legacy_flagged": 10,
+  "distorted": 7,
+  "by_street": {
+    "turn": 1,
+    "river": 6,
+    "preflop": 4
+  },
+  "legacy_by_street": {
+    "turn": 1,
+    "river": 5,
+    "preflop": 4
+  },
+  "distorted_by_street": {
+    "turn": 1,
+    "river": 6
+  },
+  "records": [
+    {
+      "street": "turn",
+      "ratio_abstract": 5.0,
+      "ratio_real": 12.5,
+      "distortion": 2.5,
+      "matched_real_chips": 320.0
+    },
+    {
+      "street": "river",
+      "ratio_abstract": 0.667,
+      "ratio_real": 3.846,
+      "distortion": 5.769,
+      "matched_real_chips": 1040.0
+    },
+    {
+      "street": "preflop",
+      "ratio_abstract": 16.0,
+      "ratio_real": 20.0,
+      "distortion": 1.25,
+      "matched_real_chips": 200.0
+    },
+    {
+      "street": "river",
+      "ratio_abstract": 1.0,
+      "ratio_real": 3.333,
+      "distortion": 3.333,
+      "matched_real_chips": 1200.0
+    },
+    {
+      "street": "river",
+      "ratio_abstract": 1.0,
+      "ratio_real": 3.333,
+      "distortion": 3.333,
+      "matched_real_chips": 1200.0
+    },
+    {
+      "street": "preflop",
+      "ratio_abstract": 10.0,
+      "ratio_real": 12.5,
+      "distortion": 1.25,
+      "matched_real_chips": 320.0
+    },
+    {
+      "street": "river",
+      "ratio_abstract": 2.5,
+      "ratio_real": 10.0,
+      "distortion": 4.0,
+      "matched_real_chips": 400.0
+    },
+    {
+      "street": "preflop",
+      "ratio_abstract": 16.0,
+      "ratio_real": 20.0,
+      "distortion": 1.25,
+      "matched_real_chips": 200.0
+    },
+    {
+      "street": "river",
+      "ratio_abstract": 1.0,
+      "ratio_real": 6.25,
+      "distortion": 6.25,
+      "matched_real_chips": 640.0
+    },
+    {
+      "street": "preflop",
+      "ratio_abstract": 16.0,
+      "ratio_real": 20.0,
+      "distortion": 1.25,
+      "matched_real_chips": 200.0
+    },
+    {
+      "street": "river",
+      "ratio_abstract": 0.833,
+      "ratio_real": 2.222,
+      "distortion": 2.667,
+      "matched_real_chips": 1800.0
+    }
+  ]
+}

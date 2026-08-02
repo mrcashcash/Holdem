@@ -1,0 +1,16 @@
+2026-07-31T03:12:32Z === guard head-to-head: 3000 pairs @ 200bb, seed 20260731 ===
+2026-07-31T03:12:32Z checkpoint: backend\data\gpu_blueprint_200bb\champion.npz
+2026-07-31T03:12:32Z --- opponent: always-min-raise ---
+2026-07-31T03:14:13Z   guard OFF: +339.48 bb/100 [+230.05,+448.92] in 101.3s
+2026-07-31T03:15:46Z   guard ON : +95.34 bb/100 [+12.67,+178.01] in 93.0s
+2026-07-31T03:15:46Z   DELTA (on - off): -244.14 bb/100
+2026-07-31T03:15:46Z --- opponent: always-call ---
+2026-07-31T03:19:10Z   guard OFF: +188.65 bb/100 [+157.81,+219.49] in 204.2s
+2026-07-31T03:21:49Z   guard ON : +188.65 bb/100 [+157.81,+219.49] in 159.0s
+2026-07-31T03:21:49Z   DELTA (on - off): +0.00 bb/100
+2026-07-31T03:21:49Z 
+2026-07-31T03:21:49Z --- comparison with the pre-fix measurement ---
+2026-07-31T03:21:49Z   always-min-raise: delta -244.14 bb/100
+2026-07-31T03:21:49Z   always-call: delta +0.00 bb/100
+2026-07-31T03:21:49Z A delta near zero means the -268.82 was the defect, not the mechanism.
+2026-07-31T03:21:49Z written to backend\data\evaluations\guard-h2h-200bb.json

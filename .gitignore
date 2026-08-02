@@ -22,3 +22,29 @@ logs/
 .claude-flow/
 .claude/proven-config.json
 .claude/.proven-config-version
+
+# Eval summaries and logs are the RECORD of what was measured -- small, textual, and
+# the reason a gate result is auditable months later. Raw per-shard sample dumps are
+# not: they are regenerable from the seed and only inflate the repo.
+!backend/data/evaluations/
+backend/data/evaluations/*
+!backend/data/evaluations/*.json
+!backend/data/evaluations/*.log
+backend/data/evaluations/*.partial.json
+backend/data/evaluations/*-shards/
+
+# Canonical-menu blueprints (2026-08-02). Kept because losing them means repeating
+# ~21 GPU-hours and ~$3 of rented time, and because the pod clone now uses
+# --filter=blob:none, so these blobs no longer slow provisioning.
+!backend/data/gpu_blueprint_50bb_canon50/
+backend/data/gpu_blueprint_50bb_canon50/*
+!backend/data/gpu_blueprint_50bb_canon50/checkpoint-15000.npz
+!backend/data/gpu_blueprint_50bb_canon50/telemetry.json
+!backend/data/gpu_blueprint_canon100/
+backend/data/gpu_blueprint_canon100/*
+!backend/data/gpu_blueprint_canon100/checkpoint-15000.npz
+!backend/data/gpu_blueprint_canon100/telemetry.json
+!backend/data/gpu_blueprint_200bb_richmenu/
+backend/data/gpu_blueprint_200bb_richmenu/*
+!backend/data/gpu_blueprint_200bb_richmenu/checkpoint-15000.npz
+!backend/data/gpu_blueprint_200bb_richmenu/telemetry.json
